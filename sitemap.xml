@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/0.9">
+  <url>
+    <loc>https://casapellegrini.com.br/</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://casapellegrini.com.br/logo.png</image:loc>
+      <image:title>Casa Pellegrini - Bar e Restaurante em Petrópolis</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://casapellegrini.com.br/historia_frente.jpg</image:loc>
+      <image:title>Fachada da Casa Pellegrini no Centro Historico de Petropolis</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://casapellegrini.com.br/burger-bacon.png</image:loc>
+      <image:title>Hamburguer artesanal Casa Pellegrini</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://casapellegrini.com.br/frango-parmegiana.png</image:loc>
+      <image:title>Frango a Parmegiana Casa Pellegrini</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://casapellegrini.com.br/cardapio.html</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+</urlset>
