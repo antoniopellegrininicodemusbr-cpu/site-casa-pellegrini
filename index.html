@@ -13,35 +13,89 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- SCHEMA MARKUP (O CÓDIGO OCULTO MEGA OTIMIZADO) -->
+        <!-- SCHEMA MARKUP - SEO LOCAL OTIMIZADO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Casa Pellegrini – Restaurante em Petrópolis",
+          "item": "https://casapellegrini.com.br/"
+        }
+      ]
+    }
+    </script>
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Restaurant",
+      "@id": "https://casapellegrini.com.br/#restaurant",
       "name": "Casa Pellegrini",
-      "image": "https://www.casapellegrini.com.br/imagem-principal.jpg",
-      "@id": "https://www.casapellegrini.com.br",
-      "url": "https://www.casapellegrini.com.br",
+      "alternateName": ["Bar e Restaurante Petrópolis", "Melhor Restaurante Petrópolis", "Hambúrguer Artesanal Petrópolis"],
+      "description": "Bar e restaurante em Petrópolis no Centro Histórico. Especialidade em hambúrgueres artesanais, almoço executivo, feijoada, happy hour com chopp gelado e frango à parmegiana. Ambiente familiar e aconchegante.",
+      "url": "https://casapellegrini.com.br/",
       "telephone": "+552422316110",
-      "servesCuisine": ["Brazilian Cuisine", "Bar Food", "Pub Food", "Hamburgers", "Frango a Parmegiana", "Feijoada", "Happy Hour", "Italian Cuisine", "Drinks", "Caipirinha", "Caipvodka", "Mojito", "Moscow Mule", "Apperol"],
-      "priceRange": "$$",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Rua Treze de Maio, 184",
-        "addressLocality": "Centro Histórico",
+        "streetAddress": "Rua do Imperador",
+        "addressLocality": "Petrópolis",
         "addressRegion": "RJ",
-        "postalCode": "25685-231",
+        "postalCode": "25610-320",
         "addressCountry": "BR"
       },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -22.5058,
+        "longitude": -43.1791
+      },
+      "servesCuisine": ["Brasileira", "Hambúrgueres Artesanais", "Petiscos", "Frutos do Mar"],
+      "priceRange": "$$",
+      "hasMenu": "https://casapellegrini.com.br/cardapio.html",
       "openingHoursSpecification": [
         {
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-          "opens": "07:30",
-          "closes": "00:30"
+          "dayOfWeek": ["Tuesday", "Wednesday", "Thursday"],
+          "opens": "11:00",
+          "closes": "23:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Friday", "Saturday"],
+          "opens": "11:00",
+          "closes": "00:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Sunday"],
+          "opens": "11:00",
+          "closes": "22:00"
         }
       ],
-      "description": "A Casa Pellegrini é o ponto de encontro mais autêntico do Centro Histórico de Petrópolis. Unimos a tradição de um restaurante familiar com a energia de um bar. Somos pioneiros em hambúrgueres artesanais na cidade e oferecemos um cardápio completo: do almoço executivo aos melhores caldos e petiscos da serra. Lugar ideal para um encontro ou date! Nosso ambiente acolhedor e atendimento cordial porém informal garantem o clima perfeito. Para os apaixonados por esporte, somos o destino certo para assistir jogos de futebol com 8 televisões e a cerveja e chopp mais gelados da região. Faça seu pedido por delivery para entrega rápida. Qualidade e tradição no coração do Baixo Petrópolis, na Rua 13 de Maio."
+      "image": "https://casapellegrini.com.br/historia_frente.jpg",
+      "sameAs": [
+        "https://www.facebook.com/CasaPellegrini/",
+        "https://www.instagram.com/casapellegrini",
+        "https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f"
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://casapellegrini.com.br/#website",
+      "url": "https://casapellegrini.com.br/",
+      "name": "Casa Pellegrini",
+      "description": "Bar e restaurante em Petrópolis no Centro Histórico. Hambúrgueres artesanais, feijoada, happy hour e almoço executivo.",
+      "inLanguage": "pt-BR",
+      "publisher": {
+        "@id": "https://casapellegrini.com.br/#restaurant"
+      }
     }
     </script>
     <style>
