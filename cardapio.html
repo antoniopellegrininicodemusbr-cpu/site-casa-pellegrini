@@ -2,6 +2,20 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+        <link rel="canonical" href="https://casapellegrini.com.br/cardapio.html">
+    <!-- Open Graph -->
+    <meta property="og:type" content="restaurant.menu">
+    <meta property="og:site_name" content="Casa Pellegrini">
+    <meta property="og:title" content="Cardápio | Casa Pellegrini — Bar e Restaurante em Petrópolis">
+    <meta property="og:description" content="Conheça o cardápio da Casa Pellegrini: hambúrgueres artesanais, feijoada, petiscos, almoço executivo e drinks. Bar e restaurante no Centro Histórico de Petrópolis.">
+    <meta property="og:url" content="https://casapellegrini.com.br/cardapio.html">
+    <meta property="og:image" content="https://casapellegrini.com.br/images/og-cardapio.jpg">
+    <meta property="og:locale" content="pt_BR">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cardápio | Casa Pellegrini — Bar e Restaurante em Petrópolis">
+    <meta name="twitter:description" content="Conheça o cardápio da Casa Pellegrini: hambúrgueres artesanais, feijoada, petiscos, almoço executivo e drinks. Bar e restaurante no Centro Histórico de Petrópolis.">
+    <meta name="twitter:image" content="https://casapellegrini.com.br/images/og-cardapio.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cardápio Digital - Casa Pellegrini</title>
     
@@ -13,72 +27,125 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Casa Pellegrini — Restaurante em Petrópolis", "item": "https://casapellegrini.com.br/"},
+        {"@type": "ListItem", "position": 2, "name": "Cardápio", "item": "https://casapellegrini.com.br/cardapio.html"}
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "@id": "https://casapellegrini.com.br/#restaurant",
+      "name": "Casa Pellegrini",
+      "alternateName": ["Bar e Restaurante Petrópolis", "Melhor Restaurante Petrópolis", "Hambúrguer Artesanal Petrópolis"],
+      "description": "Bar e restaurante em Petrópolis no Centro Histórico. Especialidade em hambúrgueres artesanais, almoço executivo, feijoada, happy hour com chopp gelado e frango à parmegiana. Ambiente familiar e aconchegante.",
+      "url": "https://casapellegrini.com.br/",
+      "telephone": "+552422316110",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua do Imperador",
+        "addressLocality": "Petrópolis",
+        "addressRegion": "RJ",
+        "postalCode": "25610-320",
+        "addressCountry": "BR"
+      },
+      "geo": {"@type": "GeoCoordinates", "latitude": -22.5058, "longitude": -43.1791},
+      "servesCuisine": ["Brasileira", "Hambúrgueres Artesanais", "Petiscos", "Frutos do Mar"],
+      "priceRange": "$$",
+      "hasMenu": "https://casapellegrini.com.br/cardapio.html",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "10:00",
+          "closes": "00:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Saturday", "Sunday"],
+          "opens": "07:30",
+          "closes": "00:00"
+        }
+      ],
+      "image": "https://casapellegrini.com.br/historia_frente.jpg"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
       "@type": "Menu",
+      "@id": "https://casapellegrini.com.br/cardapio.html#menu",
       "name": "Cardápio Principal - Casa Pellegrini",
       "description": "Cardápio completo com hambúrgueres artesanais, almoço executivo, caldos, porções, drinks, chopp e cervejas.",
+      "provider": {"@id": "https://casapellegrini.com.br/#restaurant"},
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": "https://www.casapellegrini.com.br/cardapio.html"
+        "@id": "https://casapellegrini.com.br/cardapio.html"
       },
       "hasMenuSection": [
         {
           "@type": "MenuSection",
-          "name": "Sanduíches",
+          "name": "Hambúrgueres Artesanais em Petrópolis",
           "hasMenuItem": [
-            { "@type": "MenuItem", "name": "Brazuca Burger", "offers": { "@type": "Offer", "price": "31.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Smoked Burger", "offers": { "@type": "Offer", "price": "31.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Hambúrguer Artesanal", "offers": { "@type": "Offer", "price": "25.90", "priceCurrency": "BRL" } }
+            { "@type": "MenuItem", "name": "Brazuca Burger", "description": "Hambúrguer artesanal Petrópolis com blend especial, queijo cheddar, bacon crocante e molho especial da casa.", "offers": { "@type": "Offer", "price": "31.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Smoked Burger", "description": "Hambúrguer artesanal defumado em Petrópolis com queijo gouda, cebola caramelizada e molho barbecue caseiro.", "offers": { "@type": "Offer", "price": "31.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Hambúrguer Artesanal", "description": "Clássico hambúrguer artesanal em Petrópolis, blend de carne 180g na chapa com queijo e salada.", "offers": { "@type": "Offer", "price": "25.90", "priceCurrency": "BRL" } }
           ]
         },
         {
           "@type": "MenuSection",
           "name": "Almoço e Saladas",
           "hasMenuItem": [
-            { "@type": "MenuItem", "name": "Frango à Parmegiana", "description": "O prato campeão do nosso almoço executivo.", "offers": { "@type": "Offer", "price": "44.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Feijoada Completa", "description": "Servida Sexta, Sábado e Domingo. Arroz, feijão e farofa à vontade.", "offers": { "@type": "Offer", "price": "49.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Alcatra à Parmegiana", "offers": { "@type": "Offer", "price": "55.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Salada Pellegrini", "offers": { "@type": "Offer", "price": "32.90", "priceCurrency": "BRL" } }
+            { "@type": "MenuItem", "name": "Frango à Parmegiana", "description": "O prato campeão do almoço executivo Petrópolis. Frango empanado ao molho parmegiana com arroz e fritas.", "offers": { "@type": "Offer", "price": "44.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Feijoada Completa", "description": "Feijoada Petrópolis autêntica servida às sextas e sábados com todos os acompanhamentos tradicionais.", "offers": { "@type": "Offer", "price": "49.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Alcatra à Parmegiana", "description": "Alcatra grelhada ao molho parmegiana. Destaque do almoço executivo Petrópolis com arroz, fritas e salada.", "offers": { "@type": "Offer", "price": "55.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Salada Pellegrini", "description": "Salada fresca com folhas, frango grelhado e tomate cereja. Opção leve no almoço executivo Petrópolis.", "offers": { "@type": "Offer", "price": "32.90", "priceCurrency": "BRL" } }
           ]
         },
         {
           "@type": "MenuSection",
           "name": "Porções e Petiscos",
           "hasMenuItem": [
-            { "@type": "MenuItem", "name": "Batata Frita com Cheddar e Molho de Alho", "offers": { "@type": "Offer", "price": "46.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Dadinhos de Tapioca", "offers": { "@type": "Offer", "price": "58.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Frango Frito com Molho Parmesan Garlic", "offers": { "@type": "Offer", "price": "66.90", "priceCurrency": "BRL" } }
+            { "@type": "MenuItem", "name": "Batata Frita com Cheddar e Molho de Alho", "description": "Porção generosa de batata frita crocante com cheddar derretido e molho de alho. Perfeita para o happy hour Petrópolis.", "offers": { "@type": "Offer", "price": "46.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Dadinhos de Tapioca", "description": "Dadinhos de tapioca crocantes por fora e cremosos por dentro. Petisco favorito do happy hour Petrópolis.", "offers": { "@type": "Offer", "price": "58.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Frango Frito com Molho Parmesan Garlic", "description": "Coxinhas de frango crocantes ao molho parmesan garlic. Ideal para compartilhar no happy hour Petrópolis.", "offers": { "@type": "Offer", "price": "66.90", "priceCurrency": "BRL" } }
           ]
         },
         {
           "@type": "MenuSection",
           "name": "Caldos",
           "hasMenuItem": [
-            { "@type": "MenuItem", "name": "Caldo de Ervilha com Calabresa", "offers": { "@type": "Offer", "price": "24.00", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Caldo de Abóbora com Gorgonzola", "offers": { "@type": "Offer", "price": "22.00", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Caldinho de Feijão com Torresmo", "offers": { "@type": "Offer", "price": "26.00", "priceCurrency": "BRL" } }
+            { "@type": "MenuItem", "name": "Caldo de Ervilha com Calabresa", "description": "Caldo cremoso de ervilha com rodelas de linguiça calabresa. Esquenta as noites frias de Petrópolis.", "offers": { "@type": "Offer", "price": "24.00", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Caldo de Abóbora com Gorgonzola", "description": "Caldo suave de abóbora com gorgonzola cremoso. Entrada perfeita no restaurante em Petrópolis.", "offers": { "@type": "Offer", "price": "22.00", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Caldinho de Feijão com Torresmo", "description": "Caldinho de feijão temperado com torresmo crocante. Clássico brasileiro no cardápio Petrópolis.", "offers": { "@type": "Offer", "price": "26.00", "priceCurrency": "BRL" } }
           ]
         },
         {
           "@type": "MenuSection",
           "name": "Drinks Clássicos",
           "hasMenuItem": [
-            { "@type": "MenuItem", "name": "Caipirinha", "offers": { "@type": "Offer", "price": "15.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Caipivodka", "offers": { "@type": "Offer", "price": "20.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Mojito", "offers": { "@type": "Offer", "price": "21.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Moscow Mule", "offers": { "@type": "Offer", "price": "28.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Aperol Spritz", "offers": { "@type": "Offer", "price": "30.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Gin Tônica Clássico", "offers": { "@type": "Offer", "price": "22.90", "priceCurrency": "BRL" } }
+            { "@type": "MenuItem", "name": "Caipirinha", "description": "Caipirinha de cachaça com limão e açúcar. O drink nacional do happy hour Casa Pellegrini Petrópolis.", "offers": { "@type": "Offer", "price": "15.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Caipivodka", "description": "Caipivodka com frutas da estação. Drink refrescante para o happy hour em Petrópolis.", "offers": { "@type": "Offer", "price": "20.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Mojito", "description": "Mojito com hortelã fresca, limão, rum e água com gás. Clássico cocktail do bar em Petrópolis.", "offers": { "@type": "Offer", "price": "21.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Moscow Mule", "description": "Moscow Mule com vodka premium, ginger beer e limão siciliano. Refrescante no happy hour Petrópolis.", "offers": { "@type": "Offer", "price": "28.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Aperol Spritz", "description": "Aperol Spritz com prosecco, aperol e laranja. O drink do momento no happy hour Petrópolis.", "offers": { "@type": "Offer", "price": "30.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Gin Tônica Clássico", "description": "Gin Tônica com London Dry e tônica premium. Drink refrescante no bar e restaurante Petrópolis.", "offers": { "@type": "Offer", "price": "22.90", "priceCurrency": "BRL" } }
           ]
         },
         {
           "@type": "MenuSection",
           "name": "Cervejas e Chopp",
           "hasMenuItem": [
-            { "@type": "MenuItem", "name": "Chopp Brahma", "offers": { "@type": "Offer", "price": "10.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Chopp Brewpoint IPA", "offers": { "@type": "Offer", "price": "15.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Cerveja Heineken 600ml", "offers": { "@type": "Offer", "price": "19.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Cerveja Original 600ml", "offers": { "@type": "Offer", "price": "15.90", "priceCurrency": "BRL" } },
-            { "@type": "MenuItem", "name": "Chopp de Vinho", "offers": { "@type": "Offer", "price": "21.90", "priceCurrency": "BRL" } }
+            { "@type": "MenuItem", "name": "Chopp Brahma", "description": "Chopp gelado Brahma servido na caneca. O clássico do happy hour com chopp gelado Petrópolis.", "offers": { "@type": "Offer", "price": "10.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Chopp Brewpoint IPA", "description": "Chopp artesanal IPA Brewpoint, lupulado e refrescante. Happy hour com chopp artesanal em Petrópolis.", "offers": { "@type": "Offer", "price": "15.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Cerveja Heineken 600ml", "description": "Garrafa Heineken 600ml bem gelada. Clássico para o happy hour em Petrópolis.", "offers": { "@type": "Offer", "price": "19.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Cerveja Original 600ml", "description": "Garrafa Brahma Original 600ml gelada. Happy hour com chopp e cervejas em Petrópolis.", "offers": { "@type": "Offer", "price": "15.90", "priceCurrency": "BRL" } },
+            { "@type": "MenuItem", "name": "Chopp de Vinho", "description": "Chopp de vinho artesanal, levinho e refrescante. Novidade no bar e restaurante Petrópolis.", "offers": { "@type": "Offer", "price": "21.90", "priceCurrency": "BRL" } }
           ]
         }
       ]
