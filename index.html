@@ -165,7 +165,7 @@
                 <a href="#localizacao" class="hover:text-red-200 transition font-medium">Localização</a>
             </nav>
             <div class="flex items-center space-x-2">
-                <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" class="border border-white text-white font-bold px-2 py-1.5 sm:px-4 text-xs sm:text-base rounded shadow hover:bg-white hover:text-red-700 transition">
+                <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" onclick="fbq('track', 'FindLocation'); gtag('event', 'get_directions', {event_category: 'engagement', event_label: 'Como Chegar - Header'}); ttq.track('Contact', {content_name: 'Traçar Rota'});" class="border border-white text-white font-bold px-2 py-1.5 sm:px-4 text-xs sm:text-base rounded shadow hover:bg-white hover:text-red-700 transition">
                     Como Chegar
                 </a>
                 <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" class="bg-white text-red-700 font-bold px-2 py-1.5 sm:px-4 text-xs sm:text-base rounded shadow hover:bg-gray-100 transition">
@@ -341,7 +341,7 @@
                 </div>
                 <!-- Botão colado no mapa -->
                 <div class="bg-white p-4 text-center border-t border-gray-200">
-                    <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" class="bg-amber-500 text-white text-lg font-bold px-8 py-3 rounded shadow hover:bg-amber-600 transition inline-block w-full sm:w-auto">
+                    <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" onclick="fbq('track', 'FindLocation'); gtag('event', 'get_directions', {event_category: 'engagement', event_label: 'Traçar Rota - Mapa'}); ttq.track('Contact', {content_name: 'Traçar Rota'});" class="bg-amber-500 text-white text-lg font-bold px-8 py-3 rounded shadow hover:bg-amber-600 transition inline-block w-full sm:w-auto">
                         Traçar Rota no Mapa
                     </a>
                 </div>
