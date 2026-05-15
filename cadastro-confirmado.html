@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PQ9GBFSJ');</script>
+    <!-- End Google Tag Manager -->
+
+    <link rel="canonical" href="https://casapellegrini.com.br/cadastro-confirmado.html">
+
+    <!-- noindex — página de pós-conversão, não deve aparecer no Google -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Bing Webmaster Tools verification -->
+    <meta name="msvalidate.01" content="F4FBC90059141AFCDF3F4E08B779CE67" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao Clube Pellegrini · Casa Pellegrini</title>
+    <meta name="description" content="Cadastro no Clube Pellegrini confirmado. Te esperamos no Centro Histórico de Petrópolis pra girar a roleta e ganhar seu brinde!">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        h1, h2, h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            letter-spacing: -0.01em;
+        }
+        @keyframes spin-roleta {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(720deg); }
+        }
+        .roleta-anim { animation: spin-roleta 1.4s ease-out 0.3s both; }
+    </style>
+
+    <!-- ===================================== -->
+    <!-- DISPARO DE EVENTOS DE CONVERSÃO        -->
+    <!-- Meta Pixel (944155698321112) e TikTok Pixel (C45RC77U02PK9PNQ0) já são inicializados pelo GTM (PageView automático em todas as páginas). Aqui só disparamos o evento de conversão CompleteRegistration. -->
+    <!-- ===================================== -->
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    // 1. Push pro GTM (centraliza tudo — GA4, Google Ads, Meta CAPI, TikTok Events API server-side)
+    dataLayer.push({
+      event: 'fidelizi_signup',
+      conversion_type: 'CompleteRegistration',
+      content_name: 'Clube Pellegrini',
+      value: 0,
+      currency: 'BRL',
+      utm_source: new URLSearchParams(window.location.search).get('utm_source') || 'direct',
+      utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || 'none',
+      utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || 'none',
+      utm_content: new URLSearchParams(window.location.search).get('utm_content') || 'none'
+    });
+
+    // 2. GA4 sign_up event (redundância pro caso da tag GTM não estar configurada ainda)
+    gtag('event', 'sign_up', {
+      method: 'fidelizi',
+      event_category: 'conversion',
+      event_label: 'Programa de Fidelidade - Casa Pellegrini'
+    });
+
+    // 3. Disparo direto do Meta Pixel (caso GTM já carregou fbq) — fallback pra GTM
+    window.addEventListener('load', function() {
+      try {
+        if (typeof fbq === 'function') {
+          fbq('track', 'CompleteRegistration', {content_name: 'Clube Pellegrini', value: 0, currency: 'BRL'});
+        }
+        if (typeof ttq !== 'undefined' && typeof ttq.track === 'function') {
+          ttq.track('CompleteRegistration', {content_name: 'Clube Pellegrini', value: 0, currency: 'BRL'});
+        }
+      } catch(e) {
+        console.error('Erro ao disparar pixel:', e);
+      }
+    });
+    </script>
+
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9GBFSJ"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <!-- Cabeçalho -->
+    <header class="bg-red-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <picture>
+                    <source srcset="logo.webp" type="image/webp">
+                    <img src="logo.png" alt="Logo Casa Pellegrini" class="h-9 md:h-16 max-w-[110px] md:max-w-none object-contain bg-white rounded-lg px-1.5 md:px-3 py-0.5 md:py-1.5" width="180" height="64">
+                </picture>
+            </a>
+            <a href="index.html" class="text-white text-sm md:text-base font-medium hover:text-red-200 transition">← Voltar ao site</a>
+        </div>
+    </header>
+
+    <!-- Confirmação -->
+    <section class="bg-gray-900 text-white pt-16 pb-20 text-center relative overflow-hidden min-h-[80vh] flex items-center">
+        <div class="absolute inset-0 bg-black opacity-50"></div>
+        <div class="max-w-3xl mx-auto px-4 relative z-10">
+            <!-- Roleta animada -->
+            <div class="mx-auto mb-8 w-32 h-32 md:w-40 md:h-40 roleta-anim flex items-center justify-center text-7xl md:text-8xl">
+                🎯
+            </div>
+
+            <span class="text-amber-500 font-bold tracking-wider uppercase mb-2 block">Bem-vindo ao Clube Pellegrini!</span>
+            <h1 class="font-extrabold mb-6 leading-tight">
+                <span class="block text-4xl md:text-5xl">Tá tudo certo</span>
+                <span class="block text-2xl md:text-3xl mt-2 font-semibold text-gray-100">Te esperamos pra girar a roleta</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Você agora é membro do <strong class="text-amber-400">Clube Pellegrini</strong>. Quando vier nos visitar no Centro Histórico de Petrópolis, gira a roleta no final do atendimento e <strong class="text-amber-400">leva um brinde pra próxima visita</strong>.
+            </p>
+
+            <!-- Próximos passos -->
+            <div class="bg-white bg-opacity-5 border border-amber-500 rounded-lg p-6 mb-8 text-left max-w-xl mx-auto">
+                <h2 class="text-xl font-bold mb-4 text-amber-400 text-center">Como funciona</h2>
+                <ol class="space-y-3 text-gray-200">
+                    <li><strong class="text-white">1.</strong> Vem na Casa Pellegrini — Rua 13 de Maio, 184, Centro</li>
+                    <li><strong class="text-white">2.</strong> Aproveita o almoço, hambúrguer artesanal, happy hour ou esporte na TV</li>
+                    <li><strong class="text-white">3.</strong> No final, fala com o garçom e <strong class="text-amber-400">gira a roleta</strong></li>
+                    <li><strong class="text-white">4.</strong> Resgata o brinde na próxima visita 🎁</li>
+                </ol>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-3">
+                <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" onclick="fbq('track', 'FindLocation'); gtag('event', 'get_directions', {event_category: 'engagement', event_label: 'Pos-cadastro Fidelizi'}); ttq.track('Contact', {content_name: 'Como Chegar - Pos Fidelizi'});" class="bg-amber-500 text-gray-900 font-bold px-6 py-3 rounded-full shadow hover:bg-amber-400 transition">
+                    🗺️ Como Chegar
+                </a>
+                <a href="cardapio.html" onclick="gtag('event', 'view_menu', {event_category: 'engagement', event_label: 'Pos-cadastro Fidelizi'});" class="bg-white text-red-700 font-bold px-6 py-3 rounded-full shadow hover:bg-gray-100 transition">
+                    🍔 Ver Cardápio Completo
+                </a>
+                <a href="https://wa.me/552422316110?text=Ol%C3%A1!%20Acabei%20de%20me%20cadastrar%20no%20programa%20de%20fidelidade%20da%20Casa%20Pellegrini." target="_blank" onclick="gtag('event', 'whatsapp_click', {event_category: 'engagement', event_label: 'Pos-cadastro Fidelizi'}); fbq('track', 'Contact', {content_name: 'WhatsApp Pos Fidelizi'});" class="bg-green-500 text-white font-bold px-6 py-3 rounded-full shadow hover:bg-green-600 transition">
+                    💬 Falar no WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rodapé enxuto -->
+    <footer class="bg-gray-900 text-gray-400 py-6 text-center text-sm border-t border-gray-800">
+        <p>&copy; 2026 Casa Pellegrini · Rua Treze de Maio, 184 · Centro Histórico, Petrópolis - RJ</p>
+    </footer>
+</body>
+</html>

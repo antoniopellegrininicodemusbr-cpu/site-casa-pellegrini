@@ -1,0 +1,93 @@
+# Redirects da Casa Pellegrini — atalhos curtos com UTMs
+# Sintaxe Netlify: <FROM>  <TO>  <STATUS>
+# 301 = permanente (preserva SEO, recomendado pra atalhos estáveis)
+# 301! = força o redirect mesmo se a URL final for externa
+
+# === CANONIZAÇÃO DE DOMÍNIO (HTTP → HTTPS, WWW → APEX) ===
+# Adicionado em 06/05/2026 — GSC mostrava http://www.casapellegrini.com.br/ com 2.339 imp,
+# mais que a versão https oficial. Forçar redirect 301 consolida autoridade no domínio canônico.
+# IMPORTANTE: complementar verificando no painel Netlify:
+#   1. Domain management → www.casapellegrini.com.br precisa estar listado como alias
+#   2. HTTPS → "Force HTTPS" precisa estar ativado
+#   3. Primary domain = casapellegrini.com.br (sem www)
+http://casapellegrini.com.br/*           https://casapellegrini.com.br/:splat   301!
+http://www.casapellegrini.com.br/*       https://casapellegrini.com.br/:splat   301!
+https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   301!
+
+# === REDES SOCIAIS (bio das contas) ===
+/insta         /?utm_source=instagram&utm_medium=social&utm_campaign=bio              301
+/instagram     /?utm_source=instagram&utm_medium=social&utm_campaign=bio              301
+/face          /?utm_source=facebook&utm_medium=social&utm_campaign=bio               301
+/facebook      /?utm_source=facebook&utm_medium=social&utm_campaign=bio               301
+/tiktok        /?utm_source=tiktok&utm_medium=social&utm_campaign=bio                 301
+/tt            /?utm_source=tiktok&utm_medium=social&utm_campaign=bio                 301
+/bluesky       /?utm_source=bluesky&utm_medium=social&utm_campaign=bio                301
+/bsky          /?utm_source=bluesky&utm_medium=social&utm_campaign=bio                301
+/pinterest     /?utm_source=pinterest&utm_medium=social&utm_campaign=bio              301
+/pin           /?utm_source=pinterest&utm_medium=social&utm_campaign=bio              301
+/reddit        /?utm_source=reddit&utm_medium=social&utm_campaign=bio                 301
+/discord       /?utm_source=discord&utm_medium=community&utm_campaign=bio             301
+/youtube       /?utm_source=youtube&utm_medium=social&utm_campaign=bio                301
+/yt            /?utm_source=youtube&utm_medium=social&utm_campaign=bio                301
+/linkedin      /?utm_source=linkedin&utm_medium=social&utm_campaign=bio               301
+/threads       /?utm_source=threads&utm_medium=social&utm_campaign=bio                301
+
+# === DIRETÓRIOS / REVIEWS ===
+/gmb           /?utm_source=gmb&utm_medium=organic&utm_campaign=ficha                 301
+/google        /?utm_source=gmb&utm_medium=organic&utm_campaign=ficha                 301
+/tripadvisor   /?utm_source=tripadvisor&utm_medium=referral&utm_campaign=link         301
+/yelp          /?utm_source=yelp&utm_medium=referral&utm_campaign=link                301
+/foursquare    /?utm_source=foursquare&utm_medium=referral&utm_campaign=link          301
+
+# === COMUNICAÇÃO DIRETA ===
+/wpp           /?utm_source=whatsapp&utm_medium=referral&utm_campaign=status          301
+/whatsapp      /?utm_source=whatsapp&utm_medium=referral&utm_campaign=status          301
+
+# === OFFLINE (impresso, QR codes, flyers) ===
+/menu          /cardapio.html?utm_source=qrcode&utm_medium=offline&utm_campaign=mesa  301
+/qr            /cardapio.html?utm_source=qrcode&utm_medium=offline&utm_campaign=mesa  301
+/cardapio      /cardapio.html                                                         301
+/flyer         /?utm_source=flyer&utm_medium=offline&utm_campaign=panfleto            301
+
+# === ATALHOS LIMPOS (sem UTM, só bonitos) ===
+/historia      /historia.html                                                         301
+/sobre         /historia.html                                                         301
+
+# === LINKS EXTERNOS ÚTEIS ===
+/mapa          https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis  301!
+/rota          https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis  301!
+/ifood         https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f  301!
+/instabio      https://instagram.com/casapellegrini                                   301!
+
+# === CLUBE PELLEGRINI — programa de fidelidade (Fidelizi como provedor técnico) ===
+# Hoje todos apontam pra home como placeholder. Quando Fidelizi mandar a URL real, trocar
+# a URL de destino mantendo o UTM tracking de cada origem.
+
+# Atalhos branded — apontam pra LANDING INSTITUCIONAL (indexada pra SEO/GEO)
+/clube              /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=cadastro          301
+/programa           /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=cadastro          301
+/roleta             /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=roleta            301
+/brinde             /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=brinde            301
+
+# Atalhos pro FORM de cadastro direto (pula landing — uso em CTAs e ads otimizados pra conversão)
+# Quando Fidelizi mandar URL real, trocar a URL de destino mantendo o UTM tracking.
+/inscrever          /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
+/cadastrar          /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
+/fidelizi           /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
+
+# Atalhos por origem do anúncio (campanhas pagas — cruzar atribuição no GA4 e Conversões offline)
+/clube-meta         /?utm_source=meta&utm_medium=paid&utm_campaign=clube&utm_content=ad        301
+/clube-tiktok       /?utm_source=tiktok&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
+/clube-google       /?utm_source=google&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
+/clube-insta        /?utm_source=instagram&utm_medium=social&utm_campaign=clube&utm_content=bio 301
+
+# Atalhos OFFLINE (QR codes em flyer, mesa, balcão, banner de rua etc.)
+/qr-clube           /?utm_source=qr&utm_medium=offline&utm_campaign=clube_qr               301
+/qr-rua             /?utm_source=qr_rua&utm_medium=offline&utm_campaign=clube_rua          301
+/qr-mesa            /?utm_source=qr_mesa&utm_medium=offline&utm_campaign=clube_mesa        301
+/qr-balcao          /?utm_source=qr_balcao&utm_medium=offline&utm_campaign=clube_balcao    301
+/qr-cardapio        /?utm_source=qr_cardapio&utm_medium=offline&utm_campaign=clube_menu    301
+/flyer-clube        /?utm_source=flyer&utm_medium=offline&utm_campaign=clube_flyer         301
+/cartao-clube       /?utm_source=cartao&utm_medium=offline&utm_campaign=clube_cartao       301
+/banner-clube       /?utm_source=banner&utm_medium=offline&utm_campaign=clube_banner       301
+/evento-clube       /?utm_source=evento&utm_medium=offline&utm_campaign=clube_evento       301
