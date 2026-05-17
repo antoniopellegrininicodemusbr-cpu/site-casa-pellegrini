@@ -1,4 +1,4 @@
-name: Sync Fidelizi → Google Sheets
+name: Sync Fidelizi → Sheets + Meta CAPI + TikTok Events
 
 on:
   schedule:
@@ -25,11 +25,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests google-auth google-api-python-client
 
-      - name: Run Fidelizi → Sheets sync
+      - name: Run Fidelizi → Sheets + Meta CAPI + TikTok Events
         env:
           FIDELIZI_APP_TOKEN:    ${{ secrets.FIDELIZI_APP_TOKEN }}
           FIDELIZI_ACCESS_TOKEN: ${{ secrets.FIDELIZI_ACCESS_TOKEN }}
           FIDELIZI_SHOP_ID:      '4477'
           SPREADSHEET_ID:        '1w8L28LCKWv4Mc5t4nHhZ83I0joLhX6tK40x3BX3TbfM'
           GOOGLE_SHEETS_CREDS:   ${{ secrets.GOOGLE_SHEETS_CREDS }}
+          META_CAPI_TOKEN:       ${{ secrets.META_CAPI_TOKEN }}
+          META_DATASET_ID:       ${{ secrets.META_DATASET_ID }}
+          TIKTOK_EVENTS_TOKEN:   ${{ secrets.TIKTOK_EVENTS_TOKEN }}
+          TIKTOK_EVENT_SET_ID:   ${{ secrets.TIKTOK_EVENT_SET_ID }}
         run: python scripts/sync_fidelizi_to_sheets.py
