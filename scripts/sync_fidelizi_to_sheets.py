@@ -1,23 +1,33 @@
 #!/usr/bin/env python3
 """
 Sincroniza a base de clientes do Fidelizi com a planilha Google Sheets
-"Base Fidelizi - Casa Pellegrini".
+"Base Fidelizi - Casa Pellegrini" E envia eventos Purchase pras Conversoes
+Offline do Meta + TikTok.
 
 Roda diariamente via GitHub Actions. Faz:
   1. GET na API do Fidelizi (todos os clientes, paginado)
-  2. Lê o estado atual da planilha (A2:P) ANTES de sobrescrever
-  3. Calcula campos derivados (dias_inativo, premios_pendentes, email_sha256, phone_sha256)
-  4. Detecta DELTAS: clientes novos + clientes cujo `compras` ou `receita` aumentou
-  5. Loga os deltas (na Fase 2, esses deltas viram eventos Meta CAPI + TikTok Events)
-  6. Limpa a aba (preservando os headers em A1:P1)
-  7. Reescreve todos os clientes em A2:P
+  2. Le o estado atual da planilha (A2:P) ANTES de sobrescrever
+  3. Calcula campos derivados (dias_inativo, premios_pendentes, *_sha256)
+  4. Detecta DELTAS: clientes novos (receita>0) + clientes cujo compras/receita aumentou
+  5. Junta novos+compras_novas num unico pool de eventos Purchase
+  6. Envia eventos pra Meta CAPI (unified dataset)
+  7. Envia eventos pra TikTok Events API (offline event set)
+  8. Limpa a aba (preservando o header) e reescreve
 
-Variáveis de ambiente:
+Variaveis de ambiente:
   FIDELIZI_APP_TOKEN     - app token do Fidelizi
   FIDELIZI_ACCESS_TOKEN  - access token do Fidelizi
   FIDELIZI_SHOP_ID       - ID da loja (4477 pra Casa Pellegrini)
   SPREADSHEET_ID         - ID da planilha Google Sheets
-  GOOGLE_SHEETS_CREDS    - conteúdo (JSON) do arquivo da Service Account
+  GOOGLE_SHEETS_CREDS    - conteudo (JSON) do arquivo da Service Account
+
+  META_CAPI_TOKEN        - (opcional) System User Token com permissao no dataset
+  META_DATASET_ID        - (opcional) ID do dataset Meta (ex: 2602966053197429)
+  TIKTOK_EVENTS_TOKEN    - (opcional) Access Token gerado dentro do Event Set
+  TIKTOK_EVENT_SET_ID    - (opcional) ID do Event Set TikTok (ex: 7640893360621781010)
+
+  Se META_* ou TIKTOK_* nao estiverem setados, o envio pra aquela plataforma e
+  silenciosamente pulado (logs indicam). Isso permite rodar o sync sozinho.
 """
 
 import hashlib
@@ -25,7 +35,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 from google.oauth2.service_account import Credentials
@@ -46,6 +56,9 @@ HEADERS = [
     "email_sha256", "phone_sha256",
 ]
 
+META_GRAPH_VERSION = "v21.0"
+TIKTOK_EVENTS_ENDPOINT = "https://business-api.tiktok.com/open_api/v1.3/event/track/"
+
 # ---------- Helpers ---------------------------------------------------------
 
 def parse_dt(s):
@@ -57,8 +70,21 @@ def parse_dt(s):
         return None
 
 
-def normalize_phone_e164(phone: str) -> str:
-    """Mantém só dígitos e prefixa com +. Fidelizi retorna +55 já incluso."""
+def to_unix_ts(dt_str, fallback_now):
+    """Converte 'YYYY-MM-DD HH:MM:SS' (assume BRT/UTC-3) em Unix timestamp UTC.
+
+    Se a string for vazia ou invalida, usa o fallback_now (ja em UTC).
+    """
+    dt = parse_dt(dt_str)
+    if dt is None:
+        return int(fallback_now.replace(tzinfo=timezone.utc).timestamp())
+    # BRT = UTC - 3h -> UTC = BRT + 3h
+    dt_utc = dt + timedelta(hours=3)
+    return int(dt_utc.replace(tzinfo=timezone.utc).timestamp())
+
+
+def normalize_phone_e164(phone):
+    """Mantem so digitos e prefixa com +. Fidelizi retorna +55 ja incluso."""
     if not phone:
         return ""
     digits = re.sub(r"\D", "", phone)
@@ -67,14 +93,14 @@ def normalize_phone_e164(phone: str) -> str:
     return "+" + digits
 
 
-def hash_sha256(s: str) -> str:
+def hash_sha256(s):
     """SHA256 hex de string lowercase + trim. Vazio se string vazia."""
     if not s:
         return ""
     return hashlib.sha256(s.strip().lower().encode("utf-8")).hexdigest()
 
 
-def sum_premios_pendentes(c: dict) -> int:
+def sum_premios_pendentes(c):
     return sum(
         c.get(f"pendente_resgate_{k}", 0) or 0
         for k in (
@@ -89,8 +115,8 @@ def sum_premios_pendentes(c: dict) -> int:
 
 # ---------- Fidelizi --------------------------------------------------------
 
-def fetch_fidelizi_clients(app_token: str, access_token: str, shop_id: str) -> list:
-    """Pega todos os clientes da loja, lidando com paginação."""
+def fetch_fidelizi_clients(app_token, access_token, shop_id):
+    """Pega todos os clientes da loja, lidando com paginacao."""
     url = f"{FIDELIZI_BASE}/estabelecimentos/{shop_id}/clientes"
     headers = {
         "app-token": app_token,
@@ -121,13 +147,8 @@ def fetch_fidelizi_clients(app_token: str, access_token: str, shop_id: str) -> l
 
 # ---------- Sheets ----------------------------------------------------------
 
-def read_current_state(sheets, spreadsheet_id: str) -> dict:
-    """Lê o estado atual da planilha A2:P. Retorna dict por id_cliente.
-
-    Usa valueRenderOption=UNFORMATTED_VALUE pra ler números como float nativo
-    (sem formatação locale BR que usa vírgula no separador decimal e quebra
-    o float() do Python).
-    """
+def read_current_state(sheets, spreadsheet_id):
+    """Le o estado atual da planilha A2:P. Retorna dict por id_cliente."""
     result = sheets.values().get(
         spreadsheetId=spreadsheet_id,
         range=DATA_RANGE_CLEAR,
@@ -138,7 +159,6 @@ def read_current_state(sheets, spreadsheet_id: str) -> dict:
     for row in rows:
         if not row or not row[0]:
             continue
-        # Padding pra garantir 16 colunas
         row = row + [""] * (16 - len(row))
         id_cliente = str(row[0])
         try:
@@ -159,7 +179,7 @@ def read_current_state(sheets, spreadsheet_id: str) -> dict:
     return state
 
 
-def ensure_headers(sheets, spreadsheet_id: str) -> None:
+def ensure_headers(sheets, spreadsheet_id):
     """Garante que a linha 1 tem todos os 16 headers (idempotente)."""
     sheets.values().update(
         spreadsheetId=spreadsheet_id,
@@ -169,9 +189,9 @@ def ensure_headers(sheets, spreadsheet_id: str) -> None:
     ).execute()
 
 
-# ---------- Transformação ---------------------------------------------------
+# ---------- Transformacao ---------------------------------------------------
 
-def process_client(c: dict, now: datetime) -> list:
+def process_client(c, now):
     """Transforma um cliente Fidelizi numa linha (lista) pra escrever no Sheets."""
     uc = parse_dt(c.get("ultima_compra"))
     dias_inativo = (now - uc).days if uc else ""
@@ -208,23 +228,14 @@ def process_client(c: dict, now: datetime) -> list:
 TEST_NAME_PATTERNS = ("testador", "teste fidelizi", "fidelizi teste")
 
 
-def is_test_client(c: dict) -> bool:
-    """Identifica clientes de teste/treinamento (excluídos dos deltas)."""
+def is_test_client(c):
+    """Identifica clientes de teste/treinamento (excluidos dos deltas)."""
     nome = (c.get("nome") or "").lower()
     return any(p in nome for p in TEST_NAME_PATTERNS)
 
 
-def detect_deltas(previous_state: dict, clients: list) -> dict:
-    """Compara estado anterior (do Sheets) com novo (do Fidelizi).
-
-    Retorna:
-      {
-        'novos_clientes': [...],
-        'compras_novas':  [...]  # eventos de Purchase pra Conversões Offline
-      }
-
-    Clientes de teste/treinamento (TESTADOR, etc) são silenciosamente excluídos.
-    """
+def detect_deltas(previous_state, clients):
+    """Compara estado anterior (do Sheets) com novo (do Fidelizi)."""
     novos = []
     compras_novas = []
 
@@ -241,7 +252,9 @@ def detect_deltas(previous_state: dict, clients: list) -> dict:
                 "email": c.get("email"),
                 "celular": c.get("celular"),
                 "compras": c.get("compras", 0) or 0,
-                "receita": c.get("receita", 0) or 0,
+                "receita": float(c.get("receita", 0) or 0),
+                "ultima_compra": c.get("ultima_compra"),
+                "primeira_compra": c.get("primeira_compra"),
             })
             continue
 
@@ -266,9 +279,148 @@ def detect_deltas(previous_state: dict, clients: list) -> dict:
     return {"novos_clientes": novos, "compras_novas": compras_novas}
 
 
+# ---------- Eventos Purchase (Meta + TikTok) --------------------------------
+
+def build_purchase_events(novos, compras_novas, now):
+    """Junta novos clientes (com receita>0) + compras_novas num unico pool de
+    eventos Purchase prontos pra mandar pras APIs."""
+    events = []
+
+    for n in novos:
+        if (n.get("receita") or 0) <= 0:
+            continue
+        email = (n.get("email") or "").strip().lower()
+        phone_e164 = normalize_phone_e164(n.get("celular") or "")
+        ts = to_unix_ts(n.get("ultima_compra") or n.get("primeira_compra"), now)
+        events.append({
+            "event_id": f"fidelizi-novo-{n['id_cliente']}-{int(n['receita']*100)}",
+            "event_time": ts,
+            "value": float(n["receita"]),
+            "email_sha256": hash_sha256(email),
+            "phone_sha256": hash_sha256(phone_e164),
+            "id_cliente": n["id_cliente"],
+            "nome": n.get("nome"),
+            "tipo": "primeira_compra",
+        })
+
+    for e in compras_novas:
+        if (e.get("delta_receita") or 0) <= 0:
+            continue
+        email = (e.get("email") or "").strip().lower()
+        phone_e164 = normalize_phone_e164(e.get("celular") or "")
+        ts = to_unix_ts(e.get("ultima_compra"), now)
+        events.append({
+            "event_id": f"fidelizi-delta-{e['id_cliente']}-{e['ultima_compra']}-{int(e['receita_total']*100)}",
+            "event_time": ts,
+            "value": float(e["delta_receita"]),
+            "email_sha256": hash_sha256(email),
+            "phone_sha256": hash_sha256(phone_e164),
+            "id_cliente": e["id_cliente"],
+            "nome": e.get("nome"),
+            "tipo": "recompra",
+        })
+
+    return events
+
+
+def send_to_meta_capi(events):
+    """Envia eventos Purchase pra Meta Conversions API (unified dataset)."""
+    token = os.environ.get("META_CAPI_TOKEN", "").strip()
+    dataset_id = os.environ.get("META_DATASET_ID", "").strip()
+    if not token or not dataset_id:
+        print("[meta] META_CAPI_TOKEN/META_DATASET_ID nao configurados - pulando")
+        return None
+    if not events:
+        print("[meta] nenhum evento pra enviar")
+        return None
+
+    url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/{dataset_id}/events"
+    data = []
+    for e in events:
+        user_data = {}
+        if e["email_sha256"]:
+            user_data["em"] = [e["email_sha256"]]
+        if e["phone_sha256"]:
+            user_data["ph"] = [e["phone_sha256"]]
+        data.append({
+            "event_name": "Purchase",
+            "event_time": e["event_time"],
+            "event_id": e["event_id"],
+            "action_source": "physical_store",
+            "user_data": user_data,
+            "custom_data": {
+                "currency": "BRL",
+                "value": e["value"],
+            },
+        })
+    payload = {"data": data, "access_token": token}
+
+    r = requests.post(url, json=payload, timeout=30)
+    try:
+        body = r.json()
+    except Exception:
+        body = {"raw": r.text}
+    print(f"[meta] POST {url} -> {r.status_code}")
+    print(f"[meta] response: {json.dumps(body, ensure_ascii=False)[:500]}")
+    if r.status_code >= 400:
+        print("[meta] ERRO no envio")
+    return body
+
+
+def send_to_tiktok_events(events):
+    """Envia eventos Purchase pra TikTok Events API v1.3 (offline event set)."""
+    token = os.environ.get("TIKTOK_EVENTS_TOKEN", "").strip()
+    event_set_id = os.environ.get("TIKTOK_EVENT_SET_ID", "").strip()
+    if not token or not event_set_id:
+        print("[tiktok] TIKTOK_EVENTS_TOKEN/TIKTOK_EVENT_SET_ID nao configurados - pulando")
+        return None
+    if not events:
+        print("[tiktok] nenhum evento pra enviar")
+        return None
+
+    data = []
+    for e in events:
+        user = {}
+        if e["email_sha256"]:
+            user["email"] = e["email_sha256"]
+        if e["phone_sha256"]:
+            user["phone"] = e["phone_sha256"]
+        data.append({
+            "event": "Purchase",
+            "event_time": e["event_time"],
+            "event_id": e["event_id"],
+            "user": user,
+            "properties": {
+                "currency": "BRL",
+                "value": e["value"],
+            },
+        })
+
+    payload = {
+        "event_source": "offline",
+        "event_source_id": event_set_id,
+        "data": data,
+    }
+    headers = {
+        "Access-Token": token,
+        "Content-Type": "application/json",
+    }
+    r = requests.post(TIKTOK_EVENTS_ENDPOINT, headers=headers, json=payload, timeout=30)
+    try:
+        body = r.json()
+    except Exception:
+        body = {"raw": r.text}
+    print(f"[tiktok] POST {TIKTOK_EVENTS_ENDPOINT} -> {r.status_code}")
+    print(f"[tiktok] response: {json.dumps(body, ensure_ascii=False)[:500]}")
+    code = body.get("code") if isinstance(body, dict) else None
+    if r.status_code >= 400 or (code not in (0, None)):
+        print(f"[tiktok] ERRO no envio (code={code})")
+    return body
+
+
 # ---------- Main ------------------------------------------------------------
 
-def main() -> int:
+def main():
     app_token = os.environ["FIDELIZI_APP_TOKEN"]
     access_token = os.environ["FIDELIZI_ACCESS_TOKEN"]
     shop_id = os.environ.get("FIDELIZI_SHOP_ID", "4477")
@@ -282,23 +434,19 @@ def main() -> int:
     )
     sheets = build("sheets", "v4", credentials=creds, cache_discovery=False).spreadsheets()
 
-    # Garante headers atualizados (incluindo email_sha256 e phone_sha256)
     ensure_headers(sheets, spreadsheet_id)
     print(f"[sheets] headers garantidos em {HEADER_RANGE}")
 
-    # Lê estado anterior ANTES de buscar novos dados
     previous_state = read_current_state(sheets, spreadsheet_id)
     print(f"[sheets] estado anterior: {len(previous_state)} clientes")
 
-    # Busca estado atual do Fidelizi
     clients = fetch_fidelizi_clients(app_token, access_token, shop_id)
     print(f"[fidelizi] {len(clients)} clientes encontrados")
 
     if not clients:
-        print("[abort] nenhum cliente retornado - nada será escrito")
+        print("[abort] nenhum cliente retornado - nada sera escrito")
         return 0
 
-    # Detecta deltas
     deltas = detect_deltas(previous_state, clients)
     novos = deltas["novos_clientes"]
     compras_novas = deltas["compras_novas"]
@@ -309,7 +457,7 @@ def main() -> int:
     if len(novos) > 10:
         print(f"  ... e mais {len(novos) - 10}")
 
-    print(f"[delta] {len(compras_novas)} COMPRAS NOVAS detectadas (eventos Purchase pra Conversões Offline)")
+    print(f"[delta] {len(compras_novas)} COMPRAS NOVAS detectadas")
     for e in compras_novas[:10]:
         print(
             f"  [purchase] {e['id_cliente']} {e['nome']!r} "
@@ -319,11 +467,17 @@ def main() -> int:
     if len(compras_novas) > 10:
         print(f"  ... e mais {len(compras_novas) - 10}")
 
-    # Monta as linhas
     now = datetime.now(timezone.utc).replace(tzinfo=None)
+    purchase_events = build_purchase_events(novos, compras_novas, now)
+    print(f"[events] {len(purchase_events)} eventos Purchase a enviar pras APIs")
+    for ev in purchase_events[:10]:
+        print(f"  [ev] {ev['event_id']} {ev['tipo']} R$ {ev['value']:.2f} ts={ev['event_time']}")
+
+    send_to_meta_capi(purchase_events)
+    send_to_tiktok_events(purchase_events)
+
     rows = [process_client(c, now) for c in clients]
 
-    # Limpa a aba (preservando o header) e reescreve
     sheets.values().clear(
         spreadsheetId=spreadsheet_id,
         range=DATA_RANGE_CLEAR,
