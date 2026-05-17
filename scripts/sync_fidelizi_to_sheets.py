@@ -122,10 +122,16 @@ def fetch_fidelizi_clients(app_token: str, access_token: str, shop_id: str) -> l
 # ---------- Sheets ----------------------------------------------------------
 
 def read_current_state(sheets, spreadsheet_id: str) -> dict:
-    """Lê o estado atual da planilha A2:P. Retorna dict por id_cliente."""
+    """Lê o estado atual da planilha A2:P. Retorna dict por id_cliente.
+
+    Usa valueRenderOption=UNFORMATTED_VALUE pra ler números como float nativo
+    (sem formatação locale BR que usa vírgula no separador decimal e quebra
+    o float() do Python).
+    """
     result = sheets.values().get(
         spreadsheetId=spreadsheet_id,
         range=DATA_RANGE_CLEAR,
+        valueRenderOption="UNFORMATTED_VALUE",
     ).execute()
     rows = result.get("values", [])
     state = {}
@@ -199,6 +205,15 @@ def process_client(c: dict, now: datetime) -> list:
 
 # ---------- Delta detection -------------------------------------------------
 
+TEST_NAME_PATTERNS = ("testador", "teste fidelizi", "fidelizi teste")
+
+
+def is_test_client(c: dict) -> bool:
+    """Identifica clientes de teste/treinamento (excluídos dos deltas)."""
+    nome = (c.get("nome") or "").lower()
+    return any(p in nome for p in TEST_NAME_PATTERNS)
+
+
 def detect_deltas(previous_state: dict, clients: list) -> dict:
     """Compara estado anterior (do Sheets) com novo (do Fidelizi).
 
@@ -207,11 +222,15 @@ def detect_deltas(previous_state: dict, clients: list) -> dict:
         'novos_clientes': [...],
         'compras_novas':  [...]  # eventos de Purchase pra Conversões Offline
       }
+
+    Clientes de teste/treinamento (TESTADOR, etc) são silenciosamente excluídos.
     """
     novos = []
     compras_novas = []
 
     for c in clients:
+        if is_test_client(c):
+            continue
         id_cliente = str(c.get("id_cliente"))
         prev = previous_state.get(id_cliente)
 
