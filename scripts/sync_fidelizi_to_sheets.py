@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync Fidelizi -> Sheets + Meta CAPI + TikTok Events + Meta Custom Audiences."""
+"""Sync Fidelizi -> Sheets + Meta CAPI + TikTok Events + Meta/TikTok Custom Audiences."""
 
 import hashlib
 import json
@@ -29,10 +29,16 @@ HEADERS = [
 
 META_GRAPH_VERSION = "v21.0"
 TIKTOK_EVENTS_ENDPOINT = "https://business-api.tiktok.com/open_api/v1.3/event/track/"
+TIKTOK_API_BASE = "https://business-api.tiktok.com/open_api/v1.3"
 
 # Nomes canonicos das audiences na Meta
 META_AUDIENCE_NAME = "Fidelizi - Compradores"
 META_LOOKALIKE_RATIOS = [0.01, 0.03, 0.05]
+
+# Nomes canonicos das audiences no TikTok
+TIKTOK_AUDIENCE_NAME = "Fidelizi - Compradores (Email)"
+# TikTok Lookalike: EXTENSIVE = ratio mais largo (~10%), BALANCE = medio (~3%), PRECISE = mais qualificado (~1%)
+TIKTOK_LOOKALIKE_TYPES = [("PRECISE", "1pct"), ("BALANCE", "3pct"), ("EXTENSIVE", "5pct")]
 
 
 def parse_dt(s):
@@ -330,11 +336,9 @@ def send_to_tiktok_events(events):
     return body
 
 
-# ---------- Fase 2: Meta Custom Audience + Lookalikes -----------------------
+# ---------- Fase 2A: Meta Custom Audience + Lookalikes -----------------------
 
 def get_compradores_for_audience(clients):
-    """Filtra clientes com compras>0 (exclui cadastros sem compra + testes).
-    Retorna lista de [em_sha256, ph_sha256] pra upload na Meta Custom Audience."""
     users = []
     for c in clients:
         if is_test_client(c):
@@ -351,7 +355,6 @@ def get_compradores_for_audience(clients):
 
 
 def meta_list_audiences(token, ad_account):
-    """Lista todas as Custom Audiences/Lookalikes da conta."""
     audiences = []
     url = (f"https://graph.facebook.com/{META_GRAPH_VERSION}/{ad_account}/customaudiences"
            f"?fields=id,name,subtype,approximate_count_lower_bound&limit=200&access_token={token}")
@@ -365,7 +368,6 @@ def meta_list_audiences(token, ad_account):
 
 
 def meta_get_or_create_custom_audience(token, ad_account, name, description):
-    """Busca por nome. Se nao existe, cria CUSTOM type. Retorna audience_id."""
     existing = meta_list_audiences(token, ad_account)
     for a in existing:
         if a.get("name") == name and a.get("subtype") == "CUSTOM":
@@ -387,7 +389,6 @@ def meta_get_or_create_custom_audience(token, ad_account, name, description):
 
 
 def meta_replace_audience_users(token, audience_id, users):
-    """Replace (substituicao completa) dos usuarios da audience. Idempotente."""
     if not users:
         print("[meta-audience] sem usuarios pra enviar")
         return None
@@ -410,7 +411,6 @@ def meta_replace_audience_users(token, audience_id, users):
 
 
 def meta_get_or_create_lookalike(token, ad_account, source_id, ratio, name):
-    """Cria Lookalike Brasil a partir de source_id com ratio (0.01-0.20)."""
     existing = meta_list_audiences(token, ad_account)
     for a in existing:
         if a.get("name") == name and a.get("subtype") == "LOOKALIKE":
@@ -440,11 +440,10 @@ def meta_get_or_create_lookalike(token, ad_account, source_id, ratio, name):
 
 
 def sync_meta_audiences(clients):
-    """Sincroniza Custom Audience + Lookalikes na Meta."""
     token = os.environ.get("META_USER_TOKEN", "").strip()
     ad_account = os.environ.get("META_AD_ACCOUNT_ID", "").strip()
     if not token or not ad_account:
-        print("[meta-audience] META_USER_TOKEN/META_AD_ACCOUNT_ID nao configurados - pulando Fase 2A")
+        print("[meta-audience] tokens nao configurados - pulando Fase 2A")
         return
     users = get_compradores_for_audience(clients)
     print(f"[meta-audience] {len(users)} compradores filtrados (compras>0)")
@@ -457,11 +456,183 @@ def sync_meta_audiences(clients):
         return
     print(f"[meta-audience] Custom Audience id={audience_id}")
     meta_replace_audience_users(token, audience_id, users)
-    # Lookalikes
     for ratio in META_LOOKALIKE_RATIOS:
         ratio_pct = int(ratio * 100)
         lal_name = f"Fidelizi - Compradores - Lookalike {ratio_pct}% BR"
         meta_get_or_create_lookalike(token, ad_account, audience_id, ratio, lal_name)
+
+
+# ---------- Fase 2B: TikTok Custom Audience + Lookalikes ---------------------
+
+def get_compradores_emails_sha256(clients):
+    """Lista de email_sha256 dos compradores (compras>0). Pra upload no TikTok."""
+    emails = []
+    for c in clients:
+        if is_test_client(c):
+            continue
+        if (c.get("compras", 0) or 0) <= 0:
+            continue
+        email = (c.get("email") or "").strip().lower()
+        em = hash_sha256(email)
+        if em:
+            emails.append(em)
+    return emails
+
+
+def tiktok_upload_audience_file(token, advertiser_id, csv_content, calculate_type="EMAIL_SHA256"):
+    """Upload de arquivo CSV via multipart. Retorna file_path."""
+    url = f"{TIKTOK_API_BASE}/dmp/custom_audience/file/upload/"
+    file_signature = hashlib.md5(csv_content.encode()).hexdigest()
+    files = {
+        "file": ("fidelizi_compradores.csv", csv_content, "text/csv"),
+    }
+    data = {
+        "advertiser_id": advertiser_id,
+        "calculate_type": calculate_type,
+        "file_name": "fidelizi_compradores.csv",
+        "file_signature": file_signature,
+    }
+    headers = {"Access-Token": token}
+    r = requests.post(url, headers=headers, data=data, files=files, timeout=60)
+    try:
+        body = r.json()
+    except Exception:
+        body = {"raw": r.text}
+    print(f"[tiktok-audience] FILE UPLOAD -> {r.status_code} code={body.get('code')} msg={body.get('message')}")
+    if body.get("code") != 0:
+        return None
+    return body.get("data", {}).get("file_path")
+
+
+def tiktok_list_audiences(token, advertiser_id):
+    """Lista todas Custom Audiences/Lookalikes da conta."""
+    audiences = []
+    page = 1
+    while True:
+        r = requests.get(
+            f"{TIKTOK_API_BASE}/dmp/custom_audience/list/",
+            headers={"Access-Token": token},
+            params={"advertiser_id": advertiser_id, "page": page, "page_size": 100},
+            timeout=30,
+        )
+        try:
+            body = r.json()
+        except Exception:
+            return audiences
+        if body.get("code") != 0:
+            print(f"[tiktok-audience] LIST erro: {body.get('message')}")
+            return audiences
+        items = body.get("data", {}).get("list", [])
+        audiences.extend(items)
+        page_info = body.get("data", {}).get("page_info", {})
+        if page >= page_info.get("total_page", 1):
+            break
+        page += 1
+    return audiences
+
+
+def tiktok_get_or_create_audience(token, advertiser_id, name, file_path, calculate_type="EMAIL_SHA256"):
+    """Cria nova Custom Audience ou retorna id existente."""
+    existing = tiktok_list_audiences(token, advertiser_id)
+    for a in existing:
+        if a.get("custom_audience_name") == name:
+            return a.get("custom_audience_id")
+    url = f"{TIKTOK_API_BASE}/dmp/custom_audience/create/"
+    body = {
+        "advertiser_id": advertiser_id,
+        "custom_audience_name": name,
+        "file_paths": [file_path],
+        "calculate_type": calculate_type,
+    }
+    headers = {"Access-Token": token, "Content-Type": "application/json"}
+    r = requests.post(url, headers=headers, json=body, timeout=30)
+    try:
+        resp = r.json()
+    except Exception:
+        resp = {"raw": r.text}
+    print(f"[tiktok-audience] CREATE {name} -> {r.status_code} code={resp.get('code')} msg={resp.get('message')}")
+    if resp.get("code") != 0:
+        return None
+    return resp.get("data", {}).get("custom_audience_id")
+
+
+def tiktok_update_audience(token, advertiser_id, custom_audience_id, file_path):
+    """Substitui arquivo de uma audience existente (sincroniza com base atual)."""
+    url = f"{TIKTOK_API_BASE}/dmp/custom_audience/update/"
+    body = {
+        "advertiser_id": advertiser_id,
+        "custom_audience_id": custom_audience_id,
+        "file_paths": [file_path],
+    }
+    headers = {"Access-Token": token, "Content-Type": "application/json"}
+    r = requests.post(url, headers=headers, json=body, timeout=30)
+    try:
+        resp = r.json()
+    except Exception:
+        resp = {"raw": r.text}
+    print(f"[tiktok-audience] UPDATE {custom_audience_id} -> {r.status_code} code={resp.get('code')} msg={resp.get('message')}")
+    return resp
+
+
+def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type, name, country="BR"):
+    """Cria Lookalike TikTok. expand_type: PRECISE (mais qualificado), BALANCE (medio), EXTENSIVE (mais alcance)."""
+    existing = tiktok_list_audiences(token, advertiser_id)
+    for a in existing:
+        if a.get("custom_audience_name") == name:
+            return a.get("custom_audience_id")
+    url = f"{TIKTOK_API_BASE}/dmp/custom_audience/lookalike/create/"
+    body = {
+        "advertiser_id": advertiser_id,
+        "custom_audience_id": source_id,
+        "lookalike_audience_name": name,
+        "lookalike_spec": {
+            "country": country,
+            "expand_type": expand_type,
+        },
+    }
+    headers = {"Access-Token": token, "Content-Type": "application/json"}
+    r = requests.post(url, headers=headers, json=body, timeout=30)
+    try:
+        resp = r.json()
+    except Exception:
+        resp = {"raw": r.text}
+    print(f"[tiktok-lookalike] CREATE {name} ({expand_type}) -> {r.status_code} code={resp.get('code')} msg={resp.get('message')}")
+    if resp.get("code") != 0:
+        return None
+    return resp.get("data", {}).get("audience_id")
+
+
+def sync_tiktok_audiences(clients):
+    """Sincroniza Custom Audience + Lookalikes no TikTok via Marketing API."""
+    token = os.environ.get("TIKTOK_BUSINESS_TOKEN", "").strip()
+    advertiser_id = os.environ.get("TIKTOK_ADVERTISER_ID", "").strip()
+    if not token or not advertiser_id:
+        print("[tiktok-audience] TIKTOK_BUSINESS_TOKEN/TIKTOK_ADVERTISER_ID nao configurados - pulando Fase 2B")
+        return
+    emails = get_compradores_emails_sha256(clients)
+    print(f"[tiktok-audience] {len(emails)} emails de compradores filtrados")
+    if len(emails) < 100:
+        print(f"[tiktok-audience] AVISO: TikTok exige minimo 100 source users pra Lookalike")
+    # Monta CSV (1 coluna, 1 email_sha256 por linha)
+    csv_content = "\n".join(emails) + "\n"
+    file_path = tiktok_upload_audience_file(token, advertiser_id, csv_content, "EMAIL_SHA256")
+    if not file_path:
+        print("[tiktok-audience] falha no upload do arquivo - pulando")
+        return
+    print(f"[tiktok-audience] file uploaded, file_path={file_path}")
+    audience_id = tiktok_get_or_create_audience(
+        token, advertiser_id, TIKTOK_AUDIENCE_NAME, file_path, "EMAIL_SHA256"
+    )
+    if not audience_id:
+        print("[tiktok-audience] falha ao criar/obter Custom Audience - pulando Lookalikes")
+        return
+    print(f"[tiktok-audience] Custom Audience id={audience_id}")
+    # Atualiza arquivo da audience (idempotente em re-runs - mantem base sincronizada)
+    tiktok_update_audience(token, advertiser_id, audience_id, file_path)
+    # Lookalikes
+    for expand_type, label in TIKTOK_LOOKALIKE_TYPES:
+        lal_name = f"Fidelizi - Compradores - Lookalike {label} BR"
+        tiktok_get_or_create_lookalike(token, advertiser_id, audience_id, expand_type, lal_name)
 
 
 # ---------- Main ------------------------------------------------------------
@@ -519,6 +690,9 @@ def main():
 
     # Fase 2A: Meta Custom Audience + Lookalikes
     sync_meta_audiences(clients)
+
+    # Fase 2B: TikTok Custom Audience + Lookalikes
+    sync_tiktok_audiences(clients)
 
     # Sheets update
     rows = [process_client(c, now) for c in clients]
