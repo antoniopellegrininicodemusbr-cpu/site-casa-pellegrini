@@ -36,4 +36,6 @@ jobs:
           TIKTOK_EVENT_SET_ID:   ${{ secrets.TIKTOK_EVENT_SET_ID }}
           META_USER_TOKEN:       ${{ secrets.META_USER_TOKEN }}
           META_AD_ACCOUNT_ID:    ${{ secrets.META_AD_ACCOUNT_ID }}
+          TIKTOK_BUSINESS_TOKEN: ${{ secrets.TIKTOK_BUSINESS_TOKEN }}
+          TIKTOK_ADVERTISER_ID:  ${{ secrets.TIKTOK_ADVERTISER_ID }}
         run: python scripts/sync_fidelizi_to_sheets.py
