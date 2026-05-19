@@ -1,16 +1,14 @@
-name: Sync Fidelizi → Sheets + Meta CAPI + TikTok Events
+name: Sync Fidelizi → Sheets + Meta CAPI + TikTok Events + Custom Audiences
 
 on:
   schedule:
-    # 06:00 UTC = 03:00 BRT diário (madrugada, fora do horário de pico)
     - cron: '0 6 * * *'
-  # Permite rodar manualmente pela aba "Actions" do GitHub
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -25,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests google-auth google-api-python-client
 
-      - name: Run Fidelizi → Sheets + Meta CAPI + TikTok Events
+      - name: Run sync
         env:
           FIDELIZI_APP_TOKEN:    ${{ secrets.FIDELIZI_APP_TOKEN }}
           FIDELIZI_ACCESS_TOKEN: ${{ secrets.FIDELIZI_ACCESS_TOKEN }}
@@ -36,4 +34,6 @@ jobs:
           META_DATASET_ID:       ${{ secrets.META_DATASET_ID }}
           TIKTOK_EVENTS_TOKEN:   ${{ secrets.TIKTOK_EVENTS_TOKEN }}
           TIKTOK_EVENT_SET_ID:   ${{ secrets.TIKTOK_EVENT_SET_ID }}
+          META_USER_TOKEN:       ${{ secrets.META_USER_TOKEN }}
+          META_AD_ACCOUNT_ID:    ${{ secrets.META_AD_ACCOUNT_ID }}
         run: python scripts/sync_fidelizi_to_sheets.py
