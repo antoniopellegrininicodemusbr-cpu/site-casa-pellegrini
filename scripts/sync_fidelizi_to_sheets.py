@@ -33,10 +33,15 @@ TIKTOK_API_BASE = "https://business-api.tiktok.com/open_api/v1.3"
 
 # Nomes canonicos das audiences na Meta
 META_AUDIENCE_NAME = "Fidelizi - Compradores"
+META_AUDIENCE_ATIVOS_NAME = "Fidelizi - Ativos (janela 120d)"
+META_AUDIENCE_INATIVOS_NAME = "Fidelizi - Inativos +120d"
 META_LOOKALIKE_RATIOS = [0.01, 0.03, 0.05]
+FIDELIZI_JANELA_DIAS = 120
 
 # Nomes canonicos das audiences no TikTok
 TIKTOK_AUDIENCE_NAME = "Fidelizi - Compradores (Email)"
+TIKTOK_AUDIENCE_ATIVOS_NAME = "Fidelizi - Ativos 120d (Email)"
+TIKTOK_AUDIENCE_INATIVOS_NAME = "Fidelizi - Inativos +120d (Email)"
 # TikTok Lookalike: EXTENSIVE = ratio mais largo (~10%), BALANCE = medio (~3%), PRECISE = mais qualificado (~1%)
 TIKTOK_LOOKALIKE_TYPES = [("PRECISE", "1pct"), ("BALANCE", "3pct"), ("EXTENSIVE", "5pct")]
 
@@ -338,12 +343,63 @@ def send_to_tiktok_events(events):
 
 # ---------- Fase 2A: Meta Custom Audience + Lookalikes -----------------------
 
+def _within_fidelizi_window(c, now):
+    """True se cliente esta na janela Fidelizi (dias_inativo<=120 OU premios pendentes>0).
+    Dentro da janela = Fidelizi trabalha via WhatsApp, excluir de prospeccao.
+    Fora da janela = Meta/TikTok podem REASSUMIR (retargeting de reativacao)."""
+    uc = parse_dt(c.get("ultima_compra"))
+    if uc is None:
+        return False
+    dias_inativo = (now - uc).days
+    pendentes = sum_premios_pendentes(c)
+    return dias_inativo <= FIDELIZI_JANELA_DIAS or pendentes > 0
+
+
 def get_compradores_for_audience(clients):
+    """TODOS compradores (compras>0). Source do Lookalike."""
     users = []
     for c in clients:
         if is_test_client(c):
             continue
         if (c.get("compras", 0) or 0) <= 0:
+            continue
+        email = (c.get("email") or "").strip().lower()
+        phone_e164 = normalize_phone_e164(c.get("celular") or "")
+        em = hash_sha256(email)
+        ph = hash_sha256(phone_e164)
+        if em or ph:
+            users.append([em, ph])
+    return users
+
+
+def get_ativos_120d_for_audience(clients, now):
+    """Compradores dentro da janela 120d. EXCLUIR de prospeccao."""
+    users = []
+    for c in clients:
+        if is_test_client(c):
+            continue
+        if (c.get("compras", 0) or 0) <= 0:
+            continue
+        if not _within_fidelizi_window(c, now):
+            continue
+        email = (c.get("email") or "").strip().lower()
+        phone_e164 = normalize_phone_e164(c.get("celular") or "")
+        em = hash_sha256(email)
+        ph = hash_sha256(phone_e164)
+        if em or ph:
+            users.append([em, ph])
+    return users
+
+
+def get_inativos_120d_for_audience(clients, now):
+    """Compradores fora da janela 120d (sem premios pendentes). RETARGETING reativacao."""
+    users = []
+    for c in clients:
+        if is_test_client(c):
+            continue
+        if (c.get("compras", 0) or 0) <= 0:
+            continue
+        if _within_fidelizi_window(c, now):
             continue
         email = (c.get("email") or "").strip().lower()
         phone_e164 = normalize_phone_e164(c.get("celular") or "")
@@ -445,17 +501,37 @@ def sync_meta_audiences(clients):
     if not token or not ad_account:
         print("[meta-audience] tokens nao configurados - pulando Fase 2A")
         return
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     users = get_compradores_for_audience(clients)
-    print(f"[meta-audience] {len(users)} compradores filtrados (compras>0)")
+    ativos = get_ativos_120d_for_audience(clients, now)
+    inativos = get_inativos_120d_for_audience(clients, now)
+    print(f"[meta-audience] {len(users)} compradores TOTAL (compras>0) | {len(ativos)} ATIVOS (janela 120d) | {len(inativos)} INATIVOS (+120d)")
     if len(users) < 100:
         print(f"[meta-audience] AVISO: menos de 100 compradores - Lookalike pode falhar")
-    desc = "Casa Pellegrini - clientes que ja compraram (compras>0), sincronizado diariamente do Fidelizi"
+    # 1. Compradores TOTAL (source do Lookalike)
+    desc = "Casa Pellegrini - TODOS clientes com compras>0 (source do Lookalike). Sincronizado diariamente do Fidelizi."
     audience_id = meta_get_or_create_custom_audience(token, ad_account, META_AUDIENCE_NAME, desc)
     if not audience_id:
         print("[meta-audience] falha ao criar/obter Custom Audience - pulando Lookalikes")
         return
-    print(f"[meta-audience] Custom Audience id={audience_id}")
+    print(f"[meta-audience] Compradores id={audience_id}")
     meta_replace_audience_users(token, audience_id, users)
+    # 2. Ativos 120d (excluir de prospeccao - Fidelizi trabalha via WhatsApp)
+    desc_a = "Casa Pellegrini - clientes ATIVOS no Fidelizi (dias_inativo<=120 OU premios pendentes). EXCLUIR de prospeccao."
+    ativos_id = meta_get_or_create_custom_audience(token, ad_account, META_AUDIENCE_ATIVOS_NAME, desc_a)
+    if ativos_id:
+        print(f"[meta-audience] Ativos id={ativos_id}")
+        meta_replace_audience_users(token, ativos_id, ativos)
+    # 3. Inativos +120d (retargeting reativacao - Meta/TikTok reassumem)
+    desc_i = "Casa Pellegrini - clientes INATIVOS no Fidelizi (+120 dias sem comprar, sem premios pendentes). RETARGETING reativacao."
+    inativos_id = meta_get_or_create_custom_audience(token, ad_account, META_AUDIENCE_INATIVOS_NAME, desc_i)
+    if inativos_id:
+        print(f"[meta-audience] Inativos id={inativos_id}")
+        if inativos:
+            meta_replace_audience_users(token, inativos_id, inativos)
+        else:
+            print(f"[meta-audience] Inativos sem users hoje (esperado - Fidelizi tem 12d de vida). Audience criada vazia, sera populada conforme clientes passarem dos 120d.")
+    # 4. Lookalikes a partir de "Compradores" (sinal mais forte)
     for ratio in META_LOOKALIKE_RATIOS:
         ratio_pct = int(ratio * 100)
         lal_name = f"Fidelizi - Compradores - Lookalike {ratio_pct}% BR"
@@ -607,36 +683,66 @@ def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type,
     return resp.get("data", {}).get("audience_id")
 
 
+def _tiktok_sync_one_audience(token, advertiser_id, name, emails):
+    """Helper: upload + create/get audience by name. Skip se emails vazio."""
+    if not emails:
+        print(f"[tiktok-audience] {name}: 0 emails, audience SKIP (TikTok nao aceita vazio)")
+        return None
+    csv_content = "\n".join(emails) + "\n"
+    file_path = tiktok_upload_audience_file(token, advertiser_id, csv_content, "EMAIL_SHA256")
+    if not file_path:
+        print(f"[tiktok-audience] {name}: falha upload, skip")
+        return None
+    audience_id = tiktok_get_or_create_audience(token, advertiser_id, name, file_path, "EMAIL_SHA256")
+    if not audience_id:
+        return None
+    print(f"[tiktok-audience] {name} id={audience_id} ({len(emails)} emails)")
+    tiktok_update_audience(token, advertiser_id, audience_id, file_path)
+    return audience_id
+
+
+def get_compradores_emails_filtered(clients, predicate, now=None):
+    """Helper para gerar lista de emails SHA256 com filtro arbitrario."""
+    emails = []
+    for c in clients:
+        if is_test_client(c):
+            continue
+        if (c.get("compras", 0) or 0) <= 0:
+            continue
+        if predicate is not None and not predicate(c, now):
+            continue
+        email = (c.get("email") or "").strip().lower()
+        em = hash_sha256(email)
+        if em:
+            emails.append(em)
+    return emails
+
+
 def sync_tiktok_audiences(clients):
-    """Sincroniza Custom Audience + Lookalikes no TikTok via Marketing API."""
+    """Sincroniza 3 Custom Audiences + Lookalikes no TikTok via Marketing API."""
     token = os.environ.get("TIKTOK_BUSINESS_TOKEN", "").strip()
     advertiser_id = os.environ.get("TIKTOK_ADVERTISER_ID", "").strip()
     if not token or not advertiser_id:
         print("[tiktok-audience] TIKTOK_BUSINESS_TOKEN/TIKTOK_ADVERTISER_ID nao configurados - pulando Fase 2B")
         return
-    emails = get_compradores_emails_sha256(clients)
-    print(f"[tiktok-audience] {len(emails)} emails de compradores filtrados")
-    if len(emails) < 1000:
-        print(f"[tiktok-audience] AVISO: TikTok exige minimo 1000 source users pra Lookalike (atual: {len(emails)}). Lookalike sera pulado.")
-    # Monta CSV (1 coluna, 1 email_sha256 por linha)
-    csv_content = "\n".join(emails) + "\n"
-    file_path = tiktok_upload_audience_file(token, advertiser_id, csv_content, "EMAIL_SHA256")
-    if not file_path:
-        print("[tiktok-audience] falha no upload do arquivo - pulando")
-        return
-    print(f"[tiktok-audience] file uploaded, file_path={file_path}")
-    audience_id = tiktok_get_or_create_audience(
-        token, advertiser_id, TIKTOK_AUDIENCE_NAME, file_path, "EMAIL_SHA256"
-    )
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    emails_total = get_compradores_emails_filtered(clients, None)
+    emails_ativos = get_compradores_emails_filtered(clients, _within_fidelizi_window, now)
+    emails_inativos = get_compradores_emails_filtered(clients, lambda c,n: not _within_fidelizi_window(c,n), now)
+    print(f"[tiktok-audience] {len(emails_total)} TOTAL | {len(emails_ativos)} ATIVOS 120d | {len(emails_inativos)} INATIVOS +120d")
+    if len(emails_total) < 1000:
+        print(f"[tiktok-audience] AVISO: TikTok exige minimo 1000 source users pra Lookalike (atual: {len(emails_total)}). Lookalike sera pulado.")
+    # 1. Compradores TOTAL
+    audience_id = _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_NAME, emails_total)
+    # 2. Ativos 120d
+    _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_ATIVOS_NAME, emails_ativos)
+    # 3. Inativos +120d
+    _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_INATIVOS_NAME, emails_inativos)
+    # 4. Lookalikes - so se TOTAL >= 1000
     if not audience_id:
-        print("[tiktok-audience] falha ao criar/obter Custom Audience - pulando Lookalikes")
         return
-    print(f"[tiktok-audience] Custom Audience id={audience_id}")
-    # Atualiza arquivo da audience (idempotente em re-runs - mantem base sincronizada)
-    tiktok_update_audience(token, advertiser_id, audience_id, file_path)
-    # Lookalikes - so se source >= 1000 (limite TikTok)
-    if len(emails) < 1000:
-        print(f"[tiktok-lookalike] SKIP: source size {len(emails)} < 1000 (limite TikTok). Refazer quando base crescer.")
+    if len(emails_total) < 1000:
+        print(f"[tiktok-lookalike] SKIP: source size {len(emails_total)} < 1000 (limite TikTok). Refazer quando base crescer.")
     else:
         for expand_type, label in TIKTOK_LOOKALIKE_TYPES:
             lal_name = f"Fidelizi - Compradores - Lookalike {label} BR"
