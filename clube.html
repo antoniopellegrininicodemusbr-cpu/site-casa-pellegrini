@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PQ9GBFSJ');</script>
+    <!-- End Google Tag Manager -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clube Pellegrini — cadastro</title>
+
+    <!-- Página-ponte de conversão: NÃO indexar (não é conteúdo, é tracking + redirect) -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <style>
+        :root { --vermelho:#b91c1c; --vermelho-esc:#991b1b; --ambar:#f59e0b; }
+        * { box-sizing: border-box; }
+        html,body { margin:0; height:100%; }
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(160deg, var(--vermelho) 0%, var(--vermelho-esc) 100%);
+            color:#fff; display:flex; align-items:center; justify-content:center;
+            min-height:100vh; padding:24px; text-align:center;
+        }
+        .card { max-width:420px; width:100%; }
+        .marca { font-size:1.9rem; font-weight:800; letter-spacing:.5px; margin:0 0 6px; }
+        .marca span { color:var(--ambar); }
+        .msg { font-size:1.05rem; opacity:.95; margin:0 0 26px; line-height:1.45; }
+        .spinner {
+            width:44px; height:44px; margin:0 auto 26px; border-radius:50%;
+            border:4px solid rgba(255,255,255,.3); border-top-color:#fff;
+            animation:spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .btn {
+            display:inline-block; background:var(--ambar); color:#1f2937; font-weight:800;
+            text-decoration:none; padding:14px 30px; border-radius:9999px; font-size:1.05rem;
+            box-shadow:0 8px 20px rgba(0,0,0,.25); transition:transform .15s, background .15s;
+        }
+        .btn:hover { background:#fbbf24; transform:scale(1.04); }
+        .obs { margin-top:18px; font-size:.82rem; opacity:.75; }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9GBFSJ"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div class="card">
+        <p class="marca">Clube <span>Pellegrini</span></p>
+        <div class="spinner"></div>
+        <p class="msg">Estamos te levando pro seu cadastro e brinde de boas-vindas...</p>
+        <a id="continuar" class="btn" href="https://campanhas.fidelizi.com.br/ofertas/b64c0150-2bae-4aff-bccd-094ba428a159" rel="noopener">Continuar agora &rarr;</a>
+        <p class="obs">Se a página não abrir sozinha, toque no botão acima.</p>
+    </div>
+
+    <script>
+    (function () {
+        // Destino final: oferta de boas-vindas do Clube (Fidelizi)
+        var OFERTA = "https://campanhas.fidelizi.com.br/ofertas/b64c0150-2bae-4aff-bccd-094ba428a159";
+
+        // 1) Lê os UTMs que chegaram na /clube (ex: vindo do ManyChat)
+        var p = new URLSearchParams(window.location.search);
+        var utm = {
+            utm_source:   p.get("utm_source")   || "manychat",
+            utm_medium:   p.get("utm_medium")   || "whatsapp",
+            utm_campaign: p.get("utm_campaign") || "clube",
+            utm_content:  p.get("utm_content")  || "",
+            utm_term:     p.get("utm_term")     || ""
+        };
+
+        // 2) Monta o destino carregando os UTMs (atribuição também do lado Fidelizi)
+        var qs = [];
+        Object.keys(utm).forEach(function (k) { if (utm[k]) qs.push(k + "=" + encodeURIComponent(utm[k])); });
+        var destino = OFERTA + (qs.length ? "?" + qs.join("&") : "");
+
+        // 3) Evento pro GTM/GA4 (atribui o lead ao canal de origem)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: "clube_lead",
+            clube_destino: "fidelizi_oferta_boasvindas",
+            utm_source: utm.utm_source,
+            utm_medium: utm.utm_medium,
+            utm_campaign: utm.utm_campaign,
+            utm_content: utm.utm_content,
+            utm_term: utm.utm_term
+        });
+
+        // 4) Botão de fallback aponta pro mesmo destino
+        var btn = document.getElementById("continuar");
+        if (btn) btn.href = destino;
+
+        // 5) Redireciona após ~1,8s (tempo pro GTM disparar GA4/pixels). replace() = não fica no histórico.
+        setTimeout(function () { window.location.replace(destino); }, 1800);
+    })();
+    </script>
+</body>
+</html>

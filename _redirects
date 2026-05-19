@@ -64,7 +64,9 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 # a URL de destino mantendo o UTM tracking de cada origem.
 
 # Atalhos branded — apontam pra LANDING INSTITUCIONAL (indexada pra SEO/GEO)
-/clube              /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=cadastro          301
+# NOTA (19/05/2026): /clube NÃO é mais redirect — virou PÁGINA REAL (clube.html), uma página-ponte
+# de conversão que dispara GA4/pixels (GTM) e redireciona pro link da oferta Fidelizi. Usada no
+# ManyChat. Para a landing institucional indexada, use /programa.
 /programa           /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=cadastro          301
 /roleta             /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=roleta            301
 /brinde             /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=brinde            301
@@ -89,5 +91,4 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /qr-cardapio        /?utm_source=qr_cardapio&utm_medium=offline&utm_campaign=clube_menu    301
 /flyer-clube        /?utm_source=flyer&utm_medium=offline&utm_campaign=clube_flyer         301
 /cartao-clube       /?utm_source=cartao&utm_medium=offline&utm_campaign=clube_cartao       301
-/banner-clube       /?utm_source=banner&utm_medium=offline&utm_campaign=clube_banner       301
-/evento-clube       /?utm_source=evento&utm_medium=offline&utm_campaign=clube_evento       301
+/banner-clube       /?utm_source=bann
