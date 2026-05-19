@@ -588,6 +588,7 @@ def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type,
             "source_audience_id": source_id,
             "country": country,
             "expand_type": expand_type,
+            "include_source": False,
         },
     }
     headers = {"Access-Token": token, "Content-Type": "application/json"}
