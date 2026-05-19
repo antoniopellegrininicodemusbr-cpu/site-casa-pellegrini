@@ -583,7 +583,7 @@ def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type,
     url = f"{TIKTOK_API_BASE}/dmp/custom_audience/lookalike/create/"
     body = {
         "advertiser_id": advertiser_id,
-        "lookalike_audience_name": name,
+        "custom_audience_name": name,
         "lookalike_spec": {
             "source_audience_id": source_id,
             "country": country,
