@@ -1,34 +1,5 @@
 #!/usr/bin/env python3
-"""
-Sincroniza a base de clientes do Fidelizi com a planilha Google Sheets
-"Base Fidelizi - Casa Pellegrini" E envia eventos Purchase pras Conversoes
-Offline do Meta + TikTok.
-
-Roda diariamente via GitHub Actions. Faz:
-  1. GET na API do Fidelizi (todos os clientes, paginado)
-  2. Le o estado atual da planilha (A2:P) ANTES de sobrescrever
-  3. Calcula campos derivados (dias_inativo, premios_pendentes, *_sha256)
-  4. Detecta DELTAS: clientes novos (receita>0) + clientes cujo compras/receita aumentou
-  5. Junta novos+compras_novas num unico pool de eventos Purchase
-  6. Envia eventos pra Meta CAPI (unified dataset)
-  7. Envia eventos pra TikTok Events API (offline event set)
-  8. Limpa a aba (preservando o header) e reescreve
-
-Variaveis de ambiente:
-  FIDELIZI_APP_TOKEN     - app token do Fidelizi
-  FIDELIZI_ACCESS_TOKEN  - access token do Fidelizi
-  FIDELIZI_SHOP_ID       - ID da loja (4477 pra Casa Pellegrini)
-  SPREADSHEET_ID         - ID da planilha Google Sheets
-  GOOGLE_SHEETS_CREDS    - conteudo (JSON) do arquivo da Service Account
-
-  META_CAPI_TOKEN        - (opcional) System User Token com permissao no dataset
-  META_DATASET_ID        - (opcional) ID do dataset Meta (ex: 2602966053197429)
-  TIKTOK_EVENTS_TOKEN    - (opcional) Access Token gerado dentro do Event Set
-  TIKTOK_EVENT_SET_ID    - (opcional) ID do Event Set TikTok (ex: 7640893360621781010)
-
-  Se META_* ou TIKTOK_* nao estiverem setados, o envio pra aquela plataforma e
-  silenciosamente pulado (logs indicam). Isso permite rodar o sync sozinho.
-"""
+"""Sync Fidelizi -> Sheets + Meta CAPI + TikTok Events + Meta Custom Audiences."""
 
 import hashlib
 import json
@@ -59,7 +30,10 @@ HEADERS = [
 META_GRAPH_VERSION = "v21.0"
 TIKTOK_EVENTS_ENDPOINT = "https://business-api.tiktok.com/open_api/v1.3/event/track/"
 
-# ---------- Helpers ---------------------------------------------------------
+# Nomes canonicos das audiences na Meta
+META_AUDIENCE_NAME = "Fidelizi - Compradores"
+META_LOOKALIKE_RATIOS = [0.01, 0.03, 0.05]
+
 
 def parse_dt(s):
     if not s:
@@ -71,20 +45,14 @@ def parse_dt(s):
 
 
 def to_unix_ts(dt_str, fallback_now):
-    """Converte 'YYYY-MM-DD HH:MM:SS' (assume BRT/UTC-3) em Unix timestamp UTC.
-
-    Se a string for vazia ou invalida, usa o fallback_now (ja em UTC).
-    """
     dt = parse_dt(dt_str)
     if dt is None:
         return int(fallback_now.replace(tzinfo=timezone.utc).timestamp())
-    # BRT = UTC - 3h -> UTC = BRT + 3h
     dt_utc = dt + timedelta(hours=3)
     return int(dt_utc.replace(tzinfo=timezone.utc).timestamp())
 
 
 def normalize_phone_e164(phone):
-    """Mantem so digitos e prefixa com +. Fidelizi retorna +55 ja incluso."""
     if not phone:
         return ""
     digits = re.sub(r"\D", "", phone)
@@ -94,7 +62,6 @@ def normalize_phone_e164(phone):
 
 
 def hash_sha256(s):
-    """SHA256 hex de string lowercase + trim. Vazio se string vazia."""
     if not s:
         return ""
     return hashlib.sha256(s.strip().lower().encode("utf-8")).hexdigest()
@@ -103,20 +70,12 @@ def hash_sha256(s):
 def sum_premios_pendentes(c):
     return sum(
         c.get(f"pendente_resgate_{k}", 0) or 0
-        for k in (
-            "premio_fidelidade",
-            "brinde_roleta",
-            "premio_surpresa",
-            "premio_campanha",
-            "premio_game",
-        )
+        for k in ("premio_fidelidade", "brinde_roleta", "premio_surpresa",
+                  "premio_campanha", "premio_game")
     )
 
 
-# ---------- Fidelizi --------------------------------------------------------
-
 def fetch_fidelizi_clients(app_token, access_token, shop_id):
-    """Pega todos os clientes da loja, lidando com paginacao."""
     url = f"{FIDELIZI_BASE}/estabelecimentos/{shop_id}/clientes"
     headers = {
         "app-token": app_token,
@@ -124,7 +83,6 @@ def fetch_fidelizi_clients(app_token, access_token, shop_id):
         "Accept": "application/json",
     }
     params = {"itens_por_pagina": 200, "ordenado_por": "ultima_compra"}
-
     out = []
     page = 1
     while True:
@@ -145,10 +103,7 @@ def fetch_fidelizi_clients(app_token, access_token, shop_id):
     return out
 
 
-# ---------- Sheets ----------------------------------------------------------
-
 def read_current_state(sheets, spreadsheet_id):
-    """Le o estado atual da planilha A2:P. Retorna dict por id_cliente."""
     result = sheets.values().get(
         spreadsheetId=spreadsheet_id,
         range=DATA_RANGE_CLEAR,
@@ -180,7 +135,6 @@ def read_current_state(sheets, spreadsheet_id):
 
 
 def ensure_headers(sheets, spreadsheet_id):
-    """Garante que a linha 1 tem todos os 16 headers (idempotente)."""
     sheets.values().update(
         spreadsheetId=spreadsheet_id,
         range=HEADER_RANGE,
@@ -189,20 +143,14 @@ def ensure_headers(sheets, spreadsheet_id):
     ).execute()
 
 
-# ---------- Transformacao ---------------------------------------------------
-
 def process_client(c, now):
-    """Transforma um cliente Fidelizi numa linha (lista) pra escrever no Sheets."""
     uc = parse_dt(c.get("ultima_compra"))
     dias_inativo = (now - uc).days if uc else ""
-
     pendentes = sum_premios_pendentes(c)
     carteira = c.get("carteira") or {}
     saldo = carteira.get("saldo", 0)
-
     email = (c.get("email") or "").strip().lower()
     phone_e164 = normalize_phone_e164(c.get("celular") or "")
-
     return [
         c.get("id_cliente", ""),
         c.get("nome") or "",
@@ -223,28 +171,22 @@ def process_client(c, now):
     ]
 
 
-# ---------- Delta detection -------------------------------------------------
-
 TEST_NAME_PATTERNS = ("testador", "teste fidelizi", "fidelizi teste")
 
 
 def is_test_client(c):
-    """Identifica clientes de teste/treinamento (excluidos dos deltas)."""
     nome = (c.get("nome") or "").lower()
     return any(p in nome for p in TEST_NAME_PATTERNS)
 
 
 def detect_deltas(previous_state, clients):
-    """Compara estado anterior (do Sheets) com novo (do Fidelizi)."""
     novos = []
     compras_novas = []
-
     for c in clients:
         if is_test_client(c):
             continue
         id_cliente = str(c.get("id_cliente"))
         prev = previous_state.get(id_cliente)
-
         if prev is None:
             novos.append({
                 "id_cliente": id_cliente,
@@ -257,12 +199,10 @@ def detect_deltas(previous_state, clients):
                 "primeira_compra": c.get("primeira_compra"),
             })
             continue
-
         compras_old = prev["compras"]
         compras_new = c.get("compras", 0) or 0
         receita_old = prev["receita"]
         receita_new = float(c.get("receita", 0) or 0)
-
         if compras_new > compras_old or receita_new > receita_old + 0.01:
             compras_novas.append({
                 "id_cliente": id_cliente,
@@ -275,17 +215,11 @@ def detect_deltas(previous_state, clients):
                 "receita_total": round(receita_new, 2),
                 "ultima_compra": c.get("ultima_compra"),
             })
-
     return {"novos_clientes": novos, "compras_novas": compras_novas}
 
 
-# ---------- Eventos Purchase (Meta + TikTok) --------------------------------
-
 def build_purchase_events(novos, compras_novas, now):
-    """Junta novos clientes (com receita>0) + compras_novas num unico pool de
-    eventos Purchase prontos pra mandar pras APIs."""
     events = []
-
     for n in novos:
         if (n.get("receita") or 0) <= 0:
             continue
@@ -302,7 +236,6 @@ def build_purchase_events(novos, compras_novas, now):
             "nome": n.get("nome"),
             "tipo": "primeira_compra",
         })
-
     for e in compras_novas:
         if (e.get("delta_receita") or 0) <= 0:
             continue
@@ -319,21 +252,18 @@ def build_purchase_events(novos, compras_novas, now):
             "nome": e.get("nome"),
             "tipo": "recompra",
         })
-
     return events
 
 
 def send_to_meta_capi(events):
-    """Envia eventos Purchase pra Meta Conversions API (unified dataset)."""
     token = os.environ.get("META_CAPI_TOKEN", "").strip()
     dataset_id = os.environ.get("META_DATASET_ID", "").strip()
     if not token or not dataset_id:
-        print("[meta] META_CAPI_TOKEN/META_DATASET_ID nao configurados - pulando")
+        print("[meta-capi] tokens nao configurados - pulando")
         return None
     if not events:
-        print("[meta] nenhum evento pra enviar")
+        print("[meta-capi] nenhum evento")
         return None
-
     url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/{dataset_id}/events"
     data = []
     for e in events:
@@ -348,36 +278,28 @@ def send_to_meta_capi(events):
             "event_id": e["event_id"],
             "action_source": "physical_store",
             "user_data": user_data,
-            "custom_data": {
-                "currency": "BRL",
-                "value": e["value"],
-            },
+            "custom_data": {"currency": "BRL", "value": e["value"]},
         })
     payload = {"data": data, "access_token": token}
-
     r = requests.post(url, json=payload, timeout=30)
     try:
         body = r.json()
     except Exception:
         body = {"raw": r.text}
-    print(f"[meta] POST {url} -> {r.status_code}")
-    print(f"[meta] response: {json.dumps(body, ensure_ascii=False)[:500]}")
-    if r.status_code >= 400:
-        print("[meta] ERRO no envio")
+    print(f"[meta-capi] POST -> {r.status_code}")
+    print(f"[meta-capi] response: {json.dumps(body, ensure_ascii=False)[:500]}")
     return body
 
 
 def send_to_tiktok_events(events):
-    """Envia eventos Purchase pra TikTok Events API v1.3 (offline event set)."""
     token = os.environ.get("TIKTOK_EVENTS_TOKEN", "").strip()
     event_set_id = os.environ.get("TIKTOK_EVENT_SET_ID", "").strip()
     if not token or not event_set_id:
-        print("[tiktok] TIKTOK_EVENTS_TOKEN/TIKTOK_EVENT_SET_ID nao configurados - pulando")
+        print("[tiktok-events] tokens nao configurados - pulando")
         return None
     if not events:
-        print("[tiktok] nenhum evento pra enviar")
+        print("[tiktok-events] nenhum evento")
         return None
-
     data = []
     for e in events:
         user = {}
@@ -390,32 +312,156 @@ def send_to_tiktok_events(events):
             "event_time": e["event_time"],
             "event_id": e["event_id"],
             "user": user,
-            "properties": {
-                "currency": "BRL",
-                "value": e["value"],
-            },
+            "properties": {"currency": "BRL", "value": e["value"]},
         })
-
     payload = {
         "event_source": "offline",
         "event_source_id": event_set_id,
         "data": data,
     }
-    headers = {
-        "Access-Token": token,
-        "Content-Type": "application/json",
-    }
+    headers = {"Access-Token": token, "Content-Type": "application/json"}
     r = requests.post(TIKTOK_EVENTS_ENDPOINT, headers=headers, json=payload, timeout=30)
     try:
         body = r.json()
     except Exception:
         body = {"raw": r.text}
-    print(f"[tiktok] POST {TIKTOK_EVENTS_ENDPOINT} -> {r.status_code}")
-    print(f"[tiktok] response: {json.dumps(body, ensure_ascii=False)[:500]}")
-    code = body.get("code") if isinstance(body, dict) else None
-    if r.status_code >= 400 or (code not in (0, None)):
-        print(f"[tiktok] ERRO no envio (code={code})")
+    print(f"[tiktok-events] POST -> {r.status_code}")
+    print(f"[tiktok-events] response: {json.dumps(body, ensure_ascii=False)[:500]}")
     return body
+
+
+# ---------- Fase 2: Meta Custom Audience + Lookalikes -----------------------
+
+def get_compradores_for_audience(clients):
+    """Filtra clientes com compras>0 (exclui cadastros sem compra + testes).
+    Retorna lista de [em_sha256, ph_sha256] pra upload na Meta Custom Audience."""
+    users = []
+    for c in clients:
+        if is_test_client(c):
+            continue
+        if (c.get("compras", 0) or 0) <= 0:
+            continue
+        email = (c.get("email") or "").strip().lower()
+        phone_e164 = normalize_phone_e164(c.get("celular") or "")
+        em = hash_sha256(email)
+        ph = hash_sha256(phone_e164)
+        if em or ph:
+            users.append([em, ph])
+    return users
+
+
+def meta_list_audiences(token, ad_account):
+    """Lista todas as Custom Audiences/Lookalikes da conta."""
+    audiences = []
+    url = (f"https://graph.facebook.com/{META_GRAPH_VERSION}/{ad_account}/customaudiences"
+           f"?fields=id,name,subtype,approximate_count_lower_bound&limit=200&access_token={token}")
+    while url:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        body = r.json()
+        audiences.extend(body.get("data", []))
+        url = body.get("paging", {}).get("next")
+    return audiences
+
+
+def meta_get_or_create_custom_audience(token, ad_account, name, description):
+    """Busca por nome. Se nao existe, cria CUSTOM type. Retorna audience_id."""
+    existing = meta_list_audiences(token, ad_account)
+    for a in existing:
+        if a.get("name") == name and a.get("subtype") == "CUSTOM":
+            return a["id"]
+    create_url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/{ad_account}/customaudiences"
+    body = {
+        "name": name,
+        "description": description,
+        "subtype": "CUSTOM",
+        "customer_file_source": "USER_PROVIDED_ONLY",
+        "access_token": token,
+    }
+    r = requests.post(create_url, data=body, timeout=30)
+    resp = r.json()
+    print(f"[meta-audience] CREATE {name} -> {r.status_code} {json.dumps(resp)[:300]}")
+    if r.status_code >= 400:
+        return None
+    return resp.get("id")
+
+
+def meta_replace_audience_users(token, audience_id, users):
+    """Replace (substituicao completa) dos usuarios da audience. Idempotente."""
+    if not users:
+        print("[meta-audience] sem usuarios pra enviar")
+        return None
+    url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/{audience_id}/users"
+    payload_inner = {
+        "schema": ["EMAIL_SHA256", "PHONE_SHA256"],
+        "data": users,
+    }
+    body = {
+        "payload": json.dumps(payload_inner),
+        "access_token": token,
+    }
+    r = requests.post(url, data=body, timeout=60)
+    try:
+        resp = r.json()
+    except Exception:
+        resp = {"raw": r.text}
+    print(f"[meta-audience] REPLACE users ({len(users)}) -> {r.status_code} {json.dumps(resp, ensure_ascii=False)[:300]}")
+    return resp
+
+
+def meta_get_or_create_lookalike(token, ad_account, source_id, ratio, name):
+    """Cria Lookalike Brasil a partir de source_id com ratio (0.01-0.20)."""
+    existing = meta_list_audiences(token, ad_account)
+    for a in existing:
+        if a.get("name") == name and a.get("subtype") == "LOOKALIKE":
+            return a["id"]
+    create_url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/{ad_account}/customaudiences"
+    lookalike_spec = {
+        "origin_audience_id": source_id,
+        "ratio": ratio,
+        "country": "BR",
+    }
+    body = {
+        "name": name,
+        "subtype": "LOOKALIKE",
+        "lookalike_spec": json.dumps(lookalike_spec),
+        "origin_audience_id": source_id,
+        "access_token": token,
+    }
+    r = requests.post(create_url, data=body, timeout=30)
+    try:
+        resp = r.json()
+    except Exception:
+        resp = {"raw": r.text}
+    print(f"[meta-lookalike] CREATE {name} (ratio={ratio}) -> {r.status_code} {json.dumps(resp, ensure_ascii=False)[:300]}")
+    if r.status_code >= 400:
+        return None
+    return resp.get("id")
+
+
+def sync_meta_audiences(clients):
+    """Sincroniza Custom Audience + Lookalikes na Meta."""
+    token = os.environ.get("META_USER_TOKEN", "").strip()
+    ad_account = os.environ.get("META_AD_ACCOUNT_ID", "").strip()
+    if not token or not ad_account:
+        print("[meta-audience] META_USER_TOKEN/META_AD_ACCOUNT_ID nao configurados - pulando Fase 2A")
+        return
+    users = get_compradores_for_audience(clients)
+    print(f"[meta-audience] {len(users)} compradores filtrados (compras>0)")
+    if len(users) < 100:
+        print(f"[meta-audience] AVISO: menos de 100 compradores - Lookalike pode falhar")
+    desc = "Casa Pellegrini - clientes que ja compraram (compras>0), sincronizado diariamente do Fidelizi"
+    audience_id = meta_get_or_create_custom_audience(token, ad_account, META_AUDIENCE_NAME, desc)
+    if not audience_id:
+        print("[meta-audience] falha ao criar/obter Custom Audience - pulando Lookalikes")
+        return
+    print(f"[meta-audience] Custom Audience id={audience_id}")
+    meta_replace_audience_users(token, audience_id, users)
+    # Lookalikes
+    for ratio in META_LOOKALIKE_RATIOS:
+        ratio_pct = int(ratio * 100)
+        lal_name = f"Fidelizi - Compradores - Lookalike {ratio_pct}% BR"
+        meta_get_or_create_lookalike(token, ad_account, audience_id, ratio, lal_name)
 
 
 # ---------- Main ------------------------------------------------------------
@@ -444,54 +490,50 @@ def main():
     print(f"[fidelizi] {len(clients)} clientes encontrados")
 
     if not clients:
-        print("[abort] nenhum cliente retornado - nada sera escrito")
+        print("[abort] nenhum cliente retornado")
         return 0
 
     deltas = detect_deltas(previous_state, clients)
     novos = deltas["novos_clientes"]
     compras_novas = deltas["compras_novas"]
-
-    print(f"[delta] {len(novos)} clientes NOVOS (primeira vez na base)")
+    print(f"[delta] {len(novos)} clientes NOVOS")
     for n in novos[:10]:
         print(f"  [novo] {n['id_cliente']} {n['nome']!r} R$ {n['receita']}")
     if len(novos) > 10:
         print(f"  ... e mais {len(novos) - 10}")
-
-    print(f"[delta] {len(compras_novas)} COMPRAS NOVAS detectadas")
+    print(f"[delta] {len(compras_novas)} COMPRAS NOVAS")
     for e in compras_novas[:10]:
-        print(
-            f"  [purchase] {e['id_cliente']} {e['nome']!r} "
-            f"+{e['delta_compras']} compra(s), +R$ {e['delta_receita']:.2f}, "
-            f"ultima_compra={e['ultima_compra']}"
-        )
+        print(f"  [purchase] {e['id_cliente']} {e['nome']!r} +R$ {e['delta_receita']:.2f}")
     if len(compras_novas) > 10:
         print(f"  ... e mais {len(compras_novas) - 10}")
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
-    purchase_events = build_purchase_events(novos, compras_novas, now)
-    print(f"[events] {len(purchase_events)} eventos Purchase a enviar pras APIs")
-    for ev in purchase_events[:10]:
-        print(f"  [ev] {ev['event_id']} {ev['tipo']} R$ {ev['value']:.2f} ts={ev['event_time']}")
 
+    # Fase 1: Conversoes Offline
+    purchase_events = build_purchase_events(novos, compras_novas, now)
+    print(f"[events] {len(purchase_events)} eventos Purchase pra Meta CAPI + TikTok Events")
+    for ev in purchase_events[:10]:
+        print(f"  [ev] {ev['event_id']} {ev['tipo']} R$ {ev['value']:.2f}")
     send_to_meta_capi(purchase_events)
     send_to_tiktok_events(purchase_events)
 
-    rows = [process_client(c, now) for c in clients]
+    # Fase 2A: Meta Custom Audience + Lookalikes
+    sync_meta_audiences(clients)
 
+    # Sheets update
+    rows = [process_client(c, now) for c in clients]
     sheets.values().clear(
         spreadsheetId=spreadsheet_id,
         range=DATA_RANGE_CLEAR,
     ).execute()
     print(f"[sheets] range {DATA_RANGE_CLEAR} limpo")
-
     sheets.values().update(
         spreadsheetId=spreadsheet_id,
         range=DATA_RANGE_WRITE,
         valueInputOption="RAW",
         body={"values": rows},
     ).execute()
-    print(f"[sheets] {len(rows)} linhas escritas em {DATA_RANGE_WRITE}")
-
+    print(f"[sheets] {len(rows)} linhas escritas")
     return 0
 
 
