@@ -616,8 +616,8 @@ def sync_tiktok_audiences(clients):
         return
     emails = get_compradores_emails_sha256(clients)
     print(f"[tiktok-audience] {len(emails)} emails de compradores filtrados")
-    if len(emails) < 100:
-        print(f"[tiktok-audience] AVISO: TikTok exige minimo 100 source users pra Lookalike")
+    if len(emails) < 1000:
+        print(f"[tiktok-audience] AVISO: TikTok exige minimo 1000 source users pra Lookalike (atual: {len(emails)}). Lookalike sera pulado.")
     # Monta CSV (1 coluna, 1 email_sha256 por linha)
     csv_content = "\n".join(emails) + "\n"
     file_path = tiktok_upload_audience_file(token, advertiser_id, csv_content, "EMAIL_SHA256")
@@ -634,10 +634,13 @@ def sync_tiktok_audiences(clients):
     print(f"[tiktok-audience] Custom Audience id={audience_id}")
     # Atualiza arquivo da audience (idempotente em re-runs - mantem base sincronizada)
     tiktok_update_audience(token, advertiser_id, audience_id, file_path)
-    # Lookalikes
-    for expand_type, label in TIKTOK_LOOKALIKE_TYPES:
-        lal_name = f"Fidelizi - Compradores - Lookalike {label} BR"
-        tiktok_get_or_create_lookalike(token, advertiser_id, audience_id, expand_type, lal_name)
+    # Lookalikes - so se source >= 1000 (limite TikTok)
+    if len(emails) < 1000:
+        print(f"[tiktok-lookalike] SKIP: source size {len(emails)} < 1000 (limite TikTok). Refazer quando base crescer.")
+    else:
+        for expand_type, label in TIKTOK_LOOKALIKE_TYPES:
+            lal_name = f"Fidelizi - Compradores - Lookalike {label} BR"
+            tiktok_get_or_create_lookalike(token, advertiser_id, audience_id, expand_type, lal_name)
 
 
 # ---------- Main ------------------------------------------------------------
