@@ -592,7 +592,7 @@ def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type,
             "mobile_os": "ALL",
             "placements": ["PLACEMENT_TIKTOK"],
             "location_ids": ["6252001"],
-            "audience_size": {"PRECISE": 1, "BALANCE": 3, "EXTENSIVE": 5}.get(expand_type, 1),
+            "audience_size": {"PRECISE": "NARROW", "BALANCE": "BALANCED", "EXTENSIVE": "BROAD"}.get(expand_type, "BALANCED"),
         },
     }
     headers = {"Access-Token": token, "Content-Type": "application/json"}
