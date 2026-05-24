@@ -1454,4 +1454,36 @@
         });
 
         nextBtn.addEventListener('click', () => {
-            if (currentSlide < to
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                carousel.scrollTo({
+                    left: currentSlide * window.innerWidth,
+                    behavior: 'smooth'
+                });
+                updateUI();
+            }
+        });
+
+        // Sincroniza os pontinhos quando o usuário arrasta (swipe) o carrossel
+        let scrollTimer;
+        carousel.addEventListener('scroll', () => {
+            clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                const idx = Math.round(carousel.scrollLeft / window.innerWidth);
+                const clamped = Math.max(0, Math.min(idx, totalSlides - 1));
+                if (clamped !== currentSlide) {
+                    currentSlide = clamped;
+                    updateUI();
+                }
+            }, 120);
+        });
+
+        // Reposiciona o slide atual ao redimensionar a janela
+        window.addEventListener('resize', () => {
+            carousel.scrollTo({ left: currentSlide * window.innerWidth });
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

@@ -808,4 +808,42 @@
             <div>
                 <h4 class="text-white text-lg font-bold mb-4">Contato Oficial</h4>
                 <a href="https://wa.me/552422316110" target="_blank" onclick="gtag('event', 'whatsapp_click', {event_category: 'engagement', event_label: 'WhatsApp Footer - Home'}); fbq('track', 'Contact', {content_name: 'WhatsApp Footer - Home'}); ttq.track('Contact', {content_name: 'WhatsApp Footer - Home'});" class="text-red-500 hover:text-white transition font-semibold block mb-2">WhatsApp (Reservas e Contato)</a>
-                <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" class="text-red-500 hover:text-white transition font-
+                <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" class="text-red-500 hover:text-white transition font-semibold block mb-4">iFood Casa Pellegrini</a>
+                <p class="text-sm">Rua Treze de Maio, 184<br>Centro, Petrópolis - RJ</p>
+            </div>
+        </div>
+        <div class="text-center mt-10 pt-6 border-t border-gray-700 text-sm">
+            <p>&copy; 2026 Casa Pellegrini. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Lazy load do vídeo de esportes (Intersection Observer) -->
+    <script>
+      (function () {
+        var v = document.getElementById('esportesVideo');
+        if (!v) return;
+        function carregar() {
+          if (!v.src && v.dataset.src) {
+            v.src = v.dataset.src;
+            v.load();
+          }
+          var p = v.play();
+          if (p && p.catch) { p.catch(function () {}); }
+        }
+        if ('IntersectionObserver' in window) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                carregar();
+                io.unobserve(v);
+              }
+            });
+          }, { rootMargin: '200px' });
+          io.observe(v);
+        } else {
+          carregar();
+        }
+      })();
+    </script>
+</body>
+</html>
