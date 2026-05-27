@@ -78,10 +78,10 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /fidelizi           /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
 
 # Atalhos por origem do anúncio (campanhas pagas — cruzar atribuição no GA4 e Conversões offline)
-/clube-meta         /?utm_source=meta&utm_medium=paid&utm_campaign=clube&utm_content=ad        301
-/clube-tiktok       /?utm_source=tiktok&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
-/clube-google       /?utm_source=google&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
-/clube-insta        /?utm_source=instagram&utm_medium=social&utm_campaign=clube&utm_content=bio 301
+/clube-meta         /clube-pellegrini.html?utm_source=meta&utm_medium=paid&utm_campaign=clube&utm_content=ad        301
+/clube-tiktok       /clube-pellegrini.html?utm_source=tiktok&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
+/clube-google       /clube-pellegrini.html?utm_source=google&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
+/clube-insta        /clube-pellegrini.html?utm_source=instagram&utm_medium=social&utm_campaign=clube&utm_content=bio 301
 
 # Atalhos OFFLINE (QR codes em flyer, mesa, balcão, banner de rua etc.)
 /qr-clube           /?utm_source=qr&utm_medium=offline&utm_campaign=clube_qr               301
@@ -91,4 +91,5 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /qr-cardapio        /?utm_source=qr_cardapio&utm_medium=offline&utm_campaign=clube_menu    301
 /flyer-clube        /?utm_source=flyer&utm_medium=offline&utm_campaign=clube_flyer         301
 /cartao-clube       /?utm_source=cartao&utm_medium=offline&utm_campaign=clube_cartao       301
-/banner-clube       /?utm_source=bann
+/banner-clube       /?utm_source=banner&utm_medium=offline&utm_campaign=clube_banner       301
+/evento-clu
