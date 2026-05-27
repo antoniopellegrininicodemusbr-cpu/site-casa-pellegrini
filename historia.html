@@ -33,10 +33,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nossa História | Casa Pellegrini Petrópolis desde 1898</title>
     <meta name="description" content="Da imigração italiana de 1887 ao resgate em 2015: a história da Casa Pellegrini, tradição familiar e referência em hambúrguer e chopp em Petrópolis.">
-    <meta name="keywords" content="história Casa Pellegrini, Vito Luigi Pellegrini, Polignano a Mare, imigração italiana Petrópolis, restaurante tradicional Petrópolis, pioneiros hambúrguer artesanal Petrópolis, chopp gelado Petrópolis, Centro Histórico Petrópolis, restaurante familiar Petrópolis, tradição italiana RJ">
-
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="home.css">
+    <style>
+      /* Paleta da home nova (híbrido: barras/hero/rodapé navy, conteúdo claro) */
+      .bg-pellegrini-navy { background-color:#141B2E; }
+      .bg-pellegrini-navy2{ background-color:#0C1120; }
+      .text-pellegrini-gold{ color:#F2B705; }
+      .bg-pellegrini-gold { background-color:#F2B705; }
+      .font-display{ font-family:'Playfair Display',Georgia,serif; }
+      @keyframes pulseGold{0%,100%{box-shadow:0 0 0 0 rgba(242,183,5,.55)}50%{box-shadow:0 0 0 7px rgba(242,183,5,0)}}
+      .pulse-gold{animation:pulseGold 2.2s infinite;}
+    </style>
 
     <!-- SCHEMA: BreadcrumbList -->
     <script type="application/ld+json">
@@ -120,7 +128,7 @@
           "@type": "AggregateRating",
           "itemReviewed": {"@id": "https://casapellegrini.com.br/#restaurant"},
           "ratingValue": "4.7",
-          "reviewCount": "5722",
+          "reviewCount": "5746",
           "bestRating": "5",
           "worstRating": "1"
         },
@@ -175,7 +183,7 @@
         "@type": "AggregateRating",
         "itemReviewed": {"@id": "https://casapellegrini.com.br/#restaurant"},
         "ratingValue": "4.7",
-        "reviewCount": "5722",
+        "reviewCount": "5746",
         "bestRating": "5",
         "worstRating": "1"
       },
@@ -313,43 +321,52 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <!-- Cabeçalho -->
-    <header class="bg-red-700 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center">
-                <picture>
-                    <source srcset="logo.webp" type="image/webp">
-                    <img src="logo.png" alt="Logo Casa Pellegrini - Restaurante em Petrópolis" class="h-9 md:h-16 max-w-[110px] md:max-w-none object-contain bg-white rounded-lg px-1.5 md:px-3 py-0.5 md:py-1.5" width="180" height="64">
-                </picture>
+    <header class="bg-pellegrini-navy text-white sticky top-0 z-50 border-b border-white/10">
+        <div class="flex items-center justify-between gap-2 px-3 py-2.5 max-w-6xl mx-auto md:px-8 md:py-3.5">
+            <a href="index.html" class="flex-shrink-0">
+                <picture><source srcset="logo-sm.webp" type="image/webp"><img src="logo-sm.png" alt="Casa Pellegrini" class="h-9 md:h-12 w-auto bg-white rounded-lg px-2.5 py-1 object-contain"></picture>
             </a>
-            <nav class="hidden md:flex space-x-6">
-                <a href="index.html" class="hover:text-red-200 transition font-medium">Home</a>
-                <a href="index.html#cardapio" class="hover:text-red-200 transition font-medium">Cardápio</a>
-                <a href="index.html#localizacao" class="hover:text-red-200 transition font-medium">Localização</a>
-                <a href="index.html#clube" class="hover:text-red-200 transition font-medium">Clube</a>
-                <a href="cardapio.html" class="hover:text-red-200 transition font-medium">Cardápio Completo</a>
-            </nav>
-            <div class="flex items-center space-x-2">
-                <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" onclick="fbq('track', 'FindLocation'); gtag('event', 'get_directions', {event_category: 'engagement', event_label: 'Como Chegar - Header Historia'}); ttq.track('Contact', {content_name: 'Traçar Rota'});" class="border border-white text-white font-bold px-2 py-1.5 sm:px-4 text-xs sm:text-base rounded shadow hover:bg-white hover:text-red-700 transition">
+            <div class="flex items-center gap-2 md:gap-3">
+                <!-- Cardápio (só desktop) -->
+                <a href="cardapio.html" onclick="dataLayer.push({event:'view_menu'})" class="hidden md:flex items-center gap-1.5 text-white/85 hover:text-pellegrini-gold font-bold text-base transition whitespace-nowrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v17H5.5A2.5 2.5 0 0 1 3 17.5Z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v17h6.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg>
+                    Cardápio
+                </a>
+                <!-- Como Chegar (pino) -->
+                <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" onclick="dataLayer.push({event:'get_directions'})"
+                   class="flex items-center gap-1.5 border border-white/30 text-white text-sm md:text-base font-bold px-3 md:px-5 py-2 md:py-2.5 rounded-full hover:bg-white/10 transition whitespace-nowrap flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                     Como Chegar
                 </a>
-                <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" class="bg-white text-red-700 font-bold px-2 py-1.5 sm:px-4 text-xs sm:text-base rounded shadow hover:bg-gray-100 transition">
-                    Fazer Pedido
+                <!-- Clube (só desktop) -->
+                <a href="/clube" onclick="dataLayer.push({event:'view_loyalty_program'})" class="hidden md:flex items-center gap-1.5 bg-pellegrini-gold text-pellegrini-navy font-extrabold text-base px-5 py-2.5 rounded-full hover:brightness-105 transition whitespace-nowrap flex-shrink-0">
+                    <span class="text-2xl leading-none">🍺</span> Clube
+                </a>
+                <!-- iFood -->
+                <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" aria-label="Pedir no iFood" onclick="dataLayer.push({event:'click_ifood'})"
+                   class="flex items-center bg-white px-3.5 md:px-5 py-2.5 md:py-3 rounded-full shadow hover:bg-gray-100 transition flex-shrink-0">
+                    <img src="ifood-logo.svg" alt="iFood" class="h-5 md:h-6 w-auto">
+                </a>
+                <!-- Reservar (só desktop) -->
+                <a href="https://wa.me/552422316110?text=Ol%C3%A1!%20Quero%20reservar%20uma%20mesa%20na%20Casa%20Pellegrini." target="_blank" onclick="dataLayer.push({event:'reservar_whatsapp'})" class="hidden md:flex items-center gap-2 bg-green-500 text-white font-bold text-base px-5 py-2.5 rounded-full hover:bg-green-600 transition whitespace-nowrap flex-shrink-0">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+                    Reservar
                 </a>
             </div>
         </div>
     </header>
 
     <!-- Hero da história -->
-    <section class="bg-gray-900 text-white pt-16 pb-20 text-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-black opacity-50"></div>
+    <section class="bg-pellegrini-navy2 text-white pt-16 pb-20 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-30"></div>
         <div class="max-w-3xl mx-auto px-4 relative z-10">
             <span class="text-amber-500 font-bold tracking-wider uppercase mb-2 block">Tradição Italiana em Petrópolis desde <span class="text-white border-b-2 border-amber-500">1898</span></span>
             <h1 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">A História da Casa Pellegrini</h1>
             <p class="text-xl md:text-2xl text-gray-300 mb-4">Da imigração italiana ao restaurante mais tradicional do Centro Histórico de Petrópolis. Mais de um século de gastronomia, três gerações e o compromisso com o chopp mais gelado da cidade.</p>
             <!-- Badge de avaliação -->
-            <div class="inline-flex items-center gap-2 bg-amber-500 text-gray-900 font-bold px-5 py-2 rounded-full shadow-lg mt-4">
-                <span class="text-yellow-700">★★★★★</span>
-                <span>4,7 · 5.722 avaliações no Google</span>
+            <div class="inline-flex items-center gap-2 bg-white/10 border border-amber-400/50 text-white font-bold px-5 py-2 rounded-full shadow-lg mt-4">
+                <span class="text-amber-400 text-lg leading-none">★★★★★</span>
+                <span>4,7 · 5.746 avaliações no Google</span>
             </div>
         </div>
     </section>
@@ -511,72 +528,51 @@
     </section>
 
     <!-- Botão Flutuante WhatsApp (desktop only) -->
-    <a href="https://wa.me/552422316110" target="_blank" onclick="gtag('event', 'whatsapp_click', {event_category: 'engagement', event_label: 'WhatsApp Flutuante - Historia'}); fbq('track', 'Contact', {content_name: 'WhatsApp Flutuante - Historia'}); ttq.track('Contact', {content_name: 'WhatsApp Flutuante - Historia'});" class="hidden md:flex fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition transform hover:scale-110 items-center justify-center z-50">
+    <a href="https://wa.me/552422316110?text=Ol%C3%A1!%20Quero%20reservar%20uma%20mesa%20na%20Casa%20Pellegrini." target="_blank" onclick="dataLayer.push({event:'reservar_whatsapp'})" class="hidden md:flex fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition transform hover:scale-110 items-center justify-center z-50">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
             <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
         </svg>
     </a>
 
     <!-- Sticky Bottom Bar (mobile only) -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-50 grid grid-cols-3 text-center" aria-label="Ações rápidas">
-        <a href="cardapio.html" onclick="gtag('event', 'view_menu', {event_category: 'engagement', event_label: 'Bottom Bar Mobile - Cardapio Historia'}); fbq('track', 'ViewContent', {content_name: 'Cardapio - Bottom Bar Historia'});" class="flex flex-col items-center justify-center py-2 hover:bg-gray-50 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="text-xs font-bold text-gray-800 mt-0.5">Cardápio</span>
-        </a>
-        <a href="https://wa.me/552422316110?text=Ol%C3%A1!%20Quero%20reservar%20uma%20mesa%20na%20Casa%20Pellegrini." target="_blank" onclick="gtag('event', 'reserve_intent', {event_category: 'conversion', event_label: 'Bottom Bar Mobile - WhatsApp Historia'}); fbq('track', 'Lead', {content_name: 'WhatsApp - Bottom Bar Historia'}); ttq.track('Contact', {content_name: 'WhatsApp Bottom Bar Historia'});" class="flex flex-col items-center justify-center py-2 bg-green-500 text-white hover:bg-green-600 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
-            <span class="text-xs font-bold mt-0.5">Reservar</span>
-        </a>
-        <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" onclick="fbq('track', 'FindLocation'); gtag('event', 'get_directions', {event_category: 'engagement', event_label: 'Bottom Bar Mobile - Como Chegar Historia'}); ttq.track('Contact', {content_name: 'Traçar Rota'});" class="flex flex-col items-center justify-center py-2 hover:bg-gray-50 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span class="text-xs font-bold text-gray-800 mt-0.5">Como Chegar</span>
-        </a>
+    <nav class="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-pellegrini-navy border-t border-white/10" aria-label="Ações rápidas">
+        <div class="grid grid-cols-3 items-end px-2 pt-2 pb-3" style="padding-bottom:max(0.75rem,env(safe-area-inset-bottom))">
+            <!-- Cardápio (livrinho) -->
+            <a href="cardapio.html" onclick="dataLayer.push({event:'view_menu'})" class="flex flex-col items-center gap-1 py-1 text-white/85 hover:text-pellegrini-gold transition">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v17H5.5A2.5 2.5 0 0 1 3 17.5Z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v17h6.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg>
+                <span class="text-[11px] font-bold">Cardápio</span>
+            </a>
+            <!-- Reservar (WhatsApp central destacado, FAB elevado) -->
+            <a href="https://wa.me/552422316110?text=Ol%C3%A1!%20Quero%20reservar%20uma%20mesa%20na%20Casa%20Pellegrini." target="_blank" onclick="dataLayer.push({event:'reservar_whatsapp'})" class="flex flex-col items-center -mt-7">
+                <span class="grid place-items-center w-16 h-16 rounded-full bg-green-500 text-white shadow-lg ring-4 ring-[#141B2E]">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+                </span>
+                <span class="text-[11px] font-bold text-green-400 mt-1">Reservar</span>
+            </a>
+            <!-- Clube (caneca + GANHE AGORA) -->
+            <a href="/clube" onclick="dataLayer.push({event:'view_loyalty_program'})" class="flex flex-col items-center gap-0.5 -mt-1.5 py-1 text-pellegrini-gold hover:brightness-110 transition relative">
+                <span class="absolute -top-2 right-0 bg-red-600 text-white text-[7px] font-black leading-[1.05] text-center px-1.5 py-0.5 rounded-md pulse-gold">GANHE<br>AGORA</span>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 3 11 3s2 .5 3 .5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z"/><path d="M5 8v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V8"/></svg>
+                <span class="text-[11px] font-bold leading-none">Clube</span>
+                <span class="text-[9px] font-semibold leading-none text-amber-300">Pellegrini</span>
+            </a>
+        </div>
     </nav>
 
     <style>@media (max-width: 767px) { body { padding-bottom: 70px; } }</style>
 
     <!-- Rodapé -->
-    <footer class="bg-gray-900 text-gray-300 py-10">
-        <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <picture>
-                    <source srcset="logo.webp" type="image/webp">
-                    <img src="logo.png" alt="Logo Casa Pellegrini" class="h-20 mb-4 bg-white rounded-lg px-3 py-2 object-contain" loading="lazy" width="225" height="80">
-                </picture>
-                <div class="font-extrabold leading-tight mb-4">
-                    <span class="block text-3xl text-white">Casa Pellegrini</span>
-                    <span class="block text-lg font-semibold text-gray-100 mt-1">Bar &amp; Restaurante</span>
-                    <span class="block text-base font-medium text-amber-400 mt-1">Centro Histórico de Petrópolis</span>
-                </div>
-                <div class="mt-3 flex items-center gap-2 text-amber-400 font-bold">
-                    <span>★★★★★</span>
-                    <span class="text-sm">4,7 · 5.722 avaliações</span>
-                </div>
-                <!-- CTA Clube Pellegrini no Footer -->
-                <a href="/clube" onclick="gtag('event', 'view_loyalty_program', {event_category: 'engagement', event_label: 'Clube CTA Footer Historia'}); fbq('track', 'Lead', {content_name: 'Clube Pellegrini - Footer Historia'});" class="inline-flex items-center gap-2 mt-4 bg-amber-500 text-gray-900 font-bold px-4 py-2 rounded-full hover:bg-amber-400 transition shadow">
-                    🎯 Clube Pellegrini
-                </a>
-                <!-- Redes Sociais -->
-                <div class="mt-6 flex flex-wrap gap-4 justify-center md:justify-start">
-                    <a href="https://instagram.com/casapellegrini" target="_blank" class="text-gray-400 hover:text-amber-500 transition">Instagram</a>
-                    <a href="https://www.facebook.com/CasaPellegrini/" target="_blank" class="text-gray-400 hover:text-amber-500 transition">Facebook</a>
-                </div>
-            </div>
-            <div>
-                <h4 class="text-white text-lg font-bold mb-4">Funcionamento</h4>
-                <p class="text-sm">Seg a Dom: 07:30 às 00:30</p>
-                <p class="text-sm text-gray-500 mt-1">(A cozinha encerra à meia-noite)</p>
-            </div>
-            <div>
-                <h4 class="text-white text-lg font-bold mb-4">Contato Oficial</h4>
-                <a href="https://wa.me/552422316110" target="_blank" onclick="gtag('event', 'whatsapp_click', {event_category: 'engagement', event_label: 'WhatsApp Footer - Historia'}); fbq('track', 'Contact', {content_name: 'WhatsApp Footer - Historia'}); ttq.track('Contact', {content_name: 'WhatsApp Footer - Historia'});" class="text-red-500 hover:text-white transition font-semibold block mb-2">WhatsApp (Reservas e Contato)</a>
-                <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" class="text-red-500 hover:text-white transition font-semibold block mb-4">iFood Casa Pellegrini</a>
-                <p class="text-sm">Rua Treze de Maio, 184<br>Centro, Petrópolis - RJ</p>
-            </div>
+    <!-- Rodapé (enxuto e centralizado, igual à home) -->
+    <footer class="bg-pellegrini-navy2 text-white border-t border-white/10 px-4 py-8 md:py-12 text-center">
+        <img src="logo-sm.png" alt="Casa Pellegrini" class="h-12 md:h-14 w-auto bg-white rounded-lg px-3 py-1.5 object-contain mx-auto">
+        <p class="font-display text-lg md:text-2xl mt-3">Casa Pellegrini</p>
+        <p class="text-white/50 text-xs md:text-sm">Bar &amp; Restaurante · Centro Histórico de Petrópolis</p>
+        <div class="flex justify-center gap-5 md:gap-8 mt-4 text-sm md:text-base">
+            <a href="https://instagram.com/casapellegrini" target="_blank" class="text-white/70 hover:text-pellegrini-gold transition">Instagram</a>
+            <a href="https://www.facebook.com/CasaPellegrini/" target="_blank" class="text-white/70 hover:text-pellegrini-gold transition">Facebook</a>
+            <a href="https://www.tiktok.com/@casapellegrini" target="_blank" class="text-white/70 hover:text-pellegrini-gold transition">TikTok</a>
         </div>
-        <div class="text-center mt-10 pt-6 border-t border-gray-700 text-sm">
-            <p>&copy; 2026 Casa Pellegrini. Todos os direitos reservados.</p>
-        </div>
+        <p class="text-white/30 text-[11px] md:text-xs mt-5">© 2026 Casa Pellegrini. Todos os direitos reservados.</p>
     </footer>
 </body>
 </html>
