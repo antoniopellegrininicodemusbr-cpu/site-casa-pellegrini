@@ -376,6 +376,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <!-- Favicon / ícones (logo Pellegrini) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -594,7 +595,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var v = document.getElementById('heroVideo');
     if (!v) return;
     if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (entries) {
+      var io = new In      var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
           if (e.isIntersecting) { v.play().catch(function(){}); }
           else { v.pause(); }
