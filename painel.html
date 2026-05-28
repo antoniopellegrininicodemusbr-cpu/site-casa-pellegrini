@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel de Performance — Casa Pellegrini</title>
+<style>
+  :root{
+    --navy:#141B2E; --navy2:#0C1120; --card:#1b2440; --line:#2a3458;
+    --gold:#F2B705; --red:#C8102E; --wpp:#25D366;
+    --txt:#EAEEF7; --mut:#9aa6c4;
+    --g1:#157f3c; --g2:#3aa860; --y:#C9A227; --o:#d1742f; --x:#39415c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--navy2);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;padding:16px;max-width:1100px;margin:0 auto}
+  header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0 16px}
+  h1{font-size:1.25rem;color:var(--gold);letter-spacing:.3px}
+  .sub{color:var(--mut);font-size:.8rem}
+  button{background:var(--gold);color:var(--navy2);border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.85rem}
+  button:active{transform:translateY(1px)}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  h2{font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  h2 .ico{font-size:1.1rem}
+  .blocknote{color:var(--mut);font-size:.78rem;margin-bottom:14px}
+  .badge{display:inline-block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 7px;border-radius:999px;vertical-align:middle}
+  .badge.sample{background:#3a2f12;color:var(--gold);border:1px solid #6b5717}
+  .badge.live{background:#0f2e1c;color:#46d987;border:1px solid #1c6b40}
+  /* heatmap */
+  .kw{margin-bottom:18px}
+  .kw h3{font-size:.85rem;color:var(--txt);margin-bottom:6px;font-weight:600}
+  .grid{display:grid;gap:3px;width:max-content;max-width:100%}
+  .cell{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#06203a}
+  .cell.null{color:var(--mut);background:var(--x)}
+  .kwstat{font-size:.74rem;color:var(--mut);margin-top:6px}
+  .kwstat b{color:var(--txt)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.7rem;color:var(--mut);margin-top:6px}
+  .legend span{display:inline-flex;align-items:center;gap:4px}
+  .sw{width:13px;height:13px;border-radius:3px;display:inline-block}
+  /* ads */
+  .channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .ch{background:var(--navy);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .ch h4{font-size:.9rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+  .ch .best{font-size:.6rem;background:var(--g1);color:#fff;padding:2px 6px;border-radius:999px}
+  .row{display:flex;justify-content:space-between;font-size:.8rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+  .row:last-child{border:0}
+  .row b{color:var(--gold)}
+  /* fidelizi kpis */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+  .kpi{background:var(--navy);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .kpi .n{font-size:1.6rem;font-weight:800;color:var(--gold);line-height:1.1}
+  .kpi .l{font-size:.72rem;color:var(--mut);margin-top:4px}
+  ul.sint{list-style:none;font-size:.85rem}
+  ul.sint li{padding:6px 0 6px 22px;position:relative;border-bottom:1px solid var(--line)}
+  ul.sint li:last-child{border:0}
+  ul.sint li::before{content:"▸";position:absolute;left:2px;color:var(--gold)}
+  footer{color:var(--mut);font-size:.72rem;text-align:center;padding:8px 0 24px}
+  .err{color:#ff9b9b;font-size:.78rem}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Painel de Performance · Casa Pellegrini</h1>
+    <div class="sub" id="updated">carregando…</div>
+  </div>
+  <button onclick="location.reload()">↻ Atualizar</button>
+</header>
+
+<!-- ================= BLOCO 1: SEO / GEO ================= -->
+<section>
+  <h2><span class="ico">📍</span> SEO local &amp; GEO <span id="seo-badge"></span></h2>
+  <div class="blocknote">Mapa de calor do ranking da Casa Pellegrini no Google Maps por termo, ponto a ponto ao redor do Centro. Número = posição naquele ponto; quanto mais verde e baixo, melhor. Atualiza toda quarta (geo-grid).</div>
+  <div id="seo"></div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--g1)"></i>1º</span>
+    <span><i class="sw" style="background:var(--g2)"></i>2º–3º</span>
+    <span><i class="sw" style="background:var(--y)"></i>4º–7º</span>
+    <span><i class="sw" style="background:var(--o)"></i>8º–20º</span>
+    <span><i class="sw" style="background:var(--x)"></i>fora do top 20</span>
+  </div>
+</section>
+
+<!-- ================= BLOCO 2: ADS CROSS-CHANNEL ================= -->
+<section>
+  <h2><span class="ico">📊</span> Ads — comparação de canais <span class="badge sample">exemplo</span></h2>
+  <div class="blocknote">Qual canal converte mais e a que custo. Dados de exemplo até ligar a coleta (Google Ads / Meta / TikTok via API). O canal com melhor custo por conversão fica marcado.</div>
+  <div class="channels" id="ads"></div>
+</section>
+
+<!-- ================= BLOCO 3: FIDELIZI ================= -->
+<section>
+  <h2><span class="ico">🎁</span> Clube Pellegrini (Fidelizi) <span class="badge sample">exemplo</span></h2>
+  <div class="blocknote">Novos cadastros e saúde da base. Fonte real já existe (sync diário do Fidelizi pra planilha) — falta ligar ao painel. Valores abaixo são exemplo.</div>
+  <div class="kpis" id="fidelizi"></div>
+</section>
+
+<!-- ================= BLOCO 4: SÍNTESE ================= -->
+<section>
+  <h2><span class="ico">🧭</span> Síntese &amp; ações da semana <span class="badge sample">exemplo</span></h2>
+  <ul class="sint" id="sintese"></ul>
+</section>
+
+<footer>
+  Painel interno — não indexado. Protótipo 27/05/2026. SEO/GEO ligado ao geo-grid; Ads e Fidelizi com dados de exemplo até a coleta ser ligada.
+</footer>
+
+<script>
+function cellColor(v){
+  if(v===null||v===undefined) return null;
+  if(v===1) return 'var(--g1)';
+  if(v<=3)  return 'var(--g2)';
+  if(v<=7)  return 'var(--y)';
+  if(v<=20) return 'var(--o)';
+  return 'var(--x)';
+}
+function renderSEO(data){
+  const badge=document.getElementById('seo-badge');
+  badge.className='badge '+(data.sample?'sample':'live');
+  badge.textContent=data.sample?'exemplo':'ao vivo';
+  const wrap=document.getElementById('seo');
+  wrap.innerHTML='';
+  const cols=data.grid.cols;
+  for(const [kw,d] of Object.entries(data.keywords)){
+    const div=document.createElement('div');
+    div.className='kw';
+    const flat=d.grid_ranks.flat();
+    let cells='';
+    for(const v of flat){
+      const c=cellColor(v);
+      if(c===null) cells+=`<div class="cell null">·</div>`;
+      else cells+=`<div class="cell" style="background:${c}">${v}</div>`;
+    }
+    div.innerHTML=`<h3>${kw}</h3>
+      <div class="grid" style="grid-template-columns:repeat(${cols},26px)">${cells}</div>
+      <div class="kwstat">posição média <b>${d.avg_rank??'—'}</b> · aparece em <b>${d.found_pts}/${d.total_pts}</b> pontos · top 3 em <b>${Math.round((d.top3_share||0)*100)}%</b></div>`;
+    wrap.appendChild(div);
+  }
+  const dt=data.generated_at?new Date(data.generated_at):null;
+  document.getElementById('updated').textContent='SEO/GEO: '+(dt?dt.toLocaleString('pt-BR'):'—')+(data.sample?' (exemplo)':'');
+}
+function renderAds(){
+  // dados de exemplo — substituir pela coleta real (Google/Meta/TikTok)
+  const ch=[
+    {n:'Google Ads',gasto:840,conv:38,cpa:22.1,tx:4.2},
+    {n:'Meta Ads',  gasto:610,conv:41,cpa:14.9,tx:5.8},
+    {n:'TikTok Ads',gasto:300,conv:12,cpa:25.0,tx:3.1},
+  ];
+  const best=Math.min(...ch.map(c=>c.cpa));
+  const el=document.getElementById('ads');
+  el.innerHTML=ch.map(c=>`<div class="ch">
+    <h4>${c.n}${c.cpa===best?'<span class="best">melhor CPA</span>':''}</h4>
+    <div class="row"><span>Investido</span><span>R$ ${c.gasto.toLocaleString('pt-BR')}</span></div>
+    <div class="row"><span>Conversões</span><span><b>${c.conv}</b></span></div>
+    <div class="row"><span>Custo / conversão</span><span>R$ ${c.cpa.toFixed(2)}</span></div>
+    <div class="row"><span>Taxa de conversão</span><span>${c.tx}%</span></div>
+  </div>`).join('');
+}
+function renderFidelizi(){
+  // dados de exemplo — fonte real = planilha do sync Fidelizi
+  const k=[
+    {n:'+18',l:'novos cadastros (7d)'},
+    {n:'+74',l:'novos cadastros (30d)'},
+    {n:'312',l:'base total'},
+    {n:'R$ 8,4k',l:'receita atribuída (30d)'},
+    {n:'68%',l:'ativos (120d)'},
+  ];
+  document.getElementById('fidelizi').innerHTML=k.map(x=>`<div class="kpi"><div class="n">${x.n}</div><div class="l">${x.l}</div></div>`).join('');
+}
+function renderSintese(){
+  const items=[
+    'Meta Ads está com o melhor custo por conversão (exemplo) — candidato a receber mais verba.',
+    'SEO local: posição média ainda fora do top 3 na maioria dos termos — foco em avaliações recentes + engajamento GMB.',
+    'Clube: ritmo de novos cadastros saudável — manter CTAs de Clube nos anúncios.',
+    '(Esta seção será gerada automaticamente a partir dos dados reais quando a coleta estiver ligada.)',
+  ];
+  document.getElementById('sintese').innerHTML=items.map(i=>`<li>${i}</li>`).join('');
+}
+// SEO real (fetch do JSON do geo-grid) com fallback
+fetch('/data/geo-grid-latest.json',{cache:'no-store'})
+  .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(renderSEO)
+  .catch(e=>{document.getElementById('seo').innerHTML='<div class="err">Não consegui carregar o geo-grid (/data/geo-grid-latest.json). Rode a Action "Geo-grid" no GitHub pra gerar os dados. Detalhe: '+e.message+'</div>';});
+renderAds();
+renderFidelizi();
+renderSintese();
+</script>
+</body>
+</html>
