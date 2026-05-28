@@ -1,0 +1,66 @@
+name: Geo-grid SEO/GEO local (Casa Pellegrini)
+
+on:
+  schedule:
+    # Quarta-feira 11:00 America/Sao_Paulo (BRT = UTC-3) -> 14:00 UTC
+    - cron: '0 14 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  geo-grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run geo-grid (Places API)
+        env:
+          PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+        run: |
+          python scripts/geo_grid.py \
+            --rows 7 --cols 7 --spacing-km 0.8 --topn 20 \
+            --out data/geo-grid-latest.json
+
+      - name: Append to history
+        run: |
+          mkdir -p data
+          python - <<'PY'
+          import json
+          latest = json.load(open("data/geo-grid-latest.json", encoding="utf-8"))
+          rec = {
+              "generated_at": latest.get("generated_at"),
+              "keywords": {
+                  kw: {
+                      "avg_rank": d.get("avg_rank"),
+                      "found_pts": d.get("found_pts"),
+                      "total_pts": d.get("total_pts"),
+                      "top3_pts": d.get("top3_pts"),
+                      "top3_share": d.get("top3_share"),
+                  } for kw, d in latest.get("keywords", {}).items()
+              },
+          }
+          with open("data/geo-grid-history.jsonl", "a", encoding="utf-8") as f:
+              f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+          print("history append OK:", rec["generated_at"])
+          PY
+
+      - name: Commit results
+        run: |
+          git config user.name "geo-grid-bot"
+          git config user.email "actions@github.com"
+          git add data/geo-grid-latest.json data/geo-grid-history.jsonl
+          if git diff --staged --quiet; then
+            echo "Sem mudanças."
+          else
+            git commit -m "geo-grid: rodada $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
