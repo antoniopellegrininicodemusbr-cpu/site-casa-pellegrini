@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Painel interno (Painel de Performance) — sem indexação, sem auditoria de crawlers
+Disallow: /painel.html
+Disallow: /data/
+
 Sitemap: https://casapellegrini.com.br/sitemap.xml
