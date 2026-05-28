@@ -3,6 +3,12 @@
 # 301 = permanente (preserva SEO, recomendado pra atalhos estáveis)
 # 301! = força o redirect mesmo se a URL final for externa
 
+# === ÁREA INTERNA (Netlify Identity, role=admin) ===
+# Protege os JSONs do Painel de Performance. Visitantes sem JWT válido com role admin
+# recebem 401/redirect; a página /painel.html em si carrega (HTML é o gate visual com login widget).
+# IMPORTANTE: requer Netlify Identity habilitado no site + usuários com role "admin" em app_metadata.roles.
+/data/*        /data/:splat                                                           200!  Role=admin
+
 # === CANONIZAÇÃO DE DOMÍNIO (HTTP → HTTPS, WWW → APEX) ===
 # Adicionado em 06/05/2026 — GSC mostrava http://www.casapellegrini.com.br/ com 2.339 imp,
 # mais que a versão https oficial. Forçar redirect 301 consolida autoridade no domínio canônico.
@@ -92,4 +98,4 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /flyer-clube        /?utm_source=flyer&utm_medium=offline&utm_campaign=clube_flyer         301
 /cartao-clube       /?utm_source=cartao&utm_medium=offline&utm_campaign=clube_cartao       301
 /banner-clube       /?utm_source=banner&utm_medium=offline&utm_campaign=clube_banner       301
-/evento-clu
+/evento-clube       /?utm_source=evento&utm_medium=offline&utm_campaign=clube_evento       301
