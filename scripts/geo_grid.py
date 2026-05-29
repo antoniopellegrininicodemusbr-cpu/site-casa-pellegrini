@@ -66,11 +66,7 @@ DEFAULT_KEYWORDS = [
     "frango parmegiana petropolis",
     "feijoada petropolis",
     "almoco executivo petropolis",
-    # Chopp / cerveja
-    "chopp gelado petropolis",
-    "cerveja gelada petropolis",
-    # Esportes / TV
-    "bar com tv petropolis",
+    # Esportes
     "assistir futebol petropolis",
 ]
 
