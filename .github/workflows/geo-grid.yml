@@ -2,8 +2,9 @@ name: Geo-grid SEO/GEO local (Casa Pellegrini)
 
 on:
   schedule:
-    # Quarta-feira 11:00 America/Sao_Paulo (BRT = UTC-3) -> 14:00 UTC
-    - cron: '0 14 * * 3'
+    # Segunda-feira 11:00 America/Sao_Paulo (BRT = UTC-3) -> 14:00 UTC
+    # Cadencia movida pra segunda em 28/05/2026 — dado fresco pra reuniao de terca com Matheus (publicidade)
+    - cron: '0 14 * * 1'
   workflow_dispatch:
 
 permissions:
