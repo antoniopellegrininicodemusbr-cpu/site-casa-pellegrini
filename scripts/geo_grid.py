@@ -66,6 +66,8 @@ DEFAULT_KEYWORDS = [
     "frango parmegiana petropolis",
     "feijoada petropolis",
     "almoco executivo petropolis",
+    "almoco centro petropolis",
+    "onde almocar em petropolis",
     # Esportes
     "assistir futebol petropolis",
 ]
