@@ -163,10 +163,17 @@ if(window.netlifyIdentity){
 
 async function loadPainel(user){
   document.getElementById('user-email').textContent = user.email;
-  fetch('/data/geo-grid-latest.json', {cache:'no-store', credentials:'include'})
+  // Netlify role-based redirects exigem o JWT no header Authorization (widget nao seta cookie nf_jwt)
+  let token = null;
+  try { token = await user.jwt(); } catch(e){ console.warn('jwt fail', e); }
+  const headers = token ? {'Authorization': 'Bearer ' + token} : {};
+  fetch('/data/geo-grid-latest.json', {cache:'no-store', headers})
     .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
     .then(renderSEO)
-    .catch(e=>{document.getElementById('seo').innerHTML='<div class="err">Não consegui carregar /data/geo-grid-latest.json ('+e.message+'). Se a Action Geo-grid já rodou, talvez seja permissão; verifique sua role admin no Netlify Identity.</div>';});
+    .catch(e=>{
+      document.getElementById('updated').textContent='SEO/GEO: erro ao carregar ('+e.message+')';
+      document.getElementById('seo').innerHTML='<div class="err">Falhou ao carregar /data/geo-grid-latest.json ('+e.message+'). Se for 401/404, tenta Sair e entrar de novo no painel; o widget revalida o token.</div>';
+    });
   renderAds(); renderFidelizi(); renderSintese();
 }
 
