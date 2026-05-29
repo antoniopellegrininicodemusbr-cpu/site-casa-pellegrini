@@ -49,7 +49,6 @@ DEFAULT_KEYWORDS = [
     "hamburgueria centro petropolis",
     "melhor hamburgueria petropolis",
     "hamburguer artesanal petropolis",
-    "hamburguer petropolis",
     # Restaurante / bar
     "restaurante em petropolis",
     "restaurante centro historico petropolis",
