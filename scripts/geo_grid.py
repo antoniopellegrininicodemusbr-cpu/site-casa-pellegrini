@@ -44,11 +44,36 @@ CENTER_LNG = -43.181446
 
 # Termos prioritarios (Tier 1). Manter em sincronia com marketing/palavras-chave-alvo.md.
 DEFAULT_KEYWORDS = [
-    "restaurante centro petropolis",
+    # Hamburgueria (foco — termo onde performamos bem com pouco esforço; pedido Antonio 28/05)
+    "hamburgueria petropolis",
+    "hamburgueria centro petropolis",
+    "melhor hamburgueria petropolis",
+    "hamburguer artesanal petropolis",
     "hamburguer petropolis",
-    "happy hour petropolis",
+    # Restaurante / bar
+    "restaurante em petropolis",
+    "restaurante centro historico petropolis",
+    "melhor restaurante petropolis",
+    "restaurante familiar petropolis",
+    "bar em petropolis",
     "bar petropolis centro",
-    "almoco petropolis centro",
+    # Happy hour
+    "happy hour petropolis",
+    "happy hour centro historico petropolis",
+    # Pet friendly
+    "restaurante pet friendly petropolis",
+    "bar pet friendly petropolis",
+    # Pratos
+    "frango parmegiana petropolis",
+    "feijoada petropolis",
+    "almoco executivo petropolis",
+    "cafe da manha petropolis",
+    # Chopp / cerveja
+    "chopp gelado petropolis",
+    "cerveja gelada petropolis",
+    # Esportes / TV
+    "bar com tv petropolis",
+    "assistir futebol petropolis",
 ]
 
 # Como reconhecer a Casa Pellegrini no resultado (match por substring, sem acento).
