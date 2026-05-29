@@ -53,8 +53,8 @@ DEFAULT_KEYWORDS = [
     # Restaurante / bar
     "restaurante em petropolis",
     "restaurante centro historico petropolis",
+    "restaurante centro petropolis",
     "melhor restaurante petropolis",
-    "restaurante familiar petropolis",
     "bar em petropolis",
     "bar petropolis centro",
     # Happy hour
