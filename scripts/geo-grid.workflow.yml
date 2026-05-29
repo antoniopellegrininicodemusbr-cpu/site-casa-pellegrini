@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: geo-grid
+  cancel-in-progress: false
+
 jobs:
   geo-grid:
     runs-on: ubuntu-latest
@@ -53,14 +57,26 @@ jobs:
           print("history append OK:", rec["generated_at"])
           PY
 
-      - name: Commit results
+      - name: Commit results (com rebase para evitar conflito)
         run: |
           git config user.name "geo-grid-bot"
           git config user.email "actions@github.com"
-          git add data/geo-grid-latest.json data/geo-grid-history.jsonl
+          git add data/
           if git diff --staged --quiet; then
             echo "Sem mudanças."
           else
             git commit -m "geo-grid: rodada $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
+            # Tenta empurrar; se main avancou enquanto rodavamos, rebase em cima e tenta de novo
+            for i in 1 2 3; do
+              if git push; then
+                echo "Push OK na tentativa $i"
+                break
+              fi
+              echo "Push falhou (tentativa $i), fazendo pull --rebase..."
+              git pull --rebase origin main || { echo "Rebase falhou"; exit 1; }
+              if [ $i -eq 3 ]; then
+                echo "Desisti depois de 3 tentativas"
+                exit 1
+              fi
+            done
           fi
