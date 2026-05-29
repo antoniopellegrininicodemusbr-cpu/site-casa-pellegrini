@@ -64,6 +64,8 @@
   ul.sint li::before{content:"▸";position:absolute;left:2px;color:var(--gold)}
   footer{color:var(--mut);font-size:.72rem;text-align:center;padding:8px 0 24px}
   .err{color:#ff9b9b;font-size:.78rem}
+  .date-sel{background:var(--navy);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:.72rem;cursor:pointer;margin-left:auto;font-family:inherit}
+  .date-sel:focus{outline:1px solid var(--gold)}
 </style>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -93,7 +95,11 @@
 </header>
 
 <section>
-  <h2><span class="ico">📍</span> SEO local &amp; GEO <span id="seo-badge"></span></h2>
+  <h2><span class="ico">📍</span> SEO local &amp; GEO <span id="seo-badge"></span>
+    <select id="seo-date" class="date-sel" onchange="loadSEO(this.value)" title="Ver rodadas anteriores">
+      <option value="">📅 Atual</option>
+    </select>
+  </h2>
   <div class="blocknote">Mapa de calor do ranking da Casa Pellegrini no Google Maps por termo, ponto a ponto ao redor do Centro. Número = posição naquele ponto; quanto mais verde e baixo, melhor. Atualiza toda quarta (geo-grid).</div>
   <div id="seo"></div>
   <div class="legend">
@@ -162,20 +168,61 @@ if(window.netlifyIdentity){
   showGate('Erro carregando o widget de login. Recarregue a página.');
 }
 
+let currentUser = null;
+
 async function loadPainel(user){
+  currentUser = user;
   document.getElementById('user-email').textContent = user.email;
-  // Netlify role-based redirects exigem o JWT no header Authorization (widget nao seta cookie nf_jwt)
+  await loadSEO();
+  await populateDates();
+  renderAds(); renderFidelizi(); renderSintese();
+}
+
+async function getAuthHeaders(){
   let token = null;
-  try { token = await user.jwt(); } catch(e){ console.warn('jwt fail', e); }
-  const headers = token ? {'Authorization': 'Bearer ' + token} : {};
-  fetch('/data/geo-grid-latest.json', {cache:'no-store', headers})
+  try { token = await currentUser.jwt(); } catch(e){ console.warn('jwt fail', e); }
+  return token ? {'Authorization': 'Bearer ' + token} : {};
+}
+
+async function loadSEO(date){
+  date = date || '';
+  const url = date ? '/data/geo-grid-'+date+'.json' : '/data/geo-grid-latest.json';
+  const headers = await getAuthHeaders();
+  fetch(url, {cache:'no-store', headers})
     .then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
     .then(renderSEO)
     .catch(e=>{
-      document.getElementById('updated').textContent='SEO/GEO: erro ao carregar ('+e.message+')';
-      document.getElementById('seo').innerHTML='<div class="err">Falhou ao carregar /data/geo-grid-latest.json ('+e.message+'). Se for 401/404, tenta Sair e entrar de novo no painel; o widget revalida o token.</div>';
+      const m = e.message === '404'
+        ? 'Não tem snapshot dessa data ainda — snapshots datados começaram em 28/05/2026. Rodadas anteriores só têm stats agregadas no histórico.'
+        : 'Falhou ao carregar ('+e.message+'). Tenta Sair e entrar de novo.';
+      document.getElementById('updated').textContent='SEO/GEO: '+m;
+      document.getElementById('seo').innerHTML='<div class="err">'+m+'</div>';
     });
-  renderAds(); renderFidelizi(); renderSintese();
+}
+
+async function populateDates(){
+  try {
+    const headers = await getAuthHeaders();
+    const r = await fetch('/data/geo-grid-history.jsonl', {headers});
+    if(!r.ok) return;
+    const text = await r.text();
+    const sel = document.getElementById('seo-date');
+    const seenDates = new Set();
+    text.trim().split('\n').reverse().forEach(line => {
+      try {
+        const rec = JSON.parse(line);
+        if(!rec.generated_at) return;
+        const dateKey = rec.generated_at.slice(0,10);
+        if(seenDates.has(dateKey)) return; // dedupe por dia
+        seenDates.add(dateKey);
+        const d = new Date(rec.generated_at);
+        const opt = document.createElement('option');
+        opt.value = dateKey;
+        opt.textContent = d.toLocaleDateString('pt-BR');
+        sel.appendChild(opt);
+      } catch(err) {}
+    });
+  } catch(e) { console.warn('history fail', e); }
 }
 
 function cellColor(v){
@@ -189,7 +236,8 @@ function cellColor(v){
 function renderSEO(data){
   const badge=document.getElementById('seo-badge');
   badge.className='badge '+(data.sample?'sample':'live');
-  badge.textContent=data.sample?'exemplo':'ao vivo';
+  const _dt=data.generated_at?new Date(data.generated_at):null;
+  badge.textContent=data.sample?'exemplo':(_dt?_dt.toLocaleDateString('pt-BR'):'—');
   const wrap=document.getElementById('seo');
   wrap.innerHTML='';
   const cols=data.grid.cols;

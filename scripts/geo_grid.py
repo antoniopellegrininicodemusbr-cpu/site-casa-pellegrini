@@ -231,6 +231,14 @@ def main():
         with open(args.out, "w", encoding="utf-8") as f:
             json.dump(out, f, ensure_ascii=False, indent=2)
         print(f"\nJSON salvo em {args.out}")
+        # Snapshot datado pro histórico do painel (ex: data/geo-grid-2026-05-28.json)
+        out_dir = os.path.dirname(args.out) or "."
+        date_str = out.get("generated_at", "")[:10]
+        if date_str:
+            snap = os.path.join(out_dir, f"geo-grid-{date_str}.json")
+            with open(snap, "w", encoding="utf-8") as fs:
+                json.dump(out, fs, ensure_ascii=False, indent=2)
+            print(f"Snapshot datado salvo em {snap}")
 
 
 if __name__ == "__main__":
