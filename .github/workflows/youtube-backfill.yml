@@ -1,0 +1,50 @@
+# Backfill Instagram -> YouTube Shorts (Casa Pellegrini)
+# ⚠️ COPIAR este arquivo para .github/workflows/youtube-backfill.yml via UI do GitHub
+# (o PAT do Claude nao tem escopo "workflow" — colar manualmente, igual geo-grid)
+#
+# Secrets necessarios (Settings -> Secrets and variables -> Actions):
+#   IG_ACCESS_TOKEN   -> token permanente System User Meta (credenciais.md §5)
+#   YT_CLIENT_ID      -> OAuth client do projeto pellegrini-app com YouTube Data API v3
+#   YT_CLIENT_SECRET  -> idem
+#   YT_REFRESH_TOKEN  -> refresh token com escopo youtube.upload (OAuth Playground)
+name: YouTube Backfill (Instagram antigo)
+
+on:
+  schedule:
+    - cron: "0 16 * * *"   # 13h BRT, diario
+  workflow_dispatch:
+    inputs:
+      max_uploads:
+        description: "Quantos videos subir nesta rodada (max ~6/dia pela quota)"
+        default: "5"
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rodar backfill
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          MAX_UPLOADS: ${{ github.event.inputs.max_uploads || '5' }}
+        run: python scripts/youtube_backfill.py
+      - name: Salvar estado
+        run: |
+          git config user.name "youtube-backfill-bot"
+          git config user.email "actions@github.com"
+          git add data/youtube-backfill-state.json || true
+          git diff --cached --quiet && echo "sem mudanca de estado" && exit 0
+          git commit -m "youtube-backfill: estado $(date -u +%F)"
+          for i in 1 2 3; do
+            git push && break
+            git pull --rebase && sleep 5
+          done
