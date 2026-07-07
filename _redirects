@@ -20,6 +20,13 @@ http://casapellegrini.com.br/*           https://casapellegrini.com.br/:splat   
 http://www.casapellegrini.com.br/*       https://casapellegrini.com.br/:splat   301!
 https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   301!
 
+# === URLS LIMPAS (07/07/2026 — Ahrefs: canonical sem links internos + 3XX) ===
+# Consolida .html na versao limpa. Netlify Pretty URLs ja serve /cardapio etc.
+/index.html              /                    301!
+/cardapio.html           /cardapio            301!
+/historia.html           /historia            301!
+/clube-pellegrini.html   /clube-pellegrini    301!
+
 # === REDES SOCIAIS (bio das contas) ===
 /insta         /?utm_source=instagram&utm_medium=social&utm_campaign=bio              301
 /instagram     /?utm_source=instagram&utm_medium=social&utm_campaign=bio              301

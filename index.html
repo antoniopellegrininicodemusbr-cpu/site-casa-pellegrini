@@ -37,7 +37,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <!-- SEO Básico -->
 <title>Casa Pellegrini | Bar e Restaurante em Petrópolis</title>
-<meta name="description" content="Bar e restaurante no Centro Histórico de Petrópolis. Hambúrguer artesanal, almoço executivo, feijoada, happy hour, chopp gelado e TVs pra esportes. 4,7★ com +5.700 avaliações.">
+<meta name="description" content="Bar e restaurante no Centro Histórico de Petrópolis. Hambúrguer artesanal, almoço executivo, happy hour, chopp gelado e TVs pra esportes. 4,7★ no Google.">
 
 <!-- Google Fonts: Playfair Display -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,13 +102,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   },
   "servesCuisine": ["Brasileira", "Hambúrgueres Artesanais", "Petiscos", "Frutos do Mar", "Bar", "Happy Hour"],
   "priceRange": "$$",
-  "hasMenu": "https://casapellegrini.com.br/cardapio.html",
-  "acceptsReservations": "True",
+  "hasMenu": "https://casapellegrini.com.br/cardapio",
+  "acceptsReservations": true,
   "paymentAccepted": "Cash, Credit Card, Debit Card, Pix",
   "currenciesAccepted": "BRL",
-  "smokingAllowed": "False",
-  "publicAccess": "True",
-  "isAccessibleForFree": "True",
+  "smokingAllowed": false,
+  "publicAccess": true,
+  "isAccessibleForFree": true,
   "petsAllowed": true,
   "additionalProperty": [
     {"@type": "PropertyValue", "name": "Pet Friendly", "value": "Sim — aceitamos cachorros nas mesas externas e na área coberta"},
@@ -131,8 +131,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   ],
   "image": [
     "https://casapellegrini.com.br/historia_frente.jpg",
-    "https://casapellegrini.com.br/burger-bacon.png",
-    "https://casapellegrini.com.br/frango-parmegiana.png"
+    "https://casapellegrini.com.br/burger-bacon.webp",
+    "https://casapellegrini.com.br/frango-parmegiana.webp"
   ],
   "aggregateRating": {
     "@type": "AggregateRating",
@@ -398,7 +398,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <picture><source srcset="logo-sm.webp" type="image/webp"><img src="logo-sm.png" alt="Casa Pellegrini" class="h-9 md:h-12 w-auto bg-white rounded-lg px-2.5 py-1 object-contain flex-shrink-0"></picture>
       <div class="flex items-center gap-2 md:gap-3">
         <!-- Cardápio (só desktop) -->
-        <a href="cardapio.html" onclick="dataLayer.push({event:'view_menu'})" class="hidden md:flex items-center gap-1.5 text-white/85 hover:text-brand-gold font-bold text-base transition whitespace-nowrap">
+        <a href="/cardapio" onclick="dataLayer.push({event:'view_menu'})" class="hidden md:flex items-center gap-1.5 text-white/85 hover:text-brand-gold font-bold text-base transition whitespace-nowrap">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v17H5.5A2.5 2.5 0 0 1 3 17.5Z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v17h6.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg>
           Cardápio
         </a>
@@ -409,7 +409,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           Como Chegar
         </a>
         <!-- Clube (só desktop) -->
-        <a href="clube-pellegrini.html" onclick="dataLayer.push({event:'view_loyalty_program'})" class="hidden md:flex items-center gap-1.5 bg-brand-gold text-brand-navy font-extrabold text-base px-5 py-2.5 rounded-full hover:brightness-105 transition whitespace-nowrap flex-shrink-0">
+        <a href="/clube-pellegrini" onclick="dataLayer.push({event:'view_loyalty_program'})" class="hidden md:flex items-center gap-1.5 bg-brand-gold text-brand-navy font-extrabold text-base px-5 py-2.5 rounded-full hover:brightness-105 transition whitespace-nowrap flex-shrink-0">
           <span class="text-2xl leading-none">🍺</span> Clube
         </a>
         <!-- iFood -->
@@ -468,24 +468,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p class="text-center text-white/55 text-sm md:text-base mt-1 mb-5 md:mb-8">As estrelas da casa — tem muito mais no menu.</p>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
         <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <picture><source srcset="burger-bacon.webp" type="image/webp"><img src="burger-bacon.png" alt="Brazuca Burger" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
+          <picture><source srcset="burger-bacon.webp" type="image/webp"><img src="burger-bacon.webp" alt="Brazuca Burger" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
           <div class="p-3 md:p-4"><h3 class="font-bold text-brand-gold text-sm md:text-base">Brazuca Burger</h3><p class="text-white/60 text-xs md:text-sm mt-1 leading-snug">Nosso suculento burger, cheddar derretido, muito bacon, ovo e o famoso molho de alho.</p></div>
         </div>
         <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <picture><source srcset="frango-parmegiana.webp" type="image/webp"><img src="frango-parmegiana.png" alt="Frango à Parmegiana" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
+          <picture><source srcset="frango-parmegiana.webp" type="image/webp"><img src="frango-parmegiana.webp" alt="Frango à Parmegiana" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
           <div class="p-3 md:p-4"><h3 class="font-bold text-brand-gold text-sm md:text-base">Frango à Parmegiana</h3><p class="text-white/60 text-xs md:text-sm mt-1 leading-snug">O campeão do almoço, mussarela e parmesão derretidos, molho de tomate feito na casa.</p></div>
         </div>
         <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <picture><source srcset="cerveja-original.webp" type="image/webp"><img src="cerveja-original.png" alt="Porções e cerveja gelada" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
+          <picture><source srcset="cerveja-original.webp" type="image/webp"><img src="cerveja-original.webp" alt="Porções e cerveja gelada" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
           <div class="p-3 md:p-4"><h3 class="font-bold text-brand-gold text-sm md:text-base">Porções &amp; Cerveja</h3><p class="text-white/60 text-xs md:text-sm mt-1 leading-snug">As melhores porções com nossos famosos molhos! Cerveja trincando de gelada.</p></div>
         </div>
         <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <picture><source srcset="drink-sol.webp" type="image/webp"><img src="drink-sol.png" alt="Drinks autorais" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
+          <picture><source srcset="drink-sol.webp" type="image/webp"><img src="drink-sol.webp" alt="Drinks autorais" class="w-full h-28 md:h-44 object-cover" loading="lazy"></picture>
           <div class="p-3 md:p-4"><h3 class="font-bold text-brand-gold text-sm md:text-base">Drinks autorais</h3><p class="text-white/60 text-xs md:text-sm mt-1 leading-snug">Pro happy hour render! Brindes perfeitos pro seu date!</p></div>
         </div>
       </div>
       <div class="text-center mt-4 md:mt-8">
-        <a href="cardapio.html" onclick="dataLayer.push({event:'view_menu'})" class="inline-block w-full md:w-auto bg-brand-red text-white font-bold py-3 px-10 rounded-full shadow hover:brightness-110 transition">Ver cardápio completo</a>
+        <a href="/cardapio" onclick="dataLayer.push({event:'view_menu'})" class="inline-block w-full md:w-auto bg-brand-red text-white font-bold py-3 px-10 rounded-full shadow hover:brightness-110 transition">Ver cardápio completo</a>
       </div>
     </section>
 
@@ -517,7 +517,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         A Casa Pellegrini que você conhece existe <strong class="text-white">desde 2015</strong> — mas a nossa história
         vai muito além disso, começou em <strong class="text-white">1898</strong>.
       </p>
-      <a href="historia.html" class="inline-flex items-center gap-1.5 mt-4 md:mt-6 border border-brand-gold/60 text-brand-gold font-bold px-5 md:px-7 py-2.5 md:py-3 rounded-full hover:bg-white/5 transition">
+      <a href="/historia" class="inline-flex items-center gap-1.5 mt-4 md:mt-6 border border-brand-gold/60 text-brand-gold font-bold px-5 md:px-7 py-2.5 md:py-3 rounded-full hover:bg-white/5 transition">
         Conheça nossa história →
       </a>
     </section>
@@ -528,7 +528,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="text-3xl md:text-4xl">🍺</div>
         <h2 class="font-display text-2xl md:text-4xl font-extrabold mt-1">Clube Pellegrini</h2>
         <p class="text-white/90 text-sm md:text-lg mt-2 leading-snug md:max-w-xl md:mx-auto">Cadastro grátis. A cada R$ 25 você ganha 1 ponto e <strong>toda visita gira a roleta</strong> — brinde garantido já na primeira visita. Cadastre-se agora e já ganhe seu primeiro mimo!</p>
-        <a href="clube-pellegrini.html" onclick="dataLayer.push({event:'view_loyalty_program'})" class="inline-block mt-4 md:mt-6 bg-brand-gold text-brand-navy font-extrabold px-6 md:px-10 py-3 md:py-4 rounded-full shadow hover:brightness-105 transition">Cadastrar grátis</a>
+        <a href="/clube-pellegrini" onclick="dataLayer.push({event:'view_loyalty_program'})" class="inline-block mt-4 md:mt-6 bg-brand-gold text-brand-navy font-extrabold px-6 md:px-10 py-3 md:py-4 rounded-full shadow hover:brightness-105 transition">Cadastrar grátis</a>
       </div>
     </section>
 
@@ -565,7 +565,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="grid grid-cols-3 items-end px-2 pt-2 pb-3" style="padding-bottom:max(0.75rem,env(safe-area-inset-bottom))">
 
       <!-- Cardápio (livrinho) -->
-      <a href="cardapio.html" onclick="dataLayer.push({event:'view_menu'})" class="flex flex-col items-center gap-1 py-1 text-white/85 hover:text-brand-gold transition">
+      <a href="/cardapio" onclick="dataLayer.push({event:'view_menu'})" class="flex flex-col items-center gap-1 py-1 text-white/85 hover:text-brand-gold transition">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v17H5.5A2.5 2.5 0 0 1 3 17.5Z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v17h6.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg>
         <span class="text-[11px] font-bold">Cardápio</span>
       </a>
@@ -580,7 +580,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </a>
 
       <!-- Clube (caneca de chopp / ganhe agora) -->
-      <a href="clube-pellegrini.html" onclick="dataLayer.push({event:'view_loyalty_program'})" class="flex flex-col items-center gap-0.5 -mt-1.5 py-1 text-brand-gold hover:brightness-110 transition relative">
+      <a href="/clube-pellegrini" onclick="dataLayer.push({event:'view_loyalty_program'})" class="flex flex-col items-center gap-0.5 -mt-1.5 py-1 text-brand-gold hover:brightness-110 transition relative">
         <span class="absolute -top-2 right-0 bg-brand-red text-white text-[7px] font-black leading-[1.05] text-center px-1.5 py-0.5 rounded-md pulse-gold">GANHE<br>AGORA</span>
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 3 11 3s2 .5 3 .5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z"/><path d="M5 8v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V8"/></svg>
         <span class="text-[11px] font-bold leading-none">Clube</span>
