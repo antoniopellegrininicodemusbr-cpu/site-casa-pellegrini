@@ -9,6 +9,11 @@
 # IMPORTANTE: requer Netlify Identity habilitado no site + usuários com role "admin" em app_metadata.roles.
 /data/*        /data/:splat                                                           200!  Role=admin
 
+# === API OCULTA (proxy 200 -> Cloud Functions do Clube Pellegrini) ===
+# /api/whatsapp = webhook do WhatsApp Cloud API (Meta). O dominio e nosso, o backend
+# fica no Firebase (pellegrini-app). Rota nao linkada/nao indexada em lugar nenhum.
+/api/whatsapp  https://us-central1-pellegrini-app.cloudfunctions.net/whatsapp  200!
+
 # === CANONIZAÇÃO DE DOMÍNIO (HTTP → HTTPS, WWW → APEX) ===
 # Adicionado em 06/05/2026 — GSC mostrava http://www.casapellegrini.com.br/ com 2.339 imp,
 # mais que a versão https oficial. Forçar redirect 301 consolida autoridade no domínio canônico.
