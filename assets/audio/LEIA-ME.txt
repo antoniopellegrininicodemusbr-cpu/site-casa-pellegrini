@@ -1,0 +1,1 @@
+Faixas da Biblioteca de Audio do YouTube (bar vibe). Sorteio deterministico por video.

@@ -54,14 +54,21 @@ def http(url, data=None, headers=None, method=None, raw=False, tries=1):
 def ig_list_all():
     """Lista videos SEM media_url (id/caption/tipo/timestamp), mais antigo primeiro."""
     tok = os.environ["IG_ACCESS_TOKEN"]
-    fields = "id,caption,media_type,media_product_type,permalink,timestamp"
+    fields = "id,caption,media_type,media_product_type,permalink,timestamp,children{id,media_type}"
     url = f"{GRAPH}/{IG_USER_ID}/media?fields={fields}&limit=100&access_token={tok}"
     items = []
     while url:
         d = http(url, tries=3)
         items += d.get("data", [])
         url = d.get("paging", {}).get("next")
-    vids = [m for m in items if m.get("media_type") == "VIDEO"]
+    def eh_elegivel(m):
+        if m.get("media_type") == "VIDEO":
+            return True
+        if m.get("media_type") == "CAROUSEL_ALBUM":
+            filhos = (m.get("children") or {}).get("data", [])
+            return sum(1 for c in filhos if c.get("media_type") == "IMAGE") >= 2
+        return False
+    vids = [m for m in items if eh_elegivel(m)]
     vids.sort(key=lambda m: m["timestamp"])
     return vids
 
@@ -87,6 +94,43 @@ def make_title(caption):
         if len(line) >= 8:
             return (line[:88] + " #Shorts")[:100]
     return "Casa Pellegrini — o point do Centro Histórico de Petrópolis #Shorts"
+
+def build_slideshow(image_blobs, workdir="/tmp/slides"):
+    """Monta Short vertical 1080x1920: foto centrada sobre fundo desfocado, 2.5s/foto + musica (se houver em assets/audio)."""
+    import glob, hashlib, subprocess, shutil
+    shutil.rmtree(workdir, ignore_errors=True)
+    os.makedirs(workdir, exist_ok=True)
+    paths = []
+    for i, blob in enumerate(image_blobs):
+        p = f"{workdir}/img{i:02d}.jpg"
+        open(p, "wb").write(blob)
+        paths.append(p)
+    cmd = ["ffmpeg", "-y"]
+    for p in paths:
+        cmd += ["-loop", "1", "-t", "2.5", "-i", p]
+    tracks = sorted(glob.glob("assets/audio/*.mp3")) + sorted(glob.glob("assets/audio/*.m4a"))
+    audio_idx = None
+    if tracks:
+        h = int(hashlib.sha256("".join(paths).encode()).hexdigest(), 16)
+        cmd += ["-i", tracks[h % len(tracks)]]
+        audio_idx = len(paths)
+    fc = []
+    for i in range(len(paths)):
+        fc.append(f"[{i}:v]split[a{i}][b{i}];"
+                  f"[a{i}]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:2[bg{i}];"
+                  f"[b{i}]scale=1000:1700:force_original_aspect_ratio=decrease[fg{i}];"
+                  f"[bg{i}][fg{i}]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30[v{i}]")
+    fc.append("".join(f"[v{i}]" for i in range(len(paths))) + f"concat=n={len(paths)}:v=1:a=0[vout]")
+    dur = 2.5 * len(paths)
+    maps = ["-map", "[vout]"]
+    if audio_idx is not None:
+        fc.append(f"[{audio_idx}:a]atrim=0:{dur},afade=t=out:st={dur-1.5}:d=1.5[aout]")
+        maps += ["-map", "[aout]"]
+    out = f"{workdir}/short.mp4"
+    cmd += ["-filter_complex", ";".join(fc)] + maps + ["-c:v", "libx264", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-t", str(dur), out]
+    subprocess.run(cmd, check=True, capture_output=True)
+    return open(out, "rb").read()
 
 def yt_upload(token, video_bytes, title, description):
     meta = {"snippet": {"title": title, "description": description[:4900], "tags": TAGS,
@@ -127,11 +171,23 @@ def main():
         vid_id, ts = v["id"], v["timestamp"]
         rotulo = "NOVO" if ts >= CUTOFF else "acervo"
         try:
-            murl = ig_media_url(vid_id)
-            if not murl:
-                raise RuntimeError("sem media_url (provavel copyright/indisponivel)")
-            print(f"[{rotulo}] baixando {vid_id} ({ts})")
-            data = http(murl, raw=True)
+            if v.get("media_type") == "CAROUSEL_ALBUM":
+                filhos = [c["id"] for c in (v.get("children") or {}).get("data", []) if c.get("media_type") == "IMAGE"]
+                print(f"[{rotulo}] carrossel {vid_id} ({ts}) — {len(filhos)} fotos -> slideshow")
+                blobs = []
+                for cid in filhos[:10]:
+                    cu = ig_media_url(cid)
+                    if cu:
+                        blobs.append(http(cu, raw=True))
+                if len(blobs) < 2:
+                    raise RuntimeError("carrossel sem fotos acessiveis")
+                data = build_slideshow(blobs)
+            else:
+                murl = ig_media_url(vid_id)
+                if not murl:
+                    raise RuntimeError("sem media_url (provavel copyright/indisponivel)")
+                print(f"[{rotulo}] baixando {vid_id} ({ts})")
+                data = http(murl, raw=True)
             title = make_title(v.get("caption"))
             desc = (v.get("caption") or "").strip() + SITE_BLOCK
             yt_id = yt_upload(token, data, title, desc)
