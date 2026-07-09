@@ -54,7 +54,7 @@ def http(url, data=None, headers=None, method=None, raw=False, tries=1):
 def ig_list_all():
     """Lista videos SEM media_url (id/caption/tipo/timestamp), mais antigo primeiro."""
     tok = os.environ["IG_ACCESS_TOKEN"]
-    fields = "id,caption,media_type,media_product_type,permalink,timestamp,children{id,media_type}"
+    fields = "id,caption,media_type,media_product_type,permalink,timestamp,thumbnail_url,children{id,media_type}"
     url = f"{GRAPH}/{IG_USER_ID}/media?fields={fields}&limit=100&access_token={tok}"
     items = []
     while url:
@@ -93,7 +93,41 @@ def make_title(caption):
         line = re.sub(r"\s{2,}", " ", line).strip()
         if len(line) >= 8:
             return (line[:88] + " #Shorts")[:100]
-    return "Casa Pellegrini — o point do Centro Histórico de Petrópolis #Shorts"
+    return None
+
+def gemini_title(thumb_url):
+    """Sem legenda: Gemini olha o thumbnail e inventa um titulo curto. Retorna None se nao der."""
+    import base64
+    key = os.environ.get("GEMINI_API_KEY")
+    if not (key and thumb_url):
+        return None
+    try:
+        img = http(thumb_url, raw=True)
+        body = json.dumps({
+            "contents": [{"parts": [
+                {"text": "Esta imagem é um frame de um vídeo antigo do Instagram da Casa Pellegrini, "
+                         "bar e restaurante no Centro Histórico de Petrópolis (hambúrguer artesanal, chopp gelado, jogos na TV). "
+                         "Escreva UM título curto de YouTube Shorts em português, natural e chamativo, máx 70 caracteres, "
+                         "sem hashtags e sem aspas. Responda SÓ o título."},
+                {"inline_data": {"mime_type": "image/jpeg", "data": base64.b64encode(img).decode()}}]}],
+            "generationConfig": {"temperature": 0.8, "maxOutputTokens": 200,
+                                  "thinkingConfig": {"thinkingBudget": 0}}}).encode()
+        d = http(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}",
+                 data=body, headers={"Content-Type": "application/json"}, tries=2)
+        t = d["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"').splitlines()[0][:70]
+        return (t + " #Shorts") if len(t) >= 8 else None
+    except Exception as e:
+        print(f"  gemini_title falhou: {str(e)[:100]}")
+        return None
+
+MESES = ["", "jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+
+def fallback_title(ts):
+    try:
+        ano, mes = ts[:4], MESES[int(ts[5:7])]
+        return f"Casa Pellegrini em {mes}/{ano} 🍺 #Shorts"
+    except Exception:
+        return "Casa Pellegrini — o point do Centro Histórico de Petrópolis #Shorts"
 
 def build_slideshow(image_blobs, workdir="/tmp/slides"):
     """Monta Short vertical 1080x1920: foto centrada sobre fundo desfocado, 2.5s/foto + musica (se houver em assets/audio)."""
@@ -194,7 +228,9 @@ def main():
                     raise RuntimeError("sem media_url (provavel copyright/indisponivel)")
                 print(f"[{rotulo}] baixando {vid_id} ({ts})")
                 data = http(murl, raw=True)
-            title = make_title(v.get("caption"))
+            title = (make_title(v.get("caption"))
+                     or gemini_title(v.get("thumbnail_url"))
+                     or fallback_title(ts))
             desc = (v.get("caption") or "").strip() + SITE_BLOCK
             yt_id = yt_upload(token, data, title, desc)
             print(f"  -> OK https://youtube.com/shorts/{yt_id} | {title}")
