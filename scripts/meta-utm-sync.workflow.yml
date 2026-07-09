@@ -1,0 +1,43 @@
+# UTM automatico nos anuncios Meta — lotes de 5/dia, cada anuncio tocado 1x
+# ⚠️ COPIAR para .github/workflows/meta-utm-sync.yml via UI do GitHub
+# Secrets: ja existem (META_USER_TOKEN, META_AD_ACCOUNT_ID — os mesmos do sync-fidelizi)
+name: Meta UTM Sync
+
+on:
+  schedule:
+    - cron: "30 12 * * *"   # 9h30 BRT, diario
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra quais anuncios seriam tocados"
+        default: "true"
+      max_per_run:
+        description: "Quantos anuncios por rodada"
+        default: "5"
+
+permissions:
+  contents: write
+
+jobs:
+  utm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Aplicar UTM
+        env:
+          META_USER_TOKEN: ${{ secrets.META_USER_TOKEN }}
+          META_AD_ACCOUNT_ID: ${{ secrets.META_AD_ACCOUNT_ID }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          MAX_PER_RUN: ${{ github.event.inputs.max_per_run || '5' }}
+        run: python scripts/meta_utm_sync.py
+      - name: Salvar estado
+        run: |
+          git config user.name "meta-utm-bot"
+          git config user.email "actions@github.com"
+          git add data/meta-utm-state.json || true
+          git diff --cached --quiet && echo "sem mudanca" && exit 0
+          git commit -m "meta-utm: estado $(date -u +%F)"
+          for i in 1 2 3; do git push && break; git pull --rebase && sleep 5; done
