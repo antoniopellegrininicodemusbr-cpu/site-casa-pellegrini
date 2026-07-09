@@ -200,10 +200,11 @@ def main():
     skip = set(st["done"]) | set(st["failed"])
     novos    = [v for v in vids if v["id"] not in skip and v["timestamp"] >= CUTOFF]
     backlog  = [v for v in vids if v["id"] not in skip and v["timestamp"] < CUTOFF]
-    budget = max(0, DAILY_CAP - st["day_count"])
-    fila = (novos + backlog)[:budget]
-    print(f"videos: {len(vids)} | novos pendentes: {len(novos)} | backlog: {len(backlog)} | "
-          f"hoje ja subiu: {st['day_count']} | vai subir agora: {len(fila)}")
+    # Reels NOVOS sempre sobem (furam o teto — sao raros); o teto diario vale so pro ACERVO
+    budget_backlog = max(0, DAILY_CAP - st["day_count"])
+    fila = novos + backlog[:budget_backlog]
+    print(f"videos: {len(vids)} | novos pendentes: {len(novos)} (sobem sempre) | backlog: {len(backlog)} | "
+          f"acervo hoje: {st['day_count']}/{DAILY_CAP} | vai subir agora: {len(fila)}")
     if not fila:
         return
     token = yt_access_token()
@@ -235,7 +236,8 @@ def main():
             yt_id = yt_upload(token, data, title, desc)
             print(f"  -> OK https://youtube.com/shorts/{yt_id} | {title}")
             st["done"].append(vid_id)
-            st["day_count"] += 1
+            if rotulo == "acervo":
+                st["day_count"] += 1
         except Exception as e:
             msg = str(e)[:200]
             if "quota" in msg.lower():
