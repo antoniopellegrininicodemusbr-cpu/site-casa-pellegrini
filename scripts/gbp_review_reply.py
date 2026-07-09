@@ -65,7 +65,23 @@ def delay_minutes(review_id):
     h = int(hashlib.sha256(review_id.encode()).hexdigest(), 16)
     return 20 + (h % 161)   # 20 a 180 min, estavel por review
 
+def sample_mode():
+    """DRY_RUN=sample: gera respostas pra reviews simuladas (nao publica, nao le GBP)."""
+    cases = [
+        (5, "Daniela", "(sem comentario, so a nota)"),
+        (5, "Rafael Souza", "Melhor hamburguer de Petropolis, o Brazuca e absurdo. Chopp trincando!"),
+        (4, "Marcos Vieira", "Comida muito boa e chopp gelado como prometem. So achei que demorou um pouco pra sair o pedido no sabado a noite, casa estava cheia. Mas o Brazuca Burger vale a pena!"),
+        (4, "Juliana Castro", "Fui almocar com a familia, parmegiana otima e atendimento simpatico. Achei o ambiente um pouco barulhento com os jogos, mas faz parte da vibe."),
+    ]
+    for stars, name, comment in cases:
+        reply = gemini(PROMPT.format(rating=stars, name=name, comment=comment))
+        print(f"--- {name} ({stars} estrelas): {comment[:70]}")
+        print(f"    RESPOSTA ({len(reply)} chars): {reply}\n")
+
 def main():
+    if os.environ.get("DRY_RUN", "").lower() == "sample":
+        sample_mode()
+        return
     st = {"replied": {}}
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, encoding="utf-8") as f:
