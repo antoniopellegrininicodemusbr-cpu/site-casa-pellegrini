@@ -12,7 +12,9 @@
   "17862923590251103",
   "17879747086228118"
  ],
- "failed": {},
+ "failed": {
+  "18561385543067935": "[Errno 2] No such file or directory: 'ffmpeg'"
+ },
  "day": "2026-07-09",
  "day_count": 5
 }
