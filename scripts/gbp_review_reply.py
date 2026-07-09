@@ -56,7 +56,7 @@ def gbp_token():
 
 def gemini(prompt):
     body = json.dumps({"contents": [{"parts": [{"text": prompt}]}],
-                       "generationConfig": {"temperature": 0.9, "maxOutputTokens": 400}}).encode()
+                       "generationConfig": {"temperature": 0.9, "maxOutputTokens": 1000, "thinkingConfig": {"thinkingBudget": 0}}}).encode()
     d = http(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={os.environ['GEMINI_API_KEY']}",
              data=body, headers={"Content-Type": "application/json"})
     return d["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"')
