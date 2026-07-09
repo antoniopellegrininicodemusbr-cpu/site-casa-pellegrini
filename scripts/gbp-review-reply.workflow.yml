@@ -1,0 +1,41 @@
+# Resposta automatica de reviews GBP (4-5 estrelas) — substitui o Zap "Resposta review GBP"
+# ⚠️ COPIAR para .github/workflows/gbp-review-reply.yml via UI do GitHub (PAT sem escopo workflow)
+# Secrets: GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN (credenciais.md §10), GEMINI_API_KEY (§12c)
+name: GBP Review Reply
+
+on:
+  schedule:
+    - cron: "*/50 * * * *"   # ~a cada 50 min (o delay real anti-bot esta no script: 20-180 min por review)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra as respostas sem publicar"
+        default: "true"
+
+permissions:
+  contents: write
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Responder reviews
+        env:
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/gbp_review_reply.py
+      - name: Salvar estado
+        run: |
+          git config user.name "gbp-review-bot"
+          git config user.email "actions@github.com"
+          git add data/gbp-review-replies.json || true
+          git diff --cached --quiet && echo "sem mudanca" && exit 0
+          git commit -m "gbp-review-reply: estado $(date -u +%FT%H:%M)"
+          for i in 1 2 3; do git push && break; git pull --rebase && sleep 5; done
