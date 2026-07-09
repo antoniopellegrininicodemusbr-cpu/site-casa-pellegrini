@@ -1,0 +1,43 @@
+# Instagram -> GBP (posts + galeria) — substitui o Zap "Posts do Instagram para o GMN"
+# ⚠️ COPIAR para .github/workflows/gbp-post-sync.yml via UI do GitHub
+# Secrets: ja existem todos (IG_ACCESS_TOKEN, GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN)
+name: GBP Post Sync (Instagram)
+
+on:
+  schedule:
+    - cron: "10 * * * *"   # de hora em hora
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra o que postaria"
+        default: "true"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar ffprobe
+        run: which ffprobe || sudo apt-get install -y -qq ffmpeg
+      - name: Sincronizar posts
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/gbp_post_sync.py
+      - name: Salvar estado
+        run: |
+          git config user.name "gbp-post-bot"
+          git config user.email "actions@github.com"
+          git add data/gbp-post-sync-state.json || true
+          git diff --cached --quiet && echo "sem mudanca" && exit 0
+          git commit -m "gbp-post-sync: estado $(date -u +%FT%H:%M)"
+          for i in 1 2 3; do git push && break; git pull --rebase && sleep 5; done
