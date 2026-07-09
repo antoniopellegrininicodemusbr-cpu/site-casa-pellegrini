@@ -98,6 +98,12 @@ def make_title(caption):
 def build_slideshow(image_blobs, workdir="/tmp/slides"):
     """Monta Short vertical 1080x1920: foto centrada sobre fundo desfocado, 2.5s/foto + musica (se houver em assets/audio)."""
     import glob, hashlib, subprocess, shutil
+    if not shutil.which("ffmpeg"):
+        print("  instalando ffmpeg no runner...")
+        r = subprocess.run(["sudo", "apt-get", "install", "-y", "-qq", "ffmpeg"], capture_output=True)
+        if r.returncode != 0:
+            subprocess.run(["sudo", "apt-get", "update", "-qq"], capture_output=True)
+            subprocess.run(["sudo", "apt-get", "install", "-y", "-qq", "ffmpeg"], check=True, capture_output=True)
     shutil.rmtree(workdir, ignore_errors=True)
     os.makedirs(workdir, exist_ok=True)
     paths = []
