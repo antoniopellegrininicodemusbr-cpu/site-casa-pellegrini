@@ -11,11 +11,11 @@ name: YouTube Backfill (Instagram antigo)
 
 on:
   schedule:
-    - cron: "0 16 * * *"   # 13h BRT, diario
+    - cron: "20 0,6,12,18 * * *"   # a cada 6h (Reels novos sobem rapido; teto diario no script)
   workflow_dispatch:
     inputs:
       max_uploads:
-        description: "Quantos videos subir nesta rodada (max ~6/dia pela quota)"
+        description: "Teto DIARIO de uploads (quota ~6/dia)"
         default: "5"
 
 permissions:
