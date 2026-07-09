@@ -11,7 +11,7 @@ name: YouTube Backfill (Instagram antigo)
 
 on:
   schedule:
-    - cron: "0 16 * * *"   # 13h BRT, diario
+    - cron: "20 0,6,12,18 * * *"   # 13h BRT, diario
   workflow_dispatch:
     inputs:
       max_uploads:
