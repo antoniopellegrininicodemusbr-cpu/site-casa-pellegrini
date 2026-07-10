@@ -63,24 +63,52 @@ def gads_token():
         raise RuntimeError(f"OAuth {code}: {json.dumps(d)[:200]}")
     return d["access_token"]
 
+LOGIN_HEADER = {"value": LOGIN_CUSTOMER}   # mutavel: auto-detectado
+
+def _headers(tok):
+    h = {"Authorization": f"Bearer {tok}",
+         "developer-token": os.environ["GADS_DEVELOPER_TOKEN"],
+         "Content-Type": "application/json"}
+    if LOGIN_HEADER["value"]:
+        h["login-customer-id"] = LOGIN_HEADER["value"]
+    return h
+
 def gads_call(ver, tok, path, payload):
     return http(f"https://googleads.googleapis.com/{ver}/customers/{CUSTOMER}{path}",
-                data=json.dumps(payload).encode(), method="POST",
-                headers={"Authorization": f"Bearer {tok}",
-                         "developer-token": os.environ["GADS_DEVELOPER_TOKEN"],
-                         "login-customer-id": LOGIN_CUSTOMER,
-                         "Content-Type": "application/json"})
+                data=json.dumps(payload).encode(), method="POST", headers=_headers(tok))
 
 def detect_version(tok):
+    """Descobre versao valida E a combinacao certa de login-customer-id."""
+    probe = {"query": "SELECT customer.id FROM customer LIMIT 1"}
+    ver_ok = None
     for ver in ("v21", "v20", "v19", "v18"):
-        d, code = gads_call(ver, tok, ":generateGoogleAdsQuery" if False else "/googleAds:searchStream",
-                            {"query": "SELECT customer.id FROM customer LIMIT 1"})
-        if code == 404: continue
-        print(f"[gads] versao da API: {ver} (status {code})")
-        if code >= 400:
-            raise RuntimeError(f"Google Ads {ver} erro {code}: {json.dumps(d)[:300]}")
-        return ver
-    raise RuntimeError("nenhuma versao da Google Ads API respondeu")
+        d, code = gads_call(ver, tok, "/googleAds:searchStream", probe)
+        if code == 404:
+            continue
+        ver_ok = ver
+        if code < 400:
+            print(f"[gads] versao {ver} + login-customer-id {LOGIN_HEADER['value'] or '(nenhum)'} OK")
+            return ver
+        break
+    if not ver_ok:
+        raise RuntimeError("nenhuma versao da Google Ads API respondeu")
+    # 403: tenta descobrir a combinacao certa
+    print(f"[gads] {ver_ok} deu {code} com login-customer-id={LOGIN_HEADER['value']}. Autodiagnostico...")
+    d, c2 = http(f"https://googleads.googleapis.com/{ver_ok}/customers:listAccessibleCustomers",
+                 headers={"Authorization": f"Bearer {tok}",
+                          "developer-token": os.environ["GADS_DEVELOPER_TOKEN"]})
+    acessiveis = [r.split("/")[-1] for r in d.get("resourceNames", [])] if c2 < 400 else []
+    print(f"[gads] contas acessiveis pelo login: {acessiveis}")
+    candidatos = [None] + acessiveis
+    for cand in candidatos:
+        LOGIN_HEADER["value"] = cand or ""
+        d, code = gads_call(ver_ok, tok, "/googleAds:searchStream", probe)
+        if code < 400:
+            print(f"[gads] combinacao OK: login-customer-id={cand or '(nenhum)'}")
+            return ver_ok
+        print(f"[gads] login-customer-id={cand or '(nenhum)'} -> {code}")
+    raise RuntimeError(f"nenhuma combinacao funcionou. Acessiveis: {acessiveis}. "
+                       f"Confirmar se a conta Google autorizada tem acesso ao customer {CUSTOMER}.")
 
 def get_or_create_list(ver, tok):
     d, code = gads_call(ver, tok, "/googleAds:searchStream",
