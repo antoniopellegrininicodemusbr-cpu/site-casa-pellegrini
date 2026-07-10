@@ -1,0 +1,33 @@
+# Customer Match Google Ads — base Fidelizi (compradores) diaria
+# ⚠️ COPIAR para .github/workflows/gads-customer-match.yml via UI do GitHub
+# Secrets NOVOS: GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_REFRESH_TOKEN, GADS_DEVELOPER_TOKEN
+# (FIDELIZI_APP_TOKEN e FIDELIZI_ACCESS_TOKEN ja existem)
+name: Google Ads Customer Match
+
+on:
+  schedule:
+    - cron: "0 7 * * *"   # 4h BRT, 1h depois do sync do Fidelizi
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra quantos usuarios subiria"
+        default: "true"
+
+jobs:
+  match:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Subir base pro Google Ads
+        env:
+          GADS_CLIENT_ID: ${{ secrets.GADS_CLIENT_ID }}
+          GADS_CLIENT_SECRET: ${{ secrets.GADS_CLIENT_SECRET }}
+          GADS_REFRESH_TOKEN: ${{ secrets.GADS_REFRESH_TOKEN }}
+          GADS_DEVELOPER_TOKEN: ${{ secrets.GADS_DEVELOPER_TOKEN }}
+          FIDELIZI_APP_TOKEN: ${{ secrets.FIDELIZI_APP_TOKEN }}
+          FIDELIZI_ACCESS_TOKEN: ${{ secrets.FIDELIZI_ACCESS_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/google_ads_customer_match.py
