@@ -156,6 +156,11 @@ def main():
                                      "userList": lista,
                                      "consent": {"adUserData": "GRANTED", "adPersonalization": "GRANTED"}}}})
     if code >= 400:
+        if "CUSTOMER_NOT_ALLOWLISTED" in json.dumps(d):
+            print("[gads] Conta ainda NAO ELEGIVEL pro Customer Match (Google exige ~90 dias de historico; "
+                  "conta ativa desde ~abril/2026 -> deve liberar ~fim de julho). A lista ja existe; "
+                  "o cron diario tenta de novo automaticamente e comeca a subir a base quando liberar.")
+            return
         raise RuntimeError(f"criar job falhou {code}: {json.dumps(d)[:300]}")
     job = d["resourceName"]
     print(f"[gads] job: {job}")
