@@ -1,28 +1,4 @@
 {
  "done": {},
- "failed": {
-  "120243421394760460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243421580520460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243416042850460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120248569459080460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243421503370460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120248569278710460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243415663640460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243416184340460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120244122565130460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243415934040460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120244122874930460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243416636690460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243415185380460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243415006160460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243417371810460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243415725810460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120244122792550460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243421598240460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243420214910460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120243415684960460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120248569224590460": "HTTP 400: {\"error\":{\"message\":\"An unknown error occurred\",\"type\":\"OAuthException\",\"code\":1,\"error_subcode\":1346001,\"is_transient\":false,\"error_user_title\":\"Validation Error\",\"error_user_msg\":\"A valida",
-  "120208567292090460": "HTTP 400: {\"error\":{\"message\":\"Invalid parameter\",\"type\":\"OAuthException\",\"code\":100,\"error_subcode\":1815017,\"is_transient\":false,\"error_user_title\":\"O criativo din\\u00e2mico est\\u00e1 sem o ID do con",
-  "120217370935260460": "HTTP 400: {\"error\":{\"message\":\"Invalid parameter\",\"type\":\"OAuthException\",\"code\":100,\"error_subcode\":1885499,\"is_transient\":false,\"error_user_title\":\"Sem permiss\\u00e3o para o anunciante na P\\u00e1gin"
- }
+ "failed": {}
 }
