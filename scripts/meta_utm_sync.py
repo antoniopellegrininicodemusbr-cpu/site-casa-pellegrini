@@ -43,7 +43,7 @@ def main():
             json.dump(st, f, ensure_ascii=False, indent=1)
 
     url = (f"{GRAPH}/act_{ACT}/ads?fields=id,name,effective_status,"
-           f"creative{{id,url_tags,effective_object_story_id}},campaign{{name}}&limit=100&access_token={TOK}")
+           f"creative{{id,url_tags,effective_object_story_id,asset_feed_spec,instagram_user_id,degrees_of_freedom_spec}},campaign{{name}}&limit=100&access_token={TOK}")
     ads = []
     while url:
         d = http(url)
@@ -59,18 +59,29 @@ def main():
         aid, nome = a["id"], a["name"]
         cr = a.get("creative") or {}
         story = cr.get("effective_object_story_id")
+        opt = ((cr.get("asset_feed_spec") or {}).get("optimization_type") or "")
+        if "PROFILE_VISIT" in opt:
+            print(f"[skip] {nome}: destino = perfil do Instagram (UTM nao se aplica)")
+            st["done"][aid] = "destino perfil IG - UTM nao aplicavel"
+            save()
+            continue
         try:
             if not story:
                 raise RuntimeError("criativo sem object_story_id (formato nao suportado — tratar manual)")
             if DRY_RUN:
                 print(f"[DRY] {nome}: criaria copia do criativo {cr.get('id')} com utm e trocaria no anuncio")
                 continue
+            payload = {
+                "object_story_id": story,
+                "url_tags": URL_TAGS,
+                "name": f"UTM - {nome}"[:99],
+                "access_token": TOK}
+            if cr.get("instagram_user_id"):
+                payload["instagram_user_id"] = cr["instagram_user_id"]
+            if cr.get("degrees_of_freedom_spec"):
+                payload["degrees_of_freedom_spec"] = json.dumps(cr["degrees_of_freedom_spec"])
             novo = http(f"{GRAPH}/act_{ACT}/adcreatives", method="POST",
-                        data=urllib.parse.urlencode({
-                            "object_story_id": story,
-                            "url_tags": URL_TAGS,
-                            "name": f"UTM - {nome}"[:99],
-                            "access_token": TOK}).encode())
+                        data=urllib.parse.urlencode(payload).encode())
             http(f"{GRAPH}/{aid}", method="POST",
                  data=urllib.parse.urlencode({
                      "creative": json.dumps({"creative_id": novo["id"]}),
