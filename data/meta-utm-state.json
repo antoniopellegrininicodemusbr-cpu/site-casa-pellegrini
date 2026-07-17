@@ -20,10 +20,9 @@
   "120243421598240460": "destino perfil IG - UTM nao aplicavel",
   "120243420214910460": "destino perfil IG - UTM nao aplicavel",
   "120243415684960460": "destino perfil IG - UTM nao aplicavel",
-  "120248569224590460": "destino perfil IG - UTM nao aplicavel"
+  "120248569224590460": "destino perfil IG - UTM nao aplicavel",
+  "120208567292090460": "destino WhatsApp/asset-feed - UTM nao aplicavel",
+  "120217370935260460": "destino WhatsApp/asset-feed - UTM nao aplicavel"
  },
- "failed": {
-  "120208567292090460": "HTTP 400: {\"error\":{\"message\":\"Invalid parameter\",\"type\":\"OAuthException\",\"code\":100,\"error_subcode\":1815017,\"is_transient\":false,\"error_user_title\":\"O criativo din\\u00e2mico est\\u00e1 sem o ID do con",
-  "120217370935260460": "HTTP 400: {\"error\":{\"message\":\"Invalid parameter\",\"type\":\"OAuthException\",\"code\":100,\"error_subcode\":3858504,\"is_transient\":false,\"error_user_title\":\"O criativo n\\u00e3o deve incluir aprimoramentos pa"
- }
+ "failed": {}
 }
