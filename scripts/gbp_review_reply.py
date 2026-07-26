@@ -106,21 +106,26 @@ def main():
         if age_min < wait:
             print(f"[aguardando] {name} ({stars} estrelas): responde em ~{int(wait - age_min)} min")
             continue
-        reply = gemini(PROMPT.format(rating=stars, name=name, comment=comment or "(sem comentario, so a nota)"))
-        if len(reply) > 350:
-            reply = gemini("Encurte para no maximo 250 caracteres, mantendo o tom: " + reply)
-        if DRY_RUN:
-            print(f"[DRY RUN] {name} ({stars} estrelas) '{comment[:80]}'\n  RESPOSTA: {reply}\n")
-        else:
-            http(f"https://mybusiness.googleapis.com/v4/accounts/{ACCOUNT}/locations/{LOCATION}/reviews/{rid}/reply",
-                 data=json.dumps({"comment": reply}).encode(), method="PUT",
-                 headers={**H, "Content-Type": "application/json"})
-            print(f"[respondida] {name} ({stars} estrelas) -> {reply}")
-            st["replied"][rid] = {"at": now.isoformat(), "stars": stars, "reply": reply}
-            os.makedirs("data", exist_ok=True)
-            with open(STATE_FILE, "w", encoding="utf-8") as f:
-                json.dump(st, f, ensure_ascii=False, indent=1)
-        acted += 1
+        try:
+            reply = gemini(PROMPT.format(rating=stars, name=name, comment=comment or "(sem comentario, so a nota)"))
+            if len(reply) > 350:
+                reply = gemini("Encurte para no maximo 250 caracteres, mantendo o tom: " + reply)
+            if DRY_RUN:
+                print(f"[DRY RUN] {name} ({stars} estrelas) '{comment[:80]}'\n  RESPOSTA: {reply}\n")
+            else:
+                http(f"https://mybusiness.googleapis.com/v4/accounts/{ACCOUNT}/locations/{LOCATION}/reviews/{rid}/reply",
+                     data=json.dumps({"comment": reply}).encode(), method="PUT",
+                     headers={**H, "Content-Type": "application/json"})
+                print(f"[respondida] {name} ({stars} estrelas) -> {reply}")
+                st["replied"][rid] = {"at": now.isoformat(), "stars": stars, "reply": reply}
+                os.makedirs("data", exist_ok=True)
+                with open(STATE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(st, f, ensure_ascii=False, indent=1)
+            acted += 1
+        except Exception as e:
+            # erro transitorio (ex: HTTP 500 do Google em 22/07/2026) nao derruba a rodada;
+            # a review fica pendente e o proximo cron tenta de novo
+            print(f"[ERRO transitorio] {name} ({stars} estrelas): {e} — fica pra proxima rodada")
     print(f"Fim: {len(reviews)} reviews vistas, {acted} tratadas nesta rodada.")
 
 if __name__ == "__main__":
