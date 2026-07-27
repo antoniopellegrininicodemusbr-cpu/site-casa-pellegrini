@@ -1,0 +1,74 @@
+name: Cross-posting Instagram
+
+# Substitui o cenario Make 4971593 (parou 05/07/2026: token OAuth do Facebook
+# no Make expira a cada 60 dias). Aqui usamos IG_ACCESS_TOKEN = Page Token
+# permanente, que nao expira.
+
+on:
+  schedule:
+    # 13h e 19h BRT (UTC-3) - janela parecida com a do Make
+    - cron: "0 16 * * *"
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simular (nao publica nada)"
+        type: boolean
+        default: false
+      max_tiktok:
+        description: "Maximo de posts no TikTok nesta rodada (cota Zernio 20/mes)"
+        type: string
+        default: "3"
+      fetch_limit:
+        description: "Quantas midias recentes do Instagram olhar"
+        type: string
+        default: "10"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cross-posting
+  cancel-in-progress: false
+
+jobs:
+  crosspost:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar Pillow (compressao de imagem pro Bluesky)
+        run: pip install --quiet Pillow
+
+      - name: Publicar
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: "17841404743438046"
+          ZERNIO_API_KEY: ${{ secrets.ZERNIO_API_KEY }}
+          ZERNIO_TIKTOK_ACCOUNT_ID: ${{ secrets.ZERNIO_TIKTOK_ACCOUNT_ID }}
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STATE_FILE: state/crossposted.json
+          MAX_TIKTOK_PER_RUN: ${{ github.event.inputs.max_tiktok || '3' }}
+          FETCH_LIMIT: ${{ github.event.inputs.fetch_limit || '10' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/cross_posting.py
+
+      - name: Salvar estado no repo
+        run: |
+          if [ -n "$(git status --porcelain state/)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state/
+            git commit -m "chore(cross-posting): atualiza estado [skip ci]"
+            git push
+          else
+            echo "Sem mudanca de estado."
+          fi
