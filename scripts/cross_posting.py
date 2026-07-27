@@ -556,7 +556,9 @@ def main():
         entry["media_type"] = mtype
         state[pid] = entry
 
-    if changed:
+    if DRY_RUN:
+        log("DRY_RUN: estado NAO salvo (nada foi marcado como publicado)")
+    elif changed:
         save_state(STATE_FILE, state)
     else:
         log("nada novo para publicar")
