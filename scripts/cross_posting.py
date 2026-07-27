@@ -99,7 +99,11 @@ def log(msg):
 
 def http_json(url, method="GET", payload=None, headers=None, timeout=180):
     data = None
-    hdrs = {"Accept": "application/json"}
+    hdrs = {
+        "Accept": "application/json",
+        # Cloudflare (Discord) barra o User-Agent padrao do urllib -> erro 1010
+        "User-Agent": "CasaPellegrini-CrossPoster/1.0 (+https://casapellegrini.com.br)",
+    }
     if headers:
         hdrs.update(headers)
     if payload is not None:
