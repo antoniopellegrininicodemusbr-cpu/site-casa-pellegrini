@@ -54,6 +54,11 @@ IG_ACCESS_TOKEN = _clean(os.environ.get("IG_ACCESS_TOKEN", ""))
 ZERNIO_API_BASE = "https://zernio.com/api/v1"
 ZERNIO_API_KEY = _clean(os.environ.get("ZERNIO_API_KEY", ""))
 ZERNIO_TIKTOK_ACCOUNT_ID = _clean(os.environ.get("ZERNIO_TIKTOK_ACCOUNT_ID", ""))
+ZERNIO_LINKEDIN_ACCOUNT_ID = _clean(os.environ.get("ZERNIO_LINKEDIN_ACCOUNT_ID", ""))
+LINKEDIN_ORG_URN = _clean(
+    os.environ.get("LINKEDIN_ORG_URN", "urn:li:organization:112056363")
+)
+MAX_LINKEDIN_PER_RUN = int(os.environ.get("MAX_LINKEDIN_PER_RUN", "5"))
 
 BLUESKY_PDS = "https://bsky.social"
 BLUESKY_HANDLE = _clean(os.environ.get("BLUESKY_HANDLE", "casapellegrini.bsky.social"))
@@ -87,7 +92,7 @@ TIKTOK_HASHTAGS = (
     "#casapellegrini #restaurantepetropolis"
 )
 
-PLATFORMS = ("discord", "bluesky", "tiktok")
+PLATFORMS = ("discord", "bluesky", "tiktok", "linkedin")
 
 
 def log(msg):
@@ -489,6 +494,69 @@ def publish_tiktok(item):
     return False, f"HTTP {status}: {str(body)[:400]}"
 
 
+# ---------------------------------------------------------------- linkedin
+
+
+def build_linkedin_content(item):
+    """Sem link no corpo: LinkedIn derruba o alcance em 40-50% com URL no texto.
+    O permalink vai no primeiro comentario (firstComment)."""
+    base = clean_caption(item.get("caption")) or "Casa Pellegrini"
+    return base[:3000]
+
+
+def publish_linkedin(item):
+    """Video -> video nativo. Foto/carrossel -> multi-imagem (ate 20)."""
+    if not ZERNIO_API_KEY or not ZERNIO_LINKEDIN_ACCOUNT_ID:
+        return False, "credenciais LinkedIn/Zernio ausentes"
+
+    mtype = item.get("media_type")
+    if mtype == "VIDEO":
+        if not item.get("media_url"):
+            return False, "sem media_url"
+        media = [{"type": "video", "url": item["media_url"]}]
+    else:
+        imgs = image_urls(item, limit=20)
+        if not imgs:
+            return False, "sem imagem utilizavel"
+        media = [{"type": "image", "url": u} for u in imgs]
+
+    if DRY_RUN:
+        return True, f"DRY_RUN ({mtype}, {len(media)} midias)"
+
+    psd = {}
+    if LINKEDIN_ORG_URN:
+        psd["organizationUrn"] = LINKEDIN_ORG_URN
+    link = item.get("permalink")
+    if link:
+        psd["firstComment"] = f"Veja no Instagram: {link}"
+
+    payload = {
+        "content": build_linkedin_content(item),
+        "mediaItems": media,
+        "platforms": [
+            {
+                "platform": "linkedin",
+                "accountId": ZERNIO_LINKEDIN_ACCOUNT_ID,
+                "platformSpecificData": psd,
+            }
+        ],
+        "publishNow": True,
+    }
+    status, body = http_json(
+        f"{ZERNIO_API_BASE}/posts",
+        "POST",
+        payload,
+        headers={"Authorization": f"Bearer {ZERNIO_API_KEY}"},
+    )
+    if status in (200, 201):
+        post = (body or {}).get("post") or {}
+        return True, (
+            f"id={post.get('_id', '?')} status={post.get('status', '?')} "
+            f"({mtype}, {len(media)} midias)"
+        )
+    return False, f"HTTP {status}: {str(body)[:400]}"
+
+
 # ---------------------------------------------------------------- main
 
 
@@ -512,7 +580,8 @@ def main():
         f"| ZERNIO_ACC={len(ZERNIO_TIKTOK_ACCOUNT_ID)}/24 "
         f"| BSKY_HANDLE={len(BLUESKY_HANDLE)}/26 "
         f"| BSKY_PASS={len(BLUESKY_APP_PASSWORD)}/19 "
-        f"| DISCORD={len(DISCORD_WEBHOOK_URL)}/121"
+        f"| DISCORD={len(DISCORD_WEBHOOK_URL)}/121 "
+        f"| LKDN_ACC={len(ZERNIO_LINKEDIN_ACCOUNT_ID)}/24"
     )
 
     state = load_state(STATE_FILE)
@@ -526,6 +595,7 @@ def main():
 
     session_cache = []
     tiktok_done = 0
+    linkedin_done = 0
     changed = False
     resumo = []
 
@@ -584,6 +654,22 @@ def main():
                     tiktok_done += 1
                     changed = True
                     resumo.append(f"tiktok:{pid}")
+                    time.sleep(2)
+
+        if "linkedin" in pendentes:
+            if linkedin_done >= MAX_LINKEDIN_PER_RUN:
+                log(
+                    f"   linkedin: adiado (teto de {MAX_LINKEDIN_PER_RUN}/rodada; "
+                    "sai na proxima)"
+                )
+            else:
+                ok, detail = safe_call(publish_linkedin, item)
+                log(f"   linkedin: {'OK' if ok else 'FALHOU'} -> {detail}")
+                if ok:
+                    entry["linkedin"] = True
+                    linkedin_done += 1
+                    changed = True
+                    resumo.append(f"linkedin:{pid}")
                     time.sleep(2)
 
         entry["permalink"] = item.get("permalink")
