@@ -53,7 +53,15 @@ BLUESKY_APP_PASSWORD = os.environ.get("BLUESKY_APP_PASSWORD", "")
 BLUESKY_MAX_BLOB = 950_000  # limite real ~1MB; margem de seguranca
 BLUESKY_MAX_IMAGES = 4
 
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
+def _clean_url(v):
+    """Tolera secret colado com aspas, espaco ou sem https://."""
+    v = (v or "").strip().strip('"').strip("'").strip()
+    if v and not v.startswith(("http://", "https://")):
+        v = "https://" + v.lstrip("/")
+    return v
+
+
+DISCORD_WEBHOOK_URL = _clean_url(os.environ.get("DISCORD_WEBHOOK_URL", ""))
 
 STATE_FILE = os.environ.get("STATE_FILE", "state/crossposted.json")
 EXPECTED_USERNAME = os.environ.get("EXPECTED_USERNAME", "casapellegrini")
@@ -91,8 +99,8 @@ def http_json(url, method="GET", payload=None, headers=None, timeout=180):
         data = json.dumps(payload).encode("utf-8")
         hdrs["Content-Type"] = "application/json"
 
-    req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
     try:
+        req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             raw = resp.read().decode("utf-8", "replace")
             status = resp.status
@@ -473,6 +481,14 @@ def publish_tiktok(item):
 # ---------------------------------------------------------------- main
 
 
+def safe_call(fn, *args):
+    """Isola cada rede: excecao numa nao derruba o resto da rodada."""
+    try:
+        return fn(*args)
+    except Exception as e:
+        return False, f"EXCECAO: {e}"
+
+
 def main():
     if not IG_ACCESS_TOKEN:
         log("ERRO: IG_ACCESS_TOKEN nao definido")
@@ -520,7 +536,7 @@ def main():
         log(f"> {pid} ({mtype}, {item.get('timestamp')}) pendentes={pendentes}")
 
         if "discord" in pendentes:
-            ok, detail = publish_discord(item)
+            ok, detail = safe_call(publish_discord, item)
             log(f"   discord: {'OK' if ok else 'FALHOU'} -> {detail}")
             if ok:
                 entry["discord"] = True
@@ -528,7 +544,7 @@ def main():
                 resumo.append(f"discord:{pid}")
 
         if "bluesky" in pendentes:
-            ok, detail = publish_bluesky(item, session_cache)
+            ok, detail = safe_call(publish_bluesky, item, session_cache)
             log(f"   bluesky: {'OK' if ok else 'FALHOU'} -> {detail}")
             if ok:
                 entry["bluesky"] = True
@@ -542,7 +558,7 @@ def main():
                     "sai na proxima)"
                 )
             else:
-                ok, detail = publish_tiktok(item)
+                ok, detail = safe_call(publish_tiktok, item)
                 log(f"   tiktok: {'OK' if ok else 'FALHOU'} -> {detail}")
                 if ok:
                     entry["tiktok"] = True
