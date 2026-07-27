@@ -39,23 +39,30 @@ except Exception:
 
 # ---------------------------------------------------------------- config
 
+def _clean(v):
+    """Tira espaco/quebra de linha/aspas/crase que vem junto no copiar-colar."""
+    v = (v or "").strip()
+    for ch in ('"', "'", "`"):
+        v = v.strip(ch)
+    return "".join(v.split())
+
+
 GRAPH_VERSION = "v21.0"
 IG_USER_ID = os.environ.get("IG_USER_ID", "17841404743438046")
-IG_ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN", "")
+IG_ACCESS_TOKEN = _clean(os.environ.get("IG_ACCESS_TOKEN", ""))
 
 ZERNIO_API_BASE = "https://zernio.com/api/v1"
-ZERNIO_API_KEY = os.environ.get("ZERNIO_API_KEY", "")
-ZERNIO_TIKTOK_ACCOUNT_ID = os.environ.get("ZERNIO_TIKTOK_ACCOUNT_ID", "")
+ZERNIO_API_KEY = _clean(os.environ.get("ZERNIO_API_KEY", ""))
+ZERNIO_TIKTOK_ACCOUNT_ID = _clean(os.environ.get("ZERNIO_TIKTOK_ACCOUNT_ID", ""))
 
 BLUESKY_PDS = "https://bsky.social"
-BLUESKY_HANDLE = os.environ.get("BLUESKY_HANDLE", "casapellegrini.bsky.social")
-BLUESKY_APP_PASSWORD = os.environ.get("BLUESKY_APP_PASSWORD", "")
+BLUESKY_HANDLE = _clean(os.environ.get("BLUESKY_HANDLE", "casapellegrini.bsky.social"))
+BLUESKY_APP_PASSWORD = _clean(os.environ.get("BLUESKY_APP_PASSWORD", ""))
 BLUESKY_MAX_BLOB = 950_000  # limite real ~1MB; margem de seguranca
 BLUESKY_MAX_IMAGES = 4
 
 def _clean_url(v):
-    """Tolera secret colado com aspas, espaco ou sem https://."""
-    v = (v or "").strip().strip('"').strip("'").strip()
+    v = _clean(v)
     if v and not v.startswith(("http://", "https://")):
         v = "https://" + v.lstrip("/")
     return v
@@ -495,6 +502,14 @@ def main():
         return 1
 
     log(f"=== cross-posting Casa Pellegrini (DRY_RUN={DRY_RUN}, Pillow={HAS_PIL}) ===")
+    log(
+        "secrets (tamanho esperado): "
+        f"IG={len(IG_ACCESS_TOKEN)} | ZERNIO_KEY={len(ZERNIO_API_KEY)}/67 "
+        f"| ZERNIO_ACC={len(ZERNIO_TIKTOK_ACCOUNT_ID)}/24 "
+        f"| BSKY_HANDLE={len(BLUESKY_HANDLE)}/26 "
+        f"| BSKY_PASS={len(BLUESKY_APP_PASSWORD)}/19 "
+        f"| DISCORD={len(DISCORD_WEBHOOK_URL)}/121"
+    )
 
     state = load_state(STATE_FILE)
     try:
