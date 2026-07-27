@@ -2,23 +2,27 @@
  "posts": {
   "17876152605526289": {
    "bluesky": true,
+   "discord": true,
    "media_type": "VIDEO",
    "permalink": "https://www.instagram.com/reel/DbLbib3ODrP/",
+   "tiktok": true,
    "timestamp": "2026-07-24T14:15:28+0000"
   },
   "17926723131145221": {
    "bluesky": true,
+   "discord": true,
    "media_type": "VIDEO",
    "permalink": "https://www.instagram.com/reel/DbQjE57OW3f/",
    "timestamp": "2026-07-26T14:00:23+0000"
   },
   "18107640724838089": {
    "bluesky": true,
+   "discord": true,
    "media_type": "CAROUSEL_ALBUM",
    "permalink": "https://www.instagram.com/p/DbEesMqH5bv/",
    "tiktok": true,
    "timestamp": "2026-07-21T21:27:29+0000"
   }
  },
- "updated_at": "2026-07-27T22:32:25.365695+00:00"
+ "updated_at": "2026-07-27T22:36:20.331178+00:00"
 }
