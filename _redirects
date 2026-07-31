@@ -14,6 +14,7 @@
 # fica no Firebase (pellegrini-app). Rota nao linkada/nao indexada em lugar nenhum.
 /api/whatsapp  https://us-central1-pellegrini-app.cloudfunctions.net/whatsapp  200!
 /api/clube/*   https://us-central1-pellegrini-app.cloudfunctions.net/api/:splat  200!
+/api/atendimento/*  https://us-central1-pellegrini-app.cloudfunctions.net/dm/painel/:splat  200!
 
 # === CANONIZAÇÃO DE DOMÍNIO (HTTP → HTTPS, WWW → APEX) ===
 # Adicionado em 06/05/2026 — GSC mostrava http://www.casapellegrini.com.br/ com 2.339 imp,
