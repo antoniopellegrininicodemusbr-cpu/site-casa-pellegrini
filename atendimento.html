@@ -42,6 +42,9 @@
   /* ===== chat ===== */
   #chat{flex:1;display:flex;flex-direction:column;background:var(--bg)}
   #chat-topo{padding:10px 16px;background:var(--card);border-bottom:1px solid var(--linha);display:flex;align-items:center;gap:10px;min-height:52px}
+  .modo-badge{font-size:14px;font-weight:800;padding:6px 14px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+  .mb-bot{background:#2e4257;color:#8ec5ff}
+  .mb-humano{background:#e8933a;color:#14100c}
   #chat-topo .acoes{margin-left:auto;display:flex;gap:6px}
   #chat-topo button{background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
   #chat-topo button:hover{border-color:var(--ouro)}
@@ -112,9 +115,10 @@
     <div id="chat-topo">
       <button id="voltar" style="display:none" onclick="document.body.classList.remove('vendo-chat')">←</button>
       <div>
-        <div id="chat-nome" style="font-weight:600">—</div>
+        <div id="chat-nome" style="font-weight:600;font-size:16px">—</div>
         <div id="chat-canal" style="font-size:12px;color:var(--txt2)"></div>
       </div>
+      <span id="chat-modo" class="modo-badge" style="display:none"></span>
       <div class="acoes">
         <button id="btn-devolver" onclick="devolverBot()" style="display:none">🤖 Devolver ao bot</button>
         <button onclick="mudarStatus('respondida')">✓ Lida</button>
@@ -214,6 +218,11 @@ async function carregarConversas(){
     pendentesAntes = pend;
     document.title = (pend ? "(" + pend + ") " : "") + "Atendimento — Casa Pellegrini";
     desenharLista();
+    // mantém o cabeçalho da conversa aberta em dia (nome/modo)
+    if (convSel){
+      const aberta = conversas.find((x) => x.id === convSel);
+      if (aberta) setCabecalho(aberta);
+    }
   }catch(e){ $("conexao").textContent = "⚠️ sem conexão"; }
 }
 
@@ -238,10 +247,7 @@ function desenharLista(){
 async function abrirConversa(id){
   convSel = id;
   const c = conversas.find((x) => x.id === id) || {};
-  $("chat-nome").textContent = c.nome || c.usuarioId || id;
-  const modoTxt = (c.modo === "bot" || c.modo === "reserva") ? " · 🤖 bot cuidando" : (c.modo === "humano" ? " · 👤 com atendente" : "");
-  $("chat-canal").textContent = (rotuloCanal[c.canal] || c.canal) + modoTxt;
-  $("btn-devolver").style.display = (c.modo === "humano") ? "inline-block" : "none";
+  setCabecalho(c);
   document.body.classList.add("vendo-chat");
   if (window.innerWidth <= 700) $("voltar").style.display = "block";
   desenharLista();
@@ -317,10 +323,27 @@ async function atualizarBotBadge(){
     $("btn-bot").textContent = on.length ? "🤖 Bot: " + on.join(", ") : "🤖 Bot: desligado";
   }catch(e){}
 }
+function setCabecalho(c){
+  $("chat-nome").textContent = c.nome || c.usuarioId || "";
+  $("chat-canal").textContent = rotuloCanal[c.canal] || c.canal || "";
+  const badge = $("chat-modo");
+  if (c.modo === "humano"){
+    badge.textContent = "👤 ATENDENTE";
+    badge.className = "modo-badge mb-humano";
+  } else {
+    badge.textContent = "🤖 BOT";
+    badge.className = "modo-badge mb-bot";
+  }
+  badge.style.display = "inline-block";
+  $("btn-devolver").style.display = (c.modo === "humano") ? "inline-block" : "none";
+}
+
 async function devolverBot(){
   if (!convSel) return;
   await fetch(API + "/devolver-bot", {method:"POST", headers: headers({"Content-Type":"application/json"}), body: JSON.stringify({conv: convSel})});
   await carregarConversas();
+  const c = conversas.find((x) => x.id === convSel);
+  if (c) setCabecalho(c); // atualiza o selo pra 🤖 BOT na hora
 }
 
 $("texto").addEventListener("keydown", (e) => {
