@@ -30,6 +30,7 @@
   .conv .nome{font-weight:600;font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .conv .badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;text-transform:uppercase}
   .b-nao_lida{background:var(--verm);color:#fff}
+  .b-precisa_humano{background:#e8933a;color:#14100c}
   .b-aguardando_confirmacao{background:var(--roxo);color:#fff}
   .b-respondida{background:var(--verde);color:#fff}
   .b-fechada{background:var(--linha);color:var(--txt2)}
@@ -79,7 +80,8 @@
 <header>
   <h1>🍻 Atendimento</h1>
   <span class="status-conexao" id="conexao">carregando…</span>
-  <button id="btn-bot" onclick="abrirConfigBot()" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
+  <button id="btn-som" onclick="alternarSom()" title="Ligar/desligar alerta sonoro" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔔 Som</button>
+  <button id="btn-bot" onclick="abrirConfigBot()" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
 </header>
 <div id="modal-bot" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:22px;width:320px">
@@ -98,6 +100,7 @@
   <div id="lista">
     <div id="filtros">
       <button data-f="todas" class="ativo">Todas</button>
+      <button data-f="precisa_humano">🙋 Precisa humano</button>
       <button data-f="nao_lida">🔴 Não lidas</button>
       <button data-f="aguardando_confirmacao">🟣 Reservas</button>
       <button data-f="respondida">🟢 Respondidas</button>
@@ -135,8 +138,47 @@ const $ = (id) => document.getElementById(id);
 
 function headers(extra){ return Object.assign({"X-Painel-Key": CHAVE}, extra||{}); }
 
+// ===== ALERTA SONORO =====
+// Conversas nesses status precisam de um atendente humano.
+const PRECISA_HUMANO = ["nao_lida","precisa_humano","aguardando_confirmacao"];
+let somLigado = localStorage.getItem("atd_som") !== "off";
+let audioCtx = null;
+let pendentesAntes = null;
+function initAudio(){
+  if (!audioCtx){
+    try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+function beep(freq, quando){
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  o.type = "sine"; o.frequency.value = freq;
+  const t = audioCtx.currentTime + quando;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+  o.start(t); o.stop(t + 0.33);
+}
+function tocarAlerta(){
+  if (!somLigado) return;
+  initAudio();
+  beep(880, 0); beep(1175, 0.38); // duas notinhas ("din-don")
+}
+function alternarSom(){
+  somLigado = !somLigado;
+  localStorage.setItem("atd_som", somLigado ? "on" : "off");
+  $("btn-som").textContent = somLigado ? "🔔 Som" : "🔕 Mudo";
+  if (somLigado){ initAudio(); tocarAlerta(); } // toca pra confirmar
+}
+// desbloqueia o áudio no primeiro clique/tecla (política do navegador)
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
+
 async function entrar(){
   CHAVE = $("chave").value.trim();
+  initAudio();
   const r = await fetch(API + "/conversas", {headers: headers()});
   if (r.status === 401){ $("login-erro").textContent = "Chave incorreta."; return; }
   localStorage.setItem("atd_chave", CHAVE);
@@ -166,6 +208,11 @@ async function carregarConversas(){
     if (!r.ok) throw new Error(r.status);
     conversas = (await r.json()).conversas || [];
     $("conexao").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    // alerta sonoro: se aumentou o nº de conversas que precisam de humano, toca
+    const pend = conversas.filter((c) => PRECISA_HUMANO.includes(c.status)).length;
+    if (pendentesAntes !== null && pend > pendentesAntes) tocarAlerta();
+    pendentesAntes = pend;
+    document.title = (pend ? "(" + pend + ") " : "") + "Atendimento — Casa Pellegrini";
     desenharLista();
   }catch(e){ $("conexao").textContent = "⚠️ sem conexão"; }
 }
@@ -287,6 +334,7 @@ document.querySelectorAll("#filtros button").forEach((b) => {
 });
 
 function ciclo(){
+  $("btn-som").textContent = somLigado ? "🔔 Som" : "🔕 Mudo";
   carregarConversas();
   atualizarBotBadge();
   setInterval(carregarConversas, 10000);
