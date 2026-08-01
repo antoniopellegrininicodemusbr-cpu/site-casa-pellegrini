@@ -79,7 +79,21 @@
 <header>
   <h1>🍻 Atendimento</h1>
   <span class="status-conexao" id="conexao">carregando…</span>
+  <button id="btn-bot" onclick="abrirConfigBot()" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
 </header>
+<div id="modal-bot" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:22px;width:320px">
+    <h2 style="color:var(--ouro);font-size:16px;margin-bottom:6px">🤖 Bot de atendimento</h2>
+    <p style="color:var(--txt2);font-size:12px;margin-bottom:16px">Escolha em quais canais o bot responde sozinho. Onde estiver desligado, tudo cai na fila pra vocês.</p>
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-facebook"> Facebook Messenger</label>
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-instagram"> Instagram <span style="color:var(--txt2);font-size:11px">(só após o corte do ManyChat)</span></label>
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-whatsapp"> WhatsApp <span style="color:var(--txt2);font-size:11px">(só após migrar o número)</span></label>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button onclick="salvarConfigBot()" style="flex:1;background:var(--ouro);color:#14100c;border:none;border-radius:10px;padding:10px;font-weight:700;cursor:pointer">Salvar</button>
+      <button onclick="document.getElementById('modal-bot').style.display='none'" style="background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:10px;padding:10px 16px;cursor:pointer">Fechar</button>
+    </div>
+  </div>
+</div>
 <main>
   <div id="lista">
     <div id="filtros">
@@ -99,6 +113,7 @@
         <div id="chat-canal" style="font-size:12px;color:var(--txt2)"></div>
       </div>
       <div class="acoes">
+        <button id="btn-devolver" onclick="devolverBot()" style="display:none">🤖 Devolver ao bot</button>
         <button onclick="mudarStatus('respondida')">✓ Lida</button>
         <button onclick="mudarStatus('fechada')">Fechar</button>
       </div>
@@ -177,7 +192,9 @@ async function abrirConversa(id){
   convSel = id;
   const c = conversas.find((x) => x.id === id) || {};
   $("chat-nome").textContent = c.nome || c.usuarioId || id;
-  $("chat-canal").textContent = rotuloCanal[c.canal] || c.canal;
+  const modoTxt = (c.modo === "bot" || c.modo === "reserva") ? " · 🤖 bot cuidando" : (c.modo === "humano" ? " · 👤 com atendente" : "");
+  $("chat-canal").textContent = (rotuloCanal[c.canal] || c.canal) + modoTxt;
+  $("btn-devolver").style.display = (c.modo === "humano") ? "inline-block" : "none";
   document.body.classList.add("vendo-chat");
   if (window.innerWidth <= 700) $("voltar").style.display = "block";
   desenharLista();
@@ -225,6 +242,40 @@ async function mudarStatus(status){
   await carregarConversas();
 }
 
+async function abrirConfigBot(){
+  const r = await fetch(API + "/config", {headers: headers()});
+  const cfg = r.ok ? await r.json() : {bot_canais:{}};
+  const c = cfg.bot_canais || {};
+  $("bot-facebook").checked = !!c.facebook;
+  $("bot-instagram").checked = !!c.instagram;
+  $("bot-whatsapp").checked = !!c.whatsapp;
+  $("modal-bot").style.display = "flex";
+}
+async function salvarConfigBot(){
+  const bot_canais = {
+    facebook: $("bot-facebook").checked,
+    instagram: $("bot-instagram").checked,
+    whatsapp: $("bot-whatsapp").checked,
+  };
+  await fetch(API + "/config", {method:"POST", headers: headers({"Content-Type":"application/json"}), body: JSON.stringify({bot_canais})});
+  $("modal-bot").style.display = "none";
+  atualizarBotBadge();
+}
+async function atualizarBotBadge(){
+  try{
+    const r = await fetch(API + "/config", {headers: headers()});
+    if(!r.ok) return;
+    const c = (await r.json()).bot_canais || {};
+    const on = Object.keys(c).filter(k => c[k]);
+    $("btn-bot").textContent = on.length ? "🤖 Bot: " + on.join(", ") : "🤖 Bot: desligado";
+  }catch(e){}
+}
+async function devolverBot(){
+  if (!convSel) return;
+  await fetch(API + "/devolver-bot", {method:"POST", headers: headers({"Content-Type":"application/json"}), body: JSON.stringify({conv: convSel})});
+  await carregarConversas();
+}
+
 $("texto").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); responder(); }
 });
@@ -237,6 +288,7 @@ document.querySelectorAll("#filtros button").forEach((b) => {
 
 function ciclo(){
   carregarConversas();
+  atualizarBotBadge();
   setInterval(carregarConversas, 10000);
   setInterval(() => { if (convSel) carregarMensagens(); }, 10000);
 }
