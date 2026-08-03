@@ -22,6 +22,7 @@
   #filtros{display:flex;gap:6px;padding:10px;flex-wrap:wrap;border-bottom:1px solid var(--linha)}
   #filtros button{background:var(--card2);color:var(--txt2);border:1px solid var(--linha);border-radius:14px;padding:4px 10px;font-size:12px;cursor:pointer}
   #filtros button.ativo{background:var(--ouro);color:#14100c;border-color:var(--ouro);font-weight:600}
+  .fbadge{display:none;background:var(--verm);color:#fff;border-radius:10px;font-size:11px;font-weight:800;padding:1px 6px;margin-left:2px;min-width:16px;text-align:center;line-height:16px}
   #conversas{flex:1;overflow-y:auto}
   .conv{padding:10px 12px;border-bottom:1px solid var(--linha);cursor:pointer;display:flex;flex-direction:column;gap:3px}
   .conv:hover{background:var(--card2)}
@@ -103,9 +104,9 @@
   <div id="lista">
     <div id="filtros">
       <button data-f="todas" class="ativo">Todas</button>
-      <button data-f="precisa_humano">🙋 Precisa humano</button>
-      <button data-f="nao_lida">🔴 Não lidas</button>
-      <button data-f="aguardando_confirmacao">🟣 Reservas</button>
+      <button data-f="precisa_humano">🙋 Precisa humano <span class="fbadge" id="fb-precisa_humano"></span></button>
+      <button data-f="nao_lida">🔴 Não lidas <span class="fbadge" id="fb-nao_lida"></span></button>
+      <button data-f="aguardando_confirmacao">🟣 Reservas <span class="fbadge" id="fb-aguardando_confirmacao"></span></button>
       <button data-f="respondida">🟢 Respondidas</button>
       <button data-f="fechada">Fechadas</button>
     </div>
@@ -217,6 +218,7 @@ async function carregarConversas(){
     if (pendentesAntes !== null && pend > pendentesAntes) tocarAlerta();
     pendentesAntes = pend;
     document.title = (pend ? "(" + pend + ") " : "") + "Atendimento — Casa Pellegrini";
+    atualizarBadgesFiltro();
     desenharLista();
     // mantém o cabeçalho da conversa aberta em dia (nome/modo)
     if (convSel){
@@ -224,6 +226,15 @@ async function carregarConversas(){
       if (aberta) setCabecalho(aberta);
     }
   }catch(e){ $("conexao").textContent = "⚠️ sem conexão"; }
+}
+
+function atualizarBadgesFiltro(){
+  const cont = {precisa_humano:0, nao_lida:0, aguardando_confirmacao:0};
+  conversas.forEach((c) => { if (cont[c.status] !== undefined) cont[c.status]++; });
+  Object.keys(cont).forEach((s) => {
+    const el = $("fb-" + s);
+    if (el){ el.textContent = cont[s] || ""; el.style.display = cont[s] ? "inline-block" : "none"; }
+  });
 }
 
 function desenharLista(){
