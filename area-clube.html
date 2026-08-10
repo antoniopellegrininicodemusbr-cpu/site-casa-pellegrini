@@ -130,6 +130,12 @@
   .item button{width:auto;padding:10px 16px;font-size:14px;white-space:nowrap}
   .item button:disabled{background:var(--navy2);color:var(--muted);opacity:1}
 
+  .total{display:flex;justify-content:space-between;align-items:center;
+         margin-top:14px;padding-top:14px;border-top:1px solid var(--borda);
+         font-size:14px;color:var(--muted)}
+  .total .v{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;
+            color:var(--dourado)}
+
   .vazio{color:var(--muted);font-size:14px;line-height:1.6;text-align:center;padding:8px 4px}
 
   /* ---------- histórico enxuto ---------- */
@@ -580,7 +586,13 @@ function desenharCatalogo(catalogo, pontos){
         ? '<button onclick="trocar(' + i + ', this)">Trocar</button>'
         : '<button disabled>faltam ' + falta + '</button>') +
     '</div>';
-  }).join('');
+  }).join('') +
+  // Repete o saldo no rodapé do quadro: quem está olhando os "faltam X" já
+  // rolou pra longe do número lá em cima.
+  '<div class="total">' +
+    '<span>Seu saldo</span>' +
+    '<span class="v">' + pontos + (pontos === 1 ? ' ponto' : ' pontos') + '</span>' +
+  '</div>';
 }
 
 async function trocar(indice, botao){
