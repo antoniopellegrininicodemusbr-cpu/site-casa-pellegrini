@@ -91,11 +91,24 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /roleta             /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=roleta            301
 /brinde             /clube-pellegrini.html?utm_source=clube&utm_medium=programa&utm_campaign=brinde            301
 
-# Atalhos pro FORM de cadastro direto (pula landing — uso em CTAs e ads otimizados pra conversão)
-# Quando Fidelizi mandar URL real, trocar a URL de destino mantendo o UTM tracking.
-/inscrever          /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
-/cadastrar          /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
-/fidelizi           /?utm_source=fidelizi_form&utm_medium=programa&utm_campaign=cadastro                       301
+# === CADASTRO DO CLUBE PRÓPRIO (sistema novo, substituto do Fidelizi) ===
+# ⚠️ NÃO MEXER NO NOME DESTA ROTA: /cadastro é o destino FIXO do botão do template
+# aprovado do WhatsApp (clube_convite_cadastro). Editar template aprovado tem limite
+# (1x/dia, 10x/mês) e volta pra fila de análise da Meta — por isso o template aponta
+# sempre pra cá e QUEM MUDA É O DESTINO ABAIXO, não o template.
+#   HOJE  → cadastro-clube.html (página de teste, noindex + senha)
+#   FUTURO→ /clube (quando fizermos a virada Fidelizi → sistema próprio)
+/cadastro           /cadastro-clube.html                                                    301
+
+# Área do cliente: onde ele entra com CPF/celular + senha, vê os pontos, troca
+# por prêmio e gera o código que apresenta no balcão. É o outro lado do /cadastro
+# — sem ela o cliente recebe o WhatsApp de pontuação e não tem pra onde ir.
+/minha-conta        /area-clube.html                                                        301
+
+# REMOVIDOS em 10/08/2026: /inscrever, /cadastrar e /fidelizi.
+# Eram atalhos criados esperando a URL do formulário do Fidelizi, que nunca
+# chegou — ficaram apontando pra home e nunca foram usados em lugar nenhum.
+# Quem quiser cadastro usa /cadastro (rota fixa do template do WhatsApp).
 
 # Atalhos por origem do anúncio (campanhas pagas — cruzar atribuição no GA4 e Conversões offline)
 /clube-meta         /clube-pellegrini.html?utm_source=meta&utm_medium=paid&utm_campaign=clube&utm_content=ad        301

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube Pellegrini — Minha conta</title>
+
+<!-- ============================================================
+     ÁREA DO CLIENTE — PÁGINA DE TESTE, NÃO INDEXAR
+     Ao publicar: remover o noindex e o gate de senha (bloco #gate).
+     ============================================================ -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<!-- CSP: a trava que mais importa aqui é o connect-src. Mesmo que alguém
+     conseguisse injetar código nesta página, o navegador se recusa a mandar
+     os dados pra qualquer servidor que não seja o nosso. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  connect-src 'self' https://casapellegrini.com.br;
+  script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  img-src 'self' data:;
+  frame-src https://challenges.cloudflare.com;
+  form-action 'none';
+  base-uri 'none';
+  frame-ancestors 'none';">
+
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --navy0:#0C1120; --navy1:#141B2E; --navy2:#1D2740; --borda:#2B3654;
+    --vermelho:#C8102E; --dourado:#F2B705; --creme:#F5EFE6;
+    --muted:#8B93A7; --verde:#1DB954;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--navy0); color:var(--creme);
+    font-family:Inter,system-ui,-apple-system,sans-serif;
+    min-height:100vh; padding:20px 16px 48px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:440px;margin:0 auto}
+
+  /* ---------- gate de senha (fase de teste) ---------- */
+  #gate{position:fixed;inset:0;background:var(--navy0);z-index:99;
+        display:flex;align-items:center;justify-content:center;padding:24px}
+  #gate .box{max-width:340px;width:100%;text-align:center}
+  #gate h2{font-family:'Playfair Display',serif;color:var(--dourado);font-size:22px;margin-bottom:6px}
+  #gate p{color:var(--muted);font-size:13px;margin-bottom:18px}
+
+  header{text-align:center;padding:8px 0 20px}
+  header .marca{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;
+                color:var(--dourado);letter-spacing:.5px}
+  header .linha{width:64px;height:3px;background:var(--vermelho);margin:10px auto 0;border-radius:2px}
+
+  .card{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;
+        padding:18px;margin-bottom:16px}
+
+  label{display:block;font-size:13px;font-weight:500;margin:0 0 6px;color:var(--creme)}
+  .campo{margin-bottom:16px}
+  input[type=text],input[type=tel],input[type=password]{
+    width:100%;background:var(--navy2);border:1px solid var(--borda);border-radius:10px;
+    padding:13px 14px;color:var(--creme);font-size:16px;font-family:inherit;
+  }
+  input:focus{outline:none;border-color:var(--dourado)}
+  input::placeholder{color:#5E6683}
+
+  button{width:100%;background:var(--dourado);color:#20180A;border:none;border-radius:10px;
+         padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;
+         transition:filter .15s}
+  button:hover:not(:disabled){filter:brightness(1.07)}
+  button:disabled{opacity:.45;cursor:default}
+  button.fantasma{background:transparent;color:var(--muted);border:1px solid var(--borda);
+                  font-weight:500;font-size:14px;padding:12px}
+  button.fantasma:hover{color:var(--creme);border-color:var(--muted);filter:none}
+
+  .msg{border-radius:10px;padding:13px 14px;font-size:14px;line-height:1.5;
+       margin-bottom:16px;display:none}
+  .msg.err{display:block;background:rgba(255,92,92,.12);border:1px solid rgba(255,92,92,.35);color:#FFB3B3}
+  .msg.ok{display:block;background:rgba(29,185,84,.12);border:1px solid rgba(29,185,84,.35);color:#8FE7AE}
+
+  /* ---------- saldo ---------- */
+  .saldo{background:linear-gradient(160deg,#1D2740,#141B2E);
+         border:1px solid var(--borda);border-radius:16px;padding:22px 18px;
+         text-align:center;margin-bottom:18px}
+  .saldo .ola{font-size:14px;color:var(--muted);margin-bottom:10px}
+  .saldo .ola b{color:var(--creme);font-weight:600}
+  .saldo .num{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;
+              color:var(--dourado);line-height:1}
+  .saldo .un{font-size:14px;color:var(--muted);margin-top:4px}
+  .saldo .regra{font-size:12.5px;color:var(--muted);margin-top:14px;
+                border-top:1px solid var(--navy2);padding-top:12px;line-height:1.5}
+
+  h2.sec{font-family:'Playfair Display',serif;font-size:19px;color:var(--creme);
+         margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+  h2.sec .qtd{font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#20180A;
+              background:var(--dourado);border-radius:20px;padding:2px 9px}
+
+  /* ---------- prêmio ---------- */
+  .premio{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;
+          padding:16px;margin-bottom:12px}
+  .premio .nome{font-size:16px;font-weight:600;margin-bottom:8px;line-height:1.35}
+  .premio .origem{font-size:11.5px;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.6px;margin-bottom:6px}
+  .prazo{font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:14px;line-height:1.4}
+  .prazo.ok{color:var(--muted)}
+  .prazo.perto{color:var(--dourado);font-weight:500}
+  .prazo.urgente{color:#FF8A8A;font-weight:600}
+
+  /* ---------- código ---------- */
+  .codigo{background:var(--navy2);border:1px dashed var(--dourado);border-radius:12px;
+          padding:18px 14px;text-align:center;margin-top:6px}
+  .codigo .cod{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;
+               color:var(--dourado);letter-spacing:3px;line-height:1.1}
+  .codigo .inst{font-size:12.5px;color:#C9D0E0;margin-top:10px;line-height:1.5}
+  .codigo .val{font-size:12px;color:var(--muted);margin-top:8px}
+
+  /* ---------- catálogo ---------- */
+  .item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+        padding:14px 0;border-bottom:1px solid var(--navy2)}
+  .item:last-child{border-bottom:none}
+  .item .n{font-size:15px;font-weight:500;line-height:1.35}
+  .item .c{font-size:12.5px;color:var(--dourado);margin-top:3px}
+  .item button{width:auto;padding:10px 16px;font-size:14px;white-space:nowrap}
+  .item button:disabled{background:var(--navy2);color:var(--muted);opacity:1}
+
+  .vazio{color:var(--muted);font-size:14px;line-height:1.6;text-align:center;padding:8px 4px}
+
+  /* ---------- histórico enxuto ---------- */
+  .velho{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+         color:var(--muted);padding:9px 0;border-bottom:1px solid var(--navy2)}
+  .velho:last-child{border-bottom:none}
+  .velho .tag{font-size:11px;white-space:nowrap}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:30px;line-height:1.7}
+  footer a{color:var(--muted)}
+  .cf{margin-bottom:16px}
+  .link{background:none;border:none;color:var(--dourado);font-size:13.5px;
+        padding:10px 0 0;width:auto;font-weight:500;cursor:pointer;font-family:inherit}
+  .link:hover{filter:none;text-decoration:underline}
+  #carregando{text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- ===================== GATE DE SENHA (FASE DE TESTE) ===================== -->
+<div id="gate">
+  <div class="box">
+    <h2>Área em testes</h2>
+    <p>Esta página ainda não está aberta ao público.</p>
+    <div class="campo"><input type="password" id="gsenha" placeholder="Senha de acesso" autocomplete="off"></div>
+    <button onclick="destravar()">Entrar</button>
+    <div class="msg err" id="gerro" style="margin-top:14px">Senha incorreta.</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header>
+    <div class="marca">CASA PELLEGRINI</div>
+    <div class="linha"></div>
+  </header>
+
+  <div class="msg" id="aviso"></div>
+
+  <!-- ===================== LOGIN ===================== -->
+  <div id="telaLogin" style="display:none">
+    <div class="card">
+      <h2 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px">Minha conta</h2>
+      <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
+        Entre para ver seus pontos e usar seus prêmios.
+      </p>
+
+      <form onsubmit="entrar(event)" autocomplete="on">
+        <div class="campo">
+          <label for="login">CPF ou celular</label>
+          <input type="tel" id="login" name="username" autocomplete="username"
+                 inputmode="numeric" placeholder="Só números" required>
+        </div>
+        <div class="campo">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="password" autocomplete="current-password"
+                 placeholder="Sua senha" required>
+        </div>
+
+        <div class="cf"><div class="cf-turnstile" data-sitekey="SUBSTITUIR_SITE_KEY" data-theme="dark"></div></div>
+
+        <button type="submit" id="btEntrar">Entrar</button>
+      </form>
+
+      <div style="text-align:center">
+        <button class="link" onclick="location.href='/cadastro'">Esqueci ou ainda não tenho senha</button>
+      </div>
+    </div>
+
+    <div class="vazio">
+      Ainda não é do Clube?
+      <button class="link" onclick="location.href='/cadastro'">Criar minha conta</button>
+    </div>
+  </div>
+
+  <!-- ===================== CONTA ===================== -->
+  <div id="telaConta" style="display:none">
+
+    <div class="saldo">
+      <div class="ola">Olá, <b id="nome">—</b></div>
+      <div class="num" id="pontos">0</div>
+      <div class="un" id="unidade">pontos</div>
+      <div class="regra" id="regra">A cada R$ 25 em consumo, 1 ponto.</div>
+    </div>
+
+    <h2 class="sec">Meus prêmios <span class="qtd" id="qtdPremios" style="display:none">0</span></h2>
+    <div id="listaPremios"></div>
+
+    <h2 class="sec">Trocar pontos</h2>
+    <div class="card" id="catalogo"></div>
+
+    <div id="blocoVelhos" style="display:none">
+      <h2 class="sec">Já utilizados</h2>
+      <div class="card" id="listaVelhos"></div>
+    </div>
+
+    <h2 class="sec">Meus dados</h2>
+    <div class="card">
+      <div id="meusDados"></div>
+      <div class="vazio" style="text-align:left;font-size:12.5px;padding:14px 0 0;
+                                border-top:1px solid var(--navy2);margin-top:12px">
+        Para corrigir seus dados ou apagar sua conta, fale com a gente em
+        <a href="/" style="color:var(--dourado)">casapellegrini.com.br</a>.<br>
+        Para parar de receber mensagens, responda <b style="color:var(--creme)">SAIR</b>
+        no nosso WhatsApp.
+      </div>
+    </div>
+
+    <button class="fantasma" style="margin-top:22px" onclick="sair()">Sair da minha conta</button>
+  </div>
+
+  <div id="carregando">Carregando…</div>
+
+  <footer>
+    Casa Pellegrini · Rua Treze de Maio, 184 — Centro, Petrópolis<br>
+    <a href="/">casapellegrini.com.br</a>
+  </footer>
+
+</div>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+/* ============ GATE DE SENHA — REMOVER AO PUBLICAR ============ */
+const SENHA_TESTE = 'pellegrini2026';
+if (sessionStorage.getItem('cp_ok') === '1') document.getElementById('gate').style.display = 'none';
+function destravar(){
+  if (document.getElementById('gsenha').value === SENHA_TESTE){
+    sessionStorage.setItem('cp_ok','1');
+    document.getElementById('gate').style.display='none';
+  } else {
+    document.getElementById('gerro').style.display='block';
+  }
+}
+document.getElementById('gsenha').addEventListener('keydown', e => { if(e.key==='Enter') destravar(); });
+/* ============ FIM DO GATE ============ */
+
+/* A página NUNCA vê a chave-mestra da API. Só fala com /publico/*, que só
+   sabe responder sobre a conta dona do token de sessão. */
+const API = 'https://casapellegrini.com.br/api/clube/publico';
+const DIA = 86400000;
+
+let dados = null;      // último /conta
+let trabalhando = false;
+/* Listas do desenho atual. Os botões guardam só o ÍNDICE e buscam aqui —
+   nada de nome/id costurado dentro do onclick, que quebraria (ou pior, viraria
+   brecha) se um prêmio tivesse aspas no nome. */
+let premiosNaTela = [];
+let catalogoNaTela = [];
+
+/* ---------------- utilitários ---------------- */
+const $ = id => document.getElementById(id);
+const so = v => String(v||'').replace(/\D/g,'');
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function token(){ return localStorage.getItem('cp_sessao') || ''; }
+
+function aviso(txt, tipo){
+  const a = $('aviso');
+  if(!txt){ a.className='msg'; a.textContent=''; return; }
+  a.className = 'msg ' + (tipo || 'err');
+  a.textContent = txt;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function tokenTurnstile(){
+  const el = document.querySelector('[name="cf-turnstile-response"]');
+  return el ? el.value : '';
+}
+
+const fmtData = ts => new Date(ts).toLocaleDateString('pt-BR',
+  {day:'2-digit', month:'2-digit', year:'numeric'});
+
+/* Dias inteiros que faltam. Math.ceil pra "vence amanhã" nunca virar "0 dias". */
+const diasAte = ts => Math.ceil((ts - Date.now()) / DIA);
+
+/* Frase de prazo — o modelo do Fidelizi: data E contagem, juntas.
+   A cor faz o trabalho de urgência sem precisar de texto alarmista. */
+function prazo(validadeTs){
+  if(!validadeTs) return {classe:'ok', txt:'Sem prazo de validade'};
+  const d = diasAte(validadeTs);
+  if(d <= 0)  return {classe:'urgente', txt:'Venceu em ' + fmtData(validadeTs)};
+  if(d === 1) return {classe:'urgente', txt:'Vence hoje ainda — ' + fmtData(validadeTs)};
+  if(d === 2) return {classe:'urgente', txt:'Vence amanhã — ' + fmtData(validadeTs)};
+  const cls = d <= 4 ? 'urgente' : (d <= 8 ? 'perto' : 'ok');
+  return {classe:cls, txt:'Vale até ' + fmtData(validadeTs) + ' · expira em ' + d + ' dias'};
+}
+
+/* ---------------- chamadas ---------------- */
+async function chamar(rota, corpo){
+  const opt = {
+    method: corpo ? 'POST' : 'GET',
+    headers: {'Content-Type':'application/json'},
+  };
+  const t = token();
+  if(t) opt.headers['X-Clube-Sessao'] = t;
+  if(corpo) opt.body = JSON.stringify(corpo);
+
+  const r = await fetch(API + rota, opt);
+  // sessão morreu (expirou, ou a senha foi trocada em outro aparelho)
+  if(r.status === 401){ deslogar('Sua sessão expirou. Entre de novo.'); return null; }
+  return r.json().catch(() => ({ok:false, erro:'resposta inválida do servidor'}));
+}
+
+function deslogar(msg){
+  localStorage.removeItem('cp_sessao');
+  dados = null;
+  $('telaConta').style.display = 'none';
+  $('carregando').style.display = 'none';
+  $('telaLogin').style.display = 'block';
+  if(msg) aviso(msg);
+  if(window.turnstile) window.turnstile.reset();
+}
+
+/* ---------------- login ---------------- */
+async function entrar(ev){
+  ev.preventDefault();
+  if(trabalhando) return;
+  aviso('');
+
+  const login = so($('login').value);
+  const senha = $('senha').value;
+  if(login.length < 10){ aviso('Digite seu CPF ou celular com DDD.'); return; }
+
+  trabalhando = true;
+  $('btEntrar').disabled = true;
+  $('btEntrar').textContent = 'Entrando…';
+  try{
+    const r = await fetch(API + '/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({login, senha, turnstile: tokenTurnstile()}),
+    });
+    const j = await r.json();
+    if(!j.ok){
+      aviso(j.erro || 'Não consegui entrar.');
+      if(window.turnstile) window.turnstile.reset();
+      return;
+    }
+    localStorage.setItem('cp_sessao', j.token);
+    $('senha').value = '';
+    aviso('');
+    await abrirConta();
+  }catch(e){
+    aviso('Sem conexão. Tente de novo em instantes.');
+  }finally{
+    trabalhando = false;
+    $('btEntrar').disabled = false;
+    $('btEntrar').textContent = 'Entrar';
+  }
+}
+
+async function sair(){
+  await chamar('/sair', {});          // mata a sessão no servidor também
+  deslogar('Você saiu da sua conta.');
+}
+
+/* ---------------- conta ---------------- */
+async function abrirConta(){
+  $('telaLogin').style.display = 'none';
+  $('carregando').style.display = 'block';
+
+  const j = await chamar('/conta');
+  if(!j) return;                       // 401 já tratado
+  if(!j.ok){ deslogar(j.erro || 'Não consegui abrir sua conta.'); return; }
+
+  dados = j;
+  $('carregando').style.display = 'none';
+  $('telaConta').style.display = 'block';
+  desenhar();
+}
+
+function desenhar(){
+  const j = dados;
+  $('nome').textContent = (j.nome || '').split(' ')[0] || 'tudo bem';
+  $('pontos').textContent = j.pontos || 0;
+  $('unidade').textContent = (j.pontos === 1) ? 'ponto' : 'pontos';
+  const rpp = (j.config && j.config.reaisPorPonto) || 25;
+  $('regra').textContent = 'A cada R$ ' + rpp + ' em consumo, 1 ponto.';
+
+  const premios = j.premios || [];
+  const agora = Date.now();
+
+  // vale = ainda dá pra usar. O resto vira histórico.
+  const vale = p => (p.status === 'disponivel' || p.status === 'ativo') &&
+                    (!p.validadeTs || p.validadeTs > agora);
+
+  desenharPremios(premios.filter(vale));
+  desenharCatalogo(j.catalogo || [], j.pontos || 0);
+  desenharVelhos(premios.filter(p => !vale(p)));
+  desenharDados(j.dados || {}, j.nome || '', j.visitas || 0);
+}
+
+/* Transparência de LGPD sem virar tela de cadastro: a pessoa vê o que temos
+   sobre ela (mascarado) e como pedir correção ou saída. */
+function desenharDados(d, nome, visitas){
+  const linha = (rot, val) => val
+    ? '<div class="velho"><span>' + rot + '</span>' +
+      '<span class="tag" style="color:var(--creme)">' + esc(val) + '</span></div>'
+    : '';
+  $('meusDados').innerHTML =
+    linha('Nome', nome) +
+    linha('CPF', d.cpf) +
+    linha('Celular', d.telefone) +
+    linha('E-mail', d.email) +
+    linha('Visitas registradas', visitas ? String(visitas) : '') +
+    linha('No Clube desde', d.desde);
+}
+
+function desenharPremios(lista){
+  const alvo = $('listaPremios');
+  const badge = $('qtdPremios');
+  premiosNaTela = lista;
+
+  if(!lista.length){
+    badge.style.display = 'none';
+    alvo.innerHTML = '<div class="card"><div class="vazio">' +
+      'Você não tem prêmios no momento.<br>' +
+      'Gire a roleta na sua próxima visita ou troque seus pontos aqui embaixo.' +
+      '</div></div>';
+    return;
+  }
+  badge.style.display = 'inline-block';
+  badge.textContent = lista.length;
+
+  alvo.innerHTML = lista.map((p, i) => {
+    const pz = prazo(p.validadeTs);
+    const origem = p.origem === 'roleta' ? '🎡 Ganho na roleta' : '⭐ Trocado por pontos';
+
+    // já tem código vivo? mostra direto — não faz o cliente clicar de novo
+    const codigoVivo = p.codigo && p.codigoExpiraTs && p.codigoExpiraTs > Date.now();
+
+    return '<div class="premio">' +
+      '<div class="origem">' + origem + '</div>' +
+      '<div class="nome">' + esc(p.premio) + '</div>' +
+      '<div class="prazo ' + pz.classe + '">🕒 ' + pz.txt + '</div>' +
+      (codigoVivo
+        ? blocoCodigo(p.codigo, p.codigoExpiraTs)
+        : '<button onclick="usar(' + i + ', this)">Usar agora</button>' +
+          '<div class="vazio" style="font-size:12px;padding:10px 0 0">' +
+          'Clique só quando estiver na Casa — o código vale por 24 horas.</div>') +
+    '</div>';
+  }).join('');
+}
+
+function blocoCodigo(codigo, expiraTs){
+  const h = Math.max(1, Math.round((expiraTs - Date.now()) / 3600000));
+  return '<div class="codigo">' +
+    '<div class="cod">' + esc(codigo) + '</div>' +
+    '<div class="inst">Mostre este código para o garçom</div>' +
+    '<div class="val">Vale por mais ' + h + (h === 1 ? ' hora' : ' horas') + '</div>' +
+  '</div>';
+}
+
+async function usar(indice, botao){
+  if(trabalhando) return;
+  const p = premiosNaTela[indice];
+  if(!p) return;
+
+  trabalhando = true;
+  botao.disabled = true;
+  botao.textContent = 'Gerando…';
+  aviso('');
+  try{
+    const j = await chamar('/gerar-codigo', {id: p.id});
+    if(!j) return;                       // 401 já tratado
+    if(!j.ok){
+      aviso(j.erro || 'Não consegui gerar o código.');
+      await abrirConta();                // recarrega: o prêmio pode ter expirado
+      return;
+    }
+    // Guarda o código no objeto e redesenha. Mais simples (e menos frágil) do
+    // que costurar HTML no lugar do botão — o desenho já sabe mostrar código.
+    p.codigo = j.codigo;
+    p.codigoExpiraTs = j.codigoExpiraTs;
+    p.status = 'ativo';
+    desenharPremios(premiosNaTela);
+  }catch(e){
+    aviso('Sem conexão. Tente de novo em instantes.');
+    botao.disabled = false;
+    botao.textContent = 'Usar agora';
+  }finally{
+    trabalhando = false;
+  }
+}
+
+function desenharCatalogo(catalogo, pontos){
+  const alvo = $('catalogo');
+  catalogoNaTela = catalogo;
+  if(!catalogo.length){
+    alvo.innerHTML = '<div class="vazio">Catálogo em atualização.</div>';
+    return;
+  }
+  alvo.innerHTML = catalogo.map((it, i) => {
+    const custo = parseInt(it.custo, 10) || 0;
+    const pode = pontos >= custo;
+    const falta = custo - pontos;
+    return '<div class="item">' +
+      '<div>' +
+        '<div class="n">' + esc(it.nome) + '</div>' +
+        '<div class="c">' + custo + (custo === 1 ? ' ponto' : ' pontos') + '</div>' +
+      '</div>' +
+      (pode
+        ? '<button onclick="trocar(' + i + ', this)">Trocar</button>'
+        : '<button disabled>faltam ' + falta + '</button>') +
+    '</div>';
+  }).join('');
+}
+
+async function trocar(indice, botao){
+  if(trabalhando) return;
+  const item = catalogoNaTela[indice];
+  if(!item) return;
+  const nome = item.nome;
+
+  if(!confirm('Trocar seus pontos por "' + nome + '"?\n\n' +
+              'O prêmio fica guardado na sua conta com prazo pra usar.')) return;
+
+  trabalhando = true;
+  botao.disabled = true;
+  botao.textContent = '…';
+  aviso('');
+  try{
+    // Manda SÓ o nome do prêmio. Quem decide o custo é o servidor — se o
+    // número saísse daqui, bastaria editá-lo na tela pra levar tudo de graça.
+    const j = await chamar('/trocar', {premio: nome});
+    if(!j) return;                       // 401 já tratado
+    if(!j.ok){
+      aviso(j.erro || 'Não consegui fazer a troca.');
+      botao.disabled = false;
+      botao.textContent = 'Trocar';
+      return;
+    }
+    aviso('Pronto! "' + j.premio + '" está em Meus prêmios, válido até ' +
+          fmtData(j.validadeTs) + '.', 'ok');
+    await abrirConta();
+  }catch(e){
+    aviso('Sem conexão. Tente de novo em instantes.');
+    botao.disabled = false;
+    botao.textContent = 'Trocar';
+  }finally{
+    trabalhando = false;
+  }
+}
+
+function desenharVelhos(lista){
+  if(!lista.length){ $('blocoVelhos').style.display = 'none'; return; }
+  $('blocoVelhos').style.display = 'block';
+  $('listaVelhos').innerHTML = lista.slice(0, 15).map(p => {
+    const usado = p.status === 'usado';
+    return '<div class="velho">' +
+      '<span>' + esc(p.premio) + '</span>' +
+      '<span class="tag">' + (usado ? '✓ usado' : 'expirou') + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+/* ---------------- início ---------------- */
+(function(){
+  if(token()) abrirConta();
+  else { $('carregando').style.display = 'none'; $('telaLogin').style.display = 'block'; }
+})();
+</script>
+</body>
+</html>

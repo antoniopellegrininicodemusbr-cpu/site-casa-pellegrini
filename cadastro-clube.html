@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube Pellegrini — Cadastro</title>
+
+<!-- ============================================================
+     PÁGINA DE TESTE — NÃO INDEXAR
+     Ao publicar em /clube: remover o noindex e o gate de senha.
+     ============================================================ -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --navy0:#0C1120; --navy1:#141B2E; --navy2:#1D2740; --borda:#2B3654;
+    --vermelho:#C8102E; --dourado:#F2B705; --creme:#F5EFE6;
+    --muted:#8B93A7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--navy0); color:var(--creme);
+    font-family:Inter,system-ui,-apple-system,sans-serif;
+    min-height:100vh; padding:20px 16px 48px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:440px;margin:0 auto}
+
+  /* ---------- gate de senha (fase de teste) ---------- */
+  #gate{position:fixed;inset:0;background:var(--navy0);z-index:99;
+        display:flex;align-items:center;justify-content:center;padding:24px}
+  #gate .box{max-width:340px;width:100%;text-align:center}
+  #gate h2{font-family:'Playfair Display',serif;color:var(--dourado);font-size:22px;margin-bottom:6px}
+  #gate p{color:var(--muted);font-size:13px;margin-bottom:18px}
+
+  /* ---------- topo ---------- */
+  header{text-align:center;padding:8px 0 22px}
+  header .marca{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;
+                color:var(--dourado);letter-spacing:.5px}
+  header .linha{width:64px;height:3px;background:var(--vermelho);margin:10px auto 16px;border-radius:2px}
+  header h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;margin-bottom:8px}
+  header p{color:var(--muted);font-size:14px;line-height:1.55}
+
+  /* ---------- benefícios (grid, não flex — o flex quebrava as linhas) ---------- */
+  .benef{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;
+         padding:16px 18px;margin-bottom:22px}
+  .benef .item{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;
+               font-size:14px;line-height:1.55}
+  .benef .item + .item{margin-top:12px}
+  .benef .ic{font-size:16px;line-height:1.55}
+
+  /* ---------- formulário ---------- */
+  form{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;padding:20px 18px}
+  label{display:block;font-size:13px;font-weight:500;margin:0 0 6px;color:var(--creme)}
+  label .req{color:var(--vermelho)}
+  .campo{margin-bottom:16px}
+  input[type=text],input[type=tel],input[type=email],input[type=password]{
+    width:100%;background:var(--navy2);border:1px solid var(--borda);border-radius:10px;
+    padding:13px 14px;color:var(--creme);font-size:16px;font-family:inherit;
+    transition:border-color .15s;
+  }
+  input:focus{outline:none;border-color:var(--dourado)}
+  input::placeholder{color:#5E6683}
+  .dica{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}
+  .forca{font-size:12px;margin-top:6px;font-weight:500}
+
+  /* honeypot — invisível pra gente, atraente pra robô */
+  .hp{position:absolute!important;left:-9999px!important;opacity:0;height:0;width:0}
+
+  /* ---------- LGPD ---------- */
+  .lgpd{background:var(--navy2);border-radius:10px;padding:14px;margin:4px 0 18px;
+        display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start}
+  .lgpd input{margin-top:2px;width:19px;height:19px;accent-color:var(--dourado)}
+  .lgpd label{font-size:12.5px;line-height:1.55;color:#C9D0E0;font-weight:400;margin:0}
+  .lgpd a{color:var(--dourado)}
+
+  button{width:100%;background:var(--dourado);color:#20180A;border:none;border-radius:10px;
+         padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;
+         transition:filter .15s}
+  button:hover{filter:brightness(1.07)}
+  button:disabled{opacity:.55;cursor:default}
+
+  .msg{border-radius:10px;padding:13px 14px;font-size:14px;line-height:1.5;
+       margin-bottom:16px;display:none}
+  .msg.err{display:block;background:rgba(255,92,92,.12);border:1px solid rgba(255,92,92,.35);color:#FFB3B3}
+  .msg.ok{display:block;background:rgba(29,185,84,.12);border:1px solid rgba(29,185,84,.35);color:#8FE7AE}
+
+  #sucesso{display:none;text-align:center;padding:34px 18px;background:var(--navy1);
+           border:1px solid var(--navy2);border-radius:14px}
+  #sucesso .emo{font-size:52px;margin-bottom:14px}
+  #sucesso h2{font-family:'Playfair Display',serif;color:var(--dourado);font-size:24px;margin-bottom:12px}
+  #sucesso p{color:#C9D0E0;font-size:15px;line-height:1.6;margin-bottom:10px}
+  #sucesso .pts{background:var(--navy2);border-radius:10px;padding:14px;margin:18px 0 4px;
+                font-size:15px;color:var(--dourado);font-weight:600}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.6}
+  .cf{margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- ===================== GATE DE SENHA (FASE DE TESTE) ===================== -->
+<div id="gate">
+  <div class="box">
+    <h2>Área em testes</h2>
+    <p>Esta página ainda não está aberta ao público.</p>
+    <div class="campo"><input type="password" id="gsenha" placeholder="Senha de acesso" autocomplete="off"></div>
+    <button onclick="destravar()">Entrar</button>
+    <div class="msg err" id="gerro" style="margin-top:14px">Senha incorreta.</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header>
+    <div class="marca">CASA PELLEGRINI</div>
+    <div class="linha"></div>
+    <h1>Clube Pellegrini</h1>
+    <p>Cada visita vira ponto. Ponto vira chopp, porção e prêmio.</p>
+  </header>
+
+  <div class="benef" id="benef">
+    <div class="item"><span class="ic">⭐</span><span>A cada <strong>R$&nbsp;25</strong> em consumo você ganha <strong>1 ponto</strong></span></div>
+    <div class="item"><span class="ic">🎡</span><span>Toda compra libera a <strong>Roleta</strong> — e todo giro ganha prêmio</span></div>
+    <div class="item"><span class="ic">🎂</span><span>Um <strong>mimo no seu aniversário</strong>, por nossa conta</span></div>
+  </div>
+
+  <div class="msg" id="aviso"></div>
+
+  <form id="form" onsubmit="enviar(event)" autocomplete="on">
+    <div class="campo">
+      <label for="nome">Nome completo <span class="req">*</span></label>
+      <input type="text" id="nome" name="name" autocomplete="name" placeholder="Seu nome" required>
+    </div>
+
+    <!-- CPF é o "username": não muda nunca, mesmo trocando de telefone -->
+    <div class="campo">
+      <label for="cpf">CPF <span class="req">*</span></label>
+      <input type="text" id="cpf" name="username" inputmode="numeric"
+             autocomplete="username" placeholder="000.000.000-00" maxlength="14" required>
+      <div class="dica">É com ele que você entra na sua conta — mesmo que troque de número.</div>
+    </div>
+
+    <div class="campo">
+      <label for="telefone">Celular com WhatsApp <span class="req">*</span></label>
+      <input type="tel" id="telefone" inputmode="numeric" autocomplete="tel"
+             placeholder="(24) 99999-9999" required>
+      <div class="dica">É por aqui que avisamos seus pontos e prêmios.</div>
+    </div>
+
+    <div class="campo">
+      <label for="senha">Crie uma senha <span class="req">*</span></label>
+      <input type="password" id="senha" name="new-password" autocomplete="new-password"
+             placeholder="Mínimo de 6 caracteres" minlength="6" required>
+      <div class="dica">Só você resgata seus prêmios. Sem a senha, ninguém mexe na sua conta.</div>
+      <div class="forca" id="forca"></div>
+    </div>
+
+    <div class="campo">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" autocomplete="email" placeholder="voce@email.com">
+    </div>
+
+    <div class="campo">
+      <label for="nascimento">Aniversário</label>
+      <input type="text" id="nascimento" inputmode="numeric" placeholder="DD/MM" maxlength="5">
+      <div class="dica">Só o dia e o mês — pra gente te mandar um presente.</div>
+    </div>
+
+    <!-- honeypot -->
+    <div class="hp" aria-hidden="true">
+      <label for="website">Não preencha</label>
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    <div class="lgpd">
+      <input type="checkbox" id="consentiu" required>
+      <label for="consentiu">
+        Autorizo a Casa Pellegrini a guardar meus dados e a me enviar mensagens no WhatsApp
+        sobre o Clube — pontos, prêmios e novidades. Posso pedir pra sair quando quiser,
+        respondendo <strong>SAIR</strong>. Li e aceito a
+        <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.
+      </label>
+    </div>
+
+    <!-- Cloudflare Turnstile (invisível na maioria das vezes) -->
+    <div class="cf"><div class="cf-turnstile" data-sitekey="SUBSTITUIR_SITE_KEY" data-theme="dark"></div></div>
+
+    <button type="submit" id="btn">Criar minha conta</button>
+    <div style="text-align:center;margin-top:14px">
+      <a href="#" onclick="verPainel('recuperar');return false"
+         style="color:var(--muted);font-size:13px">Já tenho conta ou esqueci minha senha</a>
+    </div>
+  </form>
+
+  <!-- ============ PEDIR CÓDIGO ============
+       Atende dois casos com a MESMA tela: "esqueci a senha" e "nunca tive
+       senha" (todo mundo que veio do Fidelizi). A resposta é sempre igual,
+       exista o CPF ou não. -->
+  <form id="pRecuperar" style="display:none" onsubmit="pedirCodigo(event)">
+    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
+      Criar ou recuperar senha</h2>
+    <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
+      Já é do Clube mas ainda não tem senha? É por aqui também. Vamos mandar um
+      código no WhatsApp que está no seu cadastro.</p>
+
+    <div class="campo">
+      <label for="rcpf">Seu CPF</label>
+      <input type="text" id="rcpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required>
+    </div>
+
+    <div class="cf"><div class="cf-turnstile" data-sitekey="SUBSTITUIR_SITE_KEY" data-theme="dark"></div></div>
+    <button type="submit" id="btnRec">Enviar código</button>
+    <div style="text-align:center;margin-top:14px">
+      <a href="#" onclick="verPainel('form');return false" style="color:var(--muted);font-size:13px">Voltar</a>
+    </div>
+  </form>
+
+  <!-- ============ DIGITAR CÓDIGO + NOVA SENHA ============ -->
+  <form id="pDefinir" style="display:none" onsubmit="definirSenha(event)">
+    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
+      Sua nova senha</h2>
+    <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px" id="txtEnviado">
+      Se o CPF estiver na nossa base, o código chegou no WhatsApp cadastrado. Ele vale por 15 minutos.</p>
+
+    <div class="campo">
+      <label for="codigo">Código de 6 dígitos</label>
+      <input type="text" id="codigo" inputmode="numeric" autocomplete="one-time-code"
+             placeholder="000000" maxlength="6" required
+             style="letter-spacing:6px;text-align:center;font-size:22px">
+    </div>
+
+    <div class="campo">
+      <label for="nsenha">Nova senha</label>
+      <input type="password" id="nsenha" autocomplete="new-password"
+             placeholder="Mínimo de 6 caracteres" minlength="6" required>
+      <div class="dica">Só você resgata seus prêmios com ela.</div>
+    </div>
+
+    <button type="submit" id="btnDef">Salvar senha e entrar</button>
+    <div style="text-align:center;margin-top:14px">
+      <a href="#" onclick="verPainel('recuperar');return false" style="color:var(--muted);font-size:13px">Não recebi o código</a>
+    </div>
+  </form>
+
+  <div id="sucesso">
+    <div class="emo">🍻</div>
+    <h2>Bem-vindo ao Clube!</h2>
+    <p>Sua conta está criada, <strong id="oNome"></strong>.</p>
+    <p>Na sua próxima visita é só dizer seu CPF no caixa — ou pagar com o mesmo cartão, que a gente já te reconhece.</p>
+    <div class="pts" id="bonus" style="display:none"></div>
+  </div>
+
+  <footer>Casa Pellegrini · Rua Treze de Maio, 184 — Centro, Petrópolis/RJ</footer>
+</div>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+/* ============ GATE DE SENHA — REMOVER AO PUBLICAR ============
+   Não é segurança real: evita só que alguém caia aqui por acaso nos testes. */
+const SENHA_TESTE = 'pellegrini2026';
+if (sessionStorage.getItem('cp_ok') === '1') document.getElementById('gate').style.display = 'none';
+function destravar(){
+  if (document.getElementById('gsenha').value === SENHA_TESTE){
+    sessionStorage.setItem('cp_ok','1');
+    document.getElementById('gate').style.display='none';
+  } else { document.getElementById('gerro').style.display='block'; }
+}
+document.getElementById('gsenha').addEventListener('keydown',e=>{if(e.key==='Enter')destravar();});
+
+/* ================== API PÚBLICA ==================
+   Repare: NÃO existe chave aqui. A rota /publico/* não aceita a chave-mestra
+   (que dá acesso à base inteira) — ela se defende com Turnstile + rate limit
+   no servidor. */
+const API = 'https://casapellegrini.com.br/api/clube/publico';
+
+/* ---------- máscaras ---------- */
+const cpf = document.getElementById('cpf');
+cpf.addEventListener('input', () => {
+  let d = cpf.value.replace(/\D/g,'').slice(0,11);
+  cpf.value = d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2')
+               .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+});
+const tel = document.getElementById('telefone');
+tel.addEventListener('input', () => {
+  let d = tel.value.replace(/\D/g,'').slice(0,11);
+  if (d.length>6)      tel.value=`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  else if (d.length>2) tel.value=`(${d.slice(0,2)}) ${d.slice(2)}`;
+  else if (d.length>0) tel.value=`(${d}`;
+  else                 tel.value='';
+});
+const nasc = document.getElementById('nascimento');
+nasc.addEventListener('input', () => {
+  let d = nasc.value.replace(/\D/g,'').slice(0,4);
+  nasc.value = d.length>2 ? `${d.slice(0,2)}/${d.slice(2)}` : d;
+});
+
+/* ---------- força da senha ---------- */
+const senha = document.getElementById('senha');
+senha.addEventListener('input', () => {
+  const v = senha.value, el = document.getElementById('forca');
+  if (!v){ el.textContent=''; return; }
+  let n = 0;
+  if (v.length >= 8) n++;
+  if (v.length >= 12) n++;
+  if (/[a-z]/.test(v) && /[A-Z]/.test(v)) n++;
+  if (/\d/.test(v)) n++;
+  if (/[^\w]/.test(v)) n++;
+  const nivel = v.length < 6 ? ['Muito curta','#FF5C5C']
+              : n <= 1 ? ['Senha fraca','#FF8A5C']
+              : n <= 3 ? ['Senha razoável','#F2B705']
+              :          ['Senha forte','#1DB954'];
+  el.textContent = nivel[0]; el.style.color = nivel[1];
+});
+
+/* ---------- validação de CPF no navegador (o servidor confere de novo) ---------- */
+function cpfValido(c){
+  c = c.replace(/\D/g,'');
+  if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+  let s=0; for(let i=0;i<9;i++) s += +c[i]*(10-i);
+  let d1=(s*10)%11; if(d1===10)d1=0; if(d1!==+c[9]) return false;
+  s=0; for(let i=0;i<10;i++) s += +c[i]*(11-i);
+  let d2=(s*10)%11; if(d2===10)d2=0; return d2===+c[10];
+}
+
+function aviso(txt){
+  const el=document.getElementById('aviso');
+  el.textContent=txt; el.className='msg err';
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+/* ---------- troca de painel ---------- */
+const PAINEIS = {form:'form', recuperar:'pRecuperar', definir:'pDefinir'};
+function verPainel(qual){
+  const alvo = PAINEIS[qual] || 'form';
+  Object.values(PAINEIS).forEach(id=>{
+    document.getElementById(id).style.display = (id===alvo) ? 'block' : 'none';
+  });
+  document.getElementById('benef').style.display = (alvo==='form') ? 'block' : 'none';
+  document.getElementById('aviso').className='msg';
+  if (window.turnstile) window.turnstile.reset();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* máscara do CPF na tela de recuperação */
+const rcpf = document.getElementById('rcpf');
+rcpf.addEventListener('input', () => {
+  let d = rcpf.value.replace(/\D/g,'').slice(0,11);
+  rcpf.value = d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+});
+document.getElementById('codigo').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g,'').slice(0,6);
+});
+
+function tokenTurnstile(){
+  const el = document.querySelector('[name="cf-turnstile-response"]');
+  return el ? el.value : '';
+}
+
+/* ---------- pedir código ---------- */
+async function pedirCodigo(e){
+  e.preventDefault();
+  const btn=document.getElementById('btnRec');
+  const c=rcpf.value.replace(/\D/g,'');
+  if(!cpfValido(c)) return aviso('Confere o CPF — parece que tem algum dígito errado.');
+
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    const r=await fetch(API+'/recuperar',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cpf:c,turnstile:tokenTurnstile()})});
+    const j=await r.json();
+    btn.disabled=false; btn.textContent='Enviar código';
+    if(j.ok===false && j.erro) return aviso(j.erro);
+    sessionStorage.setItem('cp_cpf_rec', c);
+    verPainel('definir');
+  }catch(err){
+    btn.disabled=false; btn.textContent='Enviar código';
+    aviso('Sem conexão com o servidor. Tenta de novo?');
+  }
+}
+
+/* ---------- definir a senha com o código ---------- */
+async function definirSenha(e){
+  e.preventDefault();
+  const btn=document.getElementById('btnDef');
+  const cod=document.getElementById('codigo').value.replace(/\D/g,'');
+  const nova=document.getElementById('nsenha').value;
+  const c=sessionStorage.getItem('cp_cpf_rec')||'';
+  if(cod.length!==6)  return aviso('O código tem 6 dígitos.');
+  if(nova.length<6)   return aviso('A senha precisa ter pelo menos 6 caracteres.');
+
+  btn.disabled=true; btn.textContent='Salvando...';
+  try{
+    const r=await fetch(API+'/definir-senha',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cpf:c,codigo:cod,senha:nova})});
+    const j=await r.json();
+    if(!j.ok){ btn.disabled=false; btn.textContent='Salvar senha e entrar';
+               return aviso(j.erro||'Não consegui salvar. Tenta de novo?'); }
+    if(j.token) localStorage.setItem('cp_sessao', j.token);
+    sessionStorage.removeItem('cp_cpf_rec');
+    document.getElementById('pDefinir').style.display='none';
+    document.getElementById('oNome').textContent=(j.nome||'').split(' ')[0]||'tudo certo';
+    document.getElementById('sucesso').style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    btn.disabled=false; btn.textContent='Salvar senha e entrar';
+    aviso('Sem conexão com o servidor. Tenta de novo?');
+  }
+}
+
+async function enviar(e){
+  e.preventDefault();
+  const btn=document.getElementById('btn');
+  const nome=document.getElementById('nome').value.trim();
+  const cpfD=cpf.value.replace(/\D/g,'');
+  const foneD=tel.value.replace(/\D/g,'');
+  const nascv=nasc.value.trim();
+
+  if (nome.length<2)               return aviso('Escreva seu nome, por favor.');
+  if (!cpfValido(cpfD))            return aviso('Confere o CPF — parece que tem algum dígito errado.');
+  if (foneD.length<10||foneD.length>11) return aviso('Confere o celular — precisa do DDD e do número.');
+  if (senha.value.length<6)        return aviso('A senha precisa ter pelo menos 6 caracteres.');
+  if (nascv && !/^\d{2}\/\d{2}$/.test(nascv)) return aviso('O aniversário vai no formato DD/MM.');
+  if (!document.getElementById('consentiu').checked)
+    return aviso('Pra criar sua conta, precisamos do seu aceite ali embaixo.');
+
+  const tsToken = (window.turnstile && document.querySelector('[name="cf-turnstile-response"]'))
+    ? document.querySelector('[name="cf-turnstile-response"]').value : '';
+
+  btn.disabled=true; btn.textContent='Criando sua conta...';
+  document.getElementById('aviso').className='msg';
+
+  try{
+    const r = await fetch(API + '/cadastro', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        nome, cpf: cpfD, telefone: foneD, senha: senha.value,
+        email: document.getElementById('email').value.trim(),
+        nascimento: nascv,
+        website: document.getElementById('website').value, /* honeypot */
+        turnstile: tsToken,
+        consentiu: true,
+        /* trilha do aceite — prova de quando, onde e o que foi aceito */
+        consentimento: {
+          texto:'Autorizo a Casa Pellegrini a guardar meus dados e a me enviar mensagens no WhatsApp sobre o Clube.',
+          versao:'2026-08-05',
+          aceitoEm:new Date().toISOString(),
+          origem:location.pathname,
+          userAgent:navigator.userAgent
+        }
+      })
+    });
+    const j = await r.json();
+
+    if (!j.ok){
+      btn.disabled=false; btn.textContent='Criar minha conta';
+      if (window.turnstile) window.turnstile.reset();
+      // CPF já na base (migrado do Fidelizi ou criado no caixa): manda pro
+      // fluxo de recuperação, que é o único jeito seguro de definir senha.
+      if (j.jaExiste){
+        rcpf.value = cpf.value;
+        aviso(j.erro);
+        verPainel('recuperar');
+        return;
+      }
+      return aviso(j.erro || 'Não consegui criar sua conta agora. Tenta de novo?');
+    }
+
+    if (j.token) localStorage.setItem('cp_sessao', j.token);
+
+    document.getElementById('form').style.display='none';
+    document.getElementById('benef').style.display='none';
+    document.getElementById('aviso').className='msg';
+    document.getElementById('oNome').textContent=nome.split(' ')[0];
+    document.getElementById('sucesso').style.display='block';
+
+    if (j.pontosDaCompra>0){
+      const b=document.getElementById('bonus');
+      b.textContent=`🎁 Você já entrou com ${j.pontosDaCompra} ponto(s) da sua última compra!`;
+      b.style.display='block';
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    btn.disabled=false; btn.textContent='Criar minha conta';
+    if (window.turnstile) window.turnstile.reset();
+    aviso('Sem conexão com o servidor. Confere a internet e tenta de novo.');
+  }
+}
+</script>
+</body>
+</html>
