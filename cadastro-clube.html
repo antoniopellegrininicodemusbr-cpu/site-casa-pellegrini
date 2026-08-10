@@ -254,6 +254,7 @@
     <p>Sua conta está criada, <strong id="oNome"></strong>.</p>
     <p>Na sua próxima visita é só dizer seu CPF no caixa — ou pagar com o mesmo cartão, que a gente já te reconhece.</p>
     <div class="pts" id="bonus" style="display:none"></div>
+    <button style="margin-top:18px" onclick="location.href='/minha-conta'">Ver minha conta</button>
   </div>
 
   <footer>Casa Pellegrini · Rua Treze de Maio, 184 — Centro, Petrópolis/RJ</footer>
@@ -482,9 +483,14 @@ async function enviar(e){
     document.getElementById('oNome').textContent=nome.split(' ')[0];
     document.getElementById('sucesso').style.display='block';
 
+    const b=document.getElementById('bonus');
     if (j.pontosDaCompra>0){
-      const b=document.getElementById('bonus');
+      // convite manual: os pontos daquela compra estavam guardados no convite
       b.textContent=`🎁 Você já entrou com ${j.pontosDaCompra} ponto(s) da sua última compra!`;
+      b.style.display='block';
+    } else if (j.completouPreConta){
+      // veio do convite automático da maquininha: os pontos já estavam lá
+      b.textContent='🎁 Os pontos das suas visitas já estão na sua conta.';
       b.style.display='block';
     }
     window.scrollTo({top:0,behavior:'smooth'});

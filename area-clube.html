@@ -209,7 +209,18 @@
   <div id="telaConta" style="display:none">
 
     <div class="saldo">
-      <div class="ola">Olá, <b id="nome">—</b></div>
+      <div class="ola" id="ola">Olá, <b id="nome">—</b></div>
+
+      <!-- Só aparece pra quem ainda não tem nome (conta criada na maquininha). -->
+      <div id="pedeNome" style="display:none;margin-bottom:14px">
+        <div style="font-size:13.5px;color:var(--muted);margin-bottom:10px">
+          Como podemos te chamar?
+        </div>
+        <input type="text" id="campoNome" autocomplete="given-name" maxlength="80"
+               placeholder="Seu nome" style="text-align:center;margin-bottom:10px">
+        <button id="btNome" onclick="salvarNome()" style="padding:11px;font-size:14px">Salvar</button>
+      </div>
+
       <div class="num" id="pontos">0</div>
       <div class="un" id="unidade">pontos</div>
       <div class="regra" id="regra">A cada R$ 25 em consumo, 1 ponto.</div>
@@ -403,7 +414,17 @@ async function abrirConta(){
 
 function desenhar(){
   const j = dados;
-  $('nome').textContent = (j.nome || '').split(' ')[0] || 'tudo bem';
+  // Conta vinda da maquininha não tem nome. Em vez de inventar um "tudo bem"
+  // (que servia no WhatsApp, mas na tela fica esquisito), pede o nome.
+  const primeiro = (j.nome || '').trim().split(' ')[0];
+  if(primeiro){
+    $('nome').textContent = primeiro;
+    $('ola').style.display = '';
+    $('pedeNome').style.display = 'none';
+  } else {
+    $('ola').style.display = 'none';
+    $('pedeNome').style.display = 'block';
+  }
   $('pontos').textContent = j.pontos || 0;
   $('unidade').textContent = (j.pontos === 1) ? 'ponto' : 'pontos';
   const rpp = (j.config && j.config.reaisPorPonto) || 25;
@@ -420,6 +441,30 @@ function desenhar(){
   desenharCatalogo(j.catalogo || [], j.pontos || 0);
   desenharVelhos(premios.filter(p => !vale(p)));
   desenharDados(j.dados || {}, j.nome || '', j.visitas || 0);
+}
+
+async function salvarNome(){
+  if(trabalhando) return;
+  const nome = $('campoNome').value.trim();
+  if(nome.length < 2){ aviso('Escreva seu nome pra eu te chamar direito.'); return; }
+
+  trabalhando = true;
+  $('btNome').disabled = true;
+  $('btNome').textContent = 'Salvando…';
+  aviso('');
+  try{
+    const j = await chamar('/perfil', {nome});
+    if(!j) return;                       // 401 já tratado
+    if(!j.ok){ aviso(j.erro || 'Não consegui salvar seu nome.'); return; }
+    dados.nome = j.nome;
+    desenhar();
+  }catch(e){
+    aviso('Sem conexão. Tente de novo em instantes.');
+  }finally{
+    trabalhando = false;
+    $('btNome').disabled = false;
+    $('btNome').textContent = 'Salvar';
+  }
 }
 
 /* Transparência de LGPD sem virar tela de cadastro: a pessoa vê o que temos
