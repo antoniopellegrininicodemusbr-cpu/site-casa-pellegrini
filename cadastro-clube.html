@@ -484,7 +484,14 @@ async function enviar(e){
     document.getElementById('sucesso').style.display='block';
 
     const b=document.getElementById('bonus');
-    if (j.pontosDaCompra>0){
+    const premios=(j.premiosGanhos||[]);
+    if (premios.length){
+      // girou a roleta no caixa antes de ter conta — o prêmio nasceu agora
+      b.innerHTML='🏆 Seu prêmio da roleta já está aqui:<br><strong>'+
+        premios.map(p=>String(p).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join('</strong><br><strong>')+
+        '</strong>'+(j.pontosDaCompra>0?`<br><br>E ${j.pontosDaCompra} ponto(s) da sua compra.`:'');
+      b.style.display='block';
+    } else if (j.pontosDaCompra>0){
       // convite manual: os pontos daquela compra estavam guardados no convite
       b.textContent=`🎁 Você já entrou com ${j.pontosDaCompra} ponto(s) da sua última compra!`;
       b.style.display='block';
