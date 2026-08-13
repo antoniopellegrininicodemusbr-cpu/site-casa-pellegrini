@@ -4,7 +4,7 @@
 Customer Match Google Ads (Casa Pellegrini) — sobe a base do Fidelizi (compradores) diariamente
 - Cria/atualiza a user list "Fidelizi - Compradores" com email+telefone (SHA-256)
 - Replace diario (removeAll + add) via OfflineUserDataJob, com consent GRANTED
-- Auto-detecta a versao da Google Ads API (tenta v21..v18)
+- Auto-detecta a versao da Google Ads API (tenta v25..v22; pula versoes desativadas)
 Secrets/env: GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_REFRESH_TOKEN, GADS_DEVELOPER_TOKEN,
              FIDELIZI_APP_TOKEN, FIDELIZI_ACCESS_TOKEN, DRY_RUN
 """
@@ -81,9 +81,10 @@ def detect_version(tok):
     """Descobre versao valida E a combinacao certa de login-customer-id."""
     probe = {"query": "SELECT customer.id FROM customer LIMIT 1"}
     ver_ok = None
-    for ver in ("v21", "v20", "v19", "v18"):
+    for ver in ("v25", "v24", "v23", "v22"):
         d, code = gads_call(ver, tok, "/googleAds:searchStream", probe)
-        if code == 404:
+        if code == 404 or "UNSUPPORTED_VERSION" in json.dumps(d):
+            print(f"[gads] versao {ver} indisponivel/desativada; tentando a proxima")
             continue
         ver_ok = ver
         if code < 400:
