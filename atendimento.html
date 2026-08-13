@@ -86,6 +86,7 @@
   <span class="status-conexao" id="conexao">carregando…</span>
   <button id="btn-som" onclick="alternarSom()" title="Ligar/desligar alerta sonoro" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔔 Som</button>
   <button id="btn-bot" onclick="abrirConfigBot()" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
+  <button id="btn-conectar" onclick="conectarMeta()" title="Conectar a Página do Facebook e o Instagram ao atendimento" style="margin-left:8px;background:#1877f2;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔗 Conectar</button>
 </header>
 <div id="modal-bot" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:22px;width:320px">
@@ -371,8 +372,42 @@ function ciclo(){
   $("btn-som").textContent = somLigado ? "🔔 Som" : "🔕 Mudo";
   carregarConversas();
   atualizarBotBadge();
+  carregarConexao();
   setInterval(carregarConversas, 10000);
   setInterval(() => { if (convSel) carregarMensagens(); }, 10000);
+}
+
+// Login do Facebook/Instagram: pega os dados do app no backend e manda o admin
+// pra tela de consentimento da Meta. Ao voltar, o callback do backend mostra
+// "Conectado". Serve pro dia a dia e pra demonstração do App Review.
+async function conectarMeta(){
+  try{
+    const r = await fetch(API + "/conexao", {headers: headers()});
+    const d = await r.json();
+    let url = "https://www.facebook.com/v21.0/dialog/oauth"
+      + "?client_id=" + encodeURIComponent(d.appId)
+      + "&redirect_uri=" + encodeURIComponent(d.redirect)
+      + "&response_type=code"
+      + "&state=" + Math.random().toString(36).slice(2);
+    // Login do Facebook para Empresas usa config_id; sem ele, cai no scope.
+    if (d.configId) url += "&config_id=" + encodeURIComponent(d.configId);
+    else url += "&scope=" + encodeURIComponent(d.scopes);
+    window.location.href = url;
+  }catch(e){ alert("Não consegui iniciar a conexão: " + e); }
+}
+
+async function carregarConexao(){
+  try{
+    const r = await fetch(API + "/conexao", {headers: headers()});
+    const d = await r.json();
+    const b = $("btn-conectar");
+    if (d.conexao && d.conexao.pagina){
+      const ig = d.conexao.instagram ? " · @" + d.conexao.instagram : "";
+      b.textContent = "🔗 " + d.conexao.pagina + ig;
+      b.style.background = "#166534";
+      b.title = "Conectado. Clique pra reconectar/atualizar o acesso.";
+    }
+  }catch(e){ /* mantém o botão padrão */ }
 }
 
 if (CHAVE){
