@@ -78,12 +78,24 @@ jobs:
 
       - name: Salvar estado no repo
         run: |
-          if [ -n "$(git status --porcelain state/)" ]; then
-            git config user.name  "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add state/
-            git commit -m "chore(cross-posting): atualiza estado [skip ci]"
-            git push
-          else
+          if [ -z "$(git status --porcelain state/)" ]; then
             echo "Sem mudanca de estado."
+            exit 0
           fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/
+          git commit -m "chore(cross-posting): atualiza estado [skip ci]"
+          # Outros workflows tambem commitam no repo. Sem rebase+retry o push e
+          # rejeitado, o estado se perde e a rodada seguinte REPUBLICA tudo.
+          for tentativa in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then
+              echo "Estado salvo (tentativa $tentativa)."
+              exit 0
+            fi
+            echo "Push rejeitado; nova tentativa em 5s ($tentativa/5)..."
+            sleep 5
+          done
+          echo "ERRO CRITICO: publicou mas NAO conseguiu salvar o estado."
+          echo "A proxima rodada vai republicar. Verificar antes de rodar de novo."
+          exit 1
