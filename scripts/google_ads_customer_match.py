@@ -133,6 +133,46 @@ def get_or_create_list(ver, tok):
     print(f"[gads] user list CRIADA: {rn}")
     return rn
 
+SEASONAL_NEG_CAMPAIGN = "23747885498"
+SEASONAL_NEG_TERMS = ("bauernfest", "bauerfest", "restaurante alemão")
+
+def manage_seasonal_negatives(ver, tok):
+    """Bauernfest: negativas ativas o ano todo, REMOVIDAS de 01/06 a 11/07 (janela do festival). Decisao Antonio 10/08/2026."""
+    from datetime import date
+    t = date.today()
+    in_window = (t.month == 6) or (t.month == 7 and t.day <= 11)
+    q = {"query": "SELECT campaign_criterion.criterion_id, campaign_criterion.keyword.text FROM campaign_criterion WHERE campaign_criterion.negative = TRUE AND campaign_criterion.type = 'KEYWORD' AND campaign.id = " + SEASONAL_NEG_CAMPAIGN}
+    d, code = gads_call(ver, tok, "/googleAds:searchStream", q)
+    rows = []
+    if isinstance(d, list):
+        for chunk in d:
+            rows += chunk.get("results", [])
+    elif isinstance(d, dict):
+        rows = d.get("results", [])
+    wanted = [s.lower() for s in SEASONAL_NEG_TERMS]
+    present = {}
+    for r in rows:
+        cc = r.get("campaignCriterion", {})
+        kw = ((cc.get("keyword", {}) or {}).get("text", "") or "").lower()
+        if kw in wanted:
+            present[kw] = cc.get("criterionId")
+    ops = []
+    if in_window:
+        for kw, cid in present.items():
+            ops.append({"remove": "customers/" + CUSTOMER + "/campaignCriteria/" + SEASONAL_NEG_CAMPAIGN + "~" + str(cid)})
+        action = "REMOVIDAS (janela Bauernfest 01/06-11/07)"
+    else:
+        for s in SEASONAL_NEG_TERMS:
+            if s.lower() not in present:
+                ops.append({"create": {"campaign": "customers/" + CUSTOMER + "/campaigns/" + SEASONAL_NEG_CAMPAIGN, "negative": True, "keyword": {"text": s, "matchType": "PHRASE"}}})
+        action = "REPOSTAS (fora da janela)"
+    if ops:
+        d2, c2 = gads_call(ver, tok, "/campaignCriteria:mutate", {"operations": ops})
+        print("[seasonal-negatives] " + action + ": " + str(len(ops)) + " ops, code " + str(c2))
+    else:
+        print("[seasonal-negatives] estado correto (janela=" + str(in_window) + ")")
+
+
 def main():
     clients = fidelizi_clients()
     users = []
@@ -150,6 +190,10 @@ def main():
         return
     tok = gads_token()
     ver = detect_version(tok)
+    try:
+        manage_seasonal_negatives(ver, tok)
+    except Exception as e:
+        print("[seasonal-negatives] erro:", e)
     lista = get_or_create_list(ver, tok)
     d, code = gads_call(ver, tok, "/offlineUserDataJobs:create",
                         {"job": {"type": "CUSTOMER_MATCH_USER_LIST",
