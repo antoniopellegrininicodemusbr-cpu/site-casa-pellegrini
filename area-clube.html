@@ -512,15 +512,25 @@ function desenharPremios(lista){
     // já tem código vivo? mostra direto — não faz o cliente clicar de novo
     const codigoVivo = p.codigo && p.codigoExpiraTs && p.codigoExpiraTs > Date.now();
 
+    // Prêmio da roleta só vale na PRÓXIMA visita: libera às 10:30 do dia
+    // seguinte, junto com a mensagem no WhatsApp. Aqui ele aparece desde já —
+    // a pessoa vê o que ganhou — mas com o botão inativo e a data à vista, pra
+    // ninguém tentar resgatar e levar um "não" sem entender.
+    const preso = p.liberadoTs && p.liberadoTs > Date.now();
+
     return '<div class="premio">' +
       '<div class="origem">' + origem + '</div>' +
       '<div class="nome">' + esc(p.premio) + '</div>' +
       '<div class="prazo ' + pz.classe + '">🕒 ' + pz.txt + '</div>' +
-      (codigoVivo
-        ? blocoCodigo(p.codigo, p.codigoExpiraTs)
-        : '<button onclick="usar(' + i + ', this)">Usar agora</button>' +
+      (preso
+        ? '<button disabled>🔒 Liberado em ' + fmtData(p.liberadoTs) + ', às 10:30</button>' +
           '<div class="vazio" style="font-size:12px;padding:10px 0 0">' +
-          'Clique só quando estiver na Casa — o código vale por 24 horas.</div>') +
+          'Seu prêmio fica guardado esperando sua próxima visita.</div>'
+        : codigoVivo
+          ? blocoCodigo(p.codigo, p.codigoExpiraTs)
+          : '<button onclick="usar(' + i + ', this)">Usar agora</button>' +
+            '<div class="vazio" style="font-size:12px;padding:10px 0 0">' +
+            'Clique só quando estiver na Casa — o código vale por 24 horas.</div>') +
     '</div>';
   }).join('');
 }
