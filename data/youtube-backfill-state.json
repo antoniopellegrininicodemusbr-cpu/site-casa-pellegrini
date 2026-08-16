@@ -215,7 +215,11 @@
   "17956239028979468",
   "17943514340229491",
   "17958731224942070",
-  "17900929658580519"
+  "17900929658580519",
+  "17961844285788260",
+  "18195027247200755",
+  "17943957641209563",
+  "17904344933568583"
  ],
  "failed": {
   "17978040793056788": "HTTP Error 400: Bad Request",
@@ -226,8 +230,9 @@
   "18159851395114721": "HTTP Error 400: Bad Request",
   "17935032250914030": "The read operation timed out",
   "17950492297802822": "sem media_url (provavel copyright/indisponivel)",
-  "18210782707089513": "sem media_url (provavel copyright/indisponivel)"
+  "18210782707089513": "sem media_url (provavel copyright/indisponivel)",
+  "17923098959530259": "HTTP 429: "
  },
- "day": "2026-08-15",
- "day_count": 5
+ "day": "2026-08-16",
+ "day_count": 4
 }
