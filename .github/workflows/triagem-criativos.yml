@@ -1,0 +1,49 @@
+# Esteira de triagem de criativos — Casa Pellegrini
+# Destino no repo: .github/workflows/triagem-criativos.yml
+# Secrets (JA EXISTEM no repo): GEMINI_API_KEY, IG_ACCESS_TOKEN, GOOGLE_SHEETS_CREDS
+# Planilha: "Esteira de Criativos — Casa Pellegrini"
+name: Triagem de Criativos
+
+on:
+  schedule:
+    # 09h UTC = 06h BRT, todo dia. Enquanto houver backlog processa MAX_POR_RODADA/dia;
+    # depois que a fila zerar sobra so o incremental (3-4 videos novos por semana).
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      max_por_rodada:
+        description: "Quantos videos triar nesta rodada (free tier do Gemini aguenta ~100/dia)"
+        default: "100"
+      dry_run:
+        description: "true = tria e mostra, mas nao grava na planilha"
+        default: "false"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: triagem-criativos
+  cancel-in-progress: false
+
+jobs:
+  triar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-auth google-api-python-client
+      - name: Triar criativos
+        env:
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          IG_ACCESS_TOKEN:     ${{ secrets.IG_ACCESS_TOKEN }}
+          GOOGLE_SHEETS_CREDS: ${{ secrets.GOOGLE_SHEETS_CREDS }}
+          SPREADSHEET_ID:      '1FZ9ufFd92IVNuFYoRF8UsKi_v7C_gXIxaqgwI5CocIY'
+          MAX_POR_RODADA:      ${{ github.event.inputs.max_por_rodada || '100' }}
+          DRY_RUN:             ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/triagem_criativos.py
