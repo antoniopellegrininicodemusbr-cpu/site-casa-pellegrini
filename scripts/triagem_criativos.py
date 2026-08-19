@@ -2,29 +2,27 @@
 """
 Esteira de triagem de criativos — Casa Pellegrini.
 
-Mantem uma fila na planilha "Esteira de Criativos" com TODO video do @casapellegrini
-dentro da janela de 2 anos, triado pelo Gemini.
+FONTE DA VERDADE = data/esteira-fila.json (no repo).
+A planilha do Google e um ESPELHO somente-leitura, pro Antonio enxergar.
 
-Fluxo:
-  1. Le a planilha (estado permanente).
-  2. Busca as midias do Instagram e insere as que faltam como NAO_TRIADO.
-  3. Aplica a janela de 2 anos (marca EXPIRADO quem passou).
-  4. Tria ate MAX_POR_RODADA videos NAO_TRIADO, dos mais NOVOS pros mais velhos,
-     mandando o video (com audio) pro Gemini.
-  5. Grava tudo de volta.
+Motivo do desenho: a sandbox do Cowork nao alcanca sheets.googleapis.com (DNS bloqueado),
+mas alcanca github.com por git. Com a fila no repo, o Claude consegue ler E escrever a
+esteira nas rodadas de terca/sexta com o PC do Antonio desligado. O push dele dispara
+esta Action pelo gatilho `on: push: paths`, que reespelha na planilha em segundos.
 
-O julgamento de resultado (promover / repescagem) NAO acontece aqui — quem faz isso
-e a tarefa agendada do Cowork, que le e escreve nesta mesma planilha.
+MODOS (env MODE):
+  full   (padrao) - insere midias novas, expira, tria no Gemini, grava JSON e espelha
+  mirror          - so espelha o JSON na planilha (usado no gatilho de push)
 
 Secrets: GEMINI_API_KEY, IG_ACCESS_TOKEN, GOOGLE_SHEETS_CREDS
-Env:     SPREADSHEET_ID, MAX_POR_RODADA (default 100), DRY_RUN
+Env:     SPREADSHEET_ID, MODE, MAX_POR_RODADA (default 100), DRY_RUN
 """
 
 import json
 import os
 import sys
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import requests
 from google.oauth2.service_account import Credentials
@@ -35,27 +33,26 @@ GRAPH = "https://graph.facebook.com/v21.0"
 GEMINI_BASE = "https://generativelanguage.googleapis.com"
 GEMINI_MODEL = "gemini-3.5-flash"  # 2.5-flash morre em 16/10/2026
 
+FILA_PATH = "data/esteira-fila.json"
 SHEET_NAME = "fila"
-HEADERS = [
+CAMPOS = [
     "media_id", "data_post", "media_type", "permalink", "caption",
     "status", "nota_gemini", "motivo_reprova", "flags", "conjunto_sugerido",
     "data_triagem", "data_entrada_teste", "gasto_teste", "compras_teste",
     "ctr_teste", "data_veredito", "ad_id_promovido",
 ]
-COL = {name: i for i, name in enumerate(HEADERS)}
 
-JANELA_ANOS_DIAS = 730
-MAX_DURACAO_S = 120          # video mais longo que isso e caro e nao e criativo de ads
+JANELA_DIAS = 730
 MAX_POR_RODADA = int(os.environ.get("MAX_POR_RODADA", "100"))
+MODE = os.environ.get("MODE", "full").strip().lower()
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 
 HOJE = date.today()
+ESTACAO = "inverno" if HOJE.month in (6, 7, 8, 9) else (
+    "verao" if HOJE.month in (12, 1, 2, 3) else "meia-estacao")
 
 
 # ----------------------------------------------------------------- prompt v3
-
-ESTACAO = "inverno" if HOJE.month in (6, 7, 8, 9) else (
-    "verao" if HOJE.month in (12, 1, 2, 3) else "meia-estacao")
 
 PROMPT = f"""Voce e o triador de criativos de anuncio da Casa Pellegrini, um restaurante/bar/hamburgueria
 no Centro Historico de Petropolis (RJ). Assista ao video (imagem E audio) e decida se ele serve como
@@ -67,7 +64,8 @@ REPROVE SEMPRE (criterio rigido — "na duvida, reprova, temos conteudo bom de s
 - QUALQUER indicio de data ou contexto comemorativo: aniversario da casa, mesversario, Dia das Maes/Pais,
   Dia do Trabalhador, Natal, Ano Novo, Pascoa/Semana Santa, Dia dos Namorados, Dia do Garcom, festa junina,
   Bauernfest, Copa do Mundo, eleicao, eventos com data marcada, corridas, estreias de serie/filme.
-- Promocao com prazo ("so hoje", "essa semana", "ate domingo") ou preco que pode mudar.
+- Texto na tela ou fala citando dia da semana / horario especifico ("quarta as 12h", "so hoje", "amanha").
+- Promocao com prazo ou preco que pode mudar.
 - CAFE DA MANHA em qualquer forma — a casa so serve cafe aos domingos e feriados das 7h45 as 11h, e as
   janelas dos conjuntos de anuncio comecam as 10h. O anuncio prometeria algo que quase nunca esta disponivel.
 - DELIVERY / iFood — a campanha e para visita fisica na casa.
@@ -100,11 +98,10 @@ Responda SOMENTE com JSON valido, sem markdown, neste formato exato:
 # ----------------------------------------------------------------- instagram
 
 def ig_midias(token):
-    """Todas as midias do perfil, mais novas primeiro."""
-    out = []
-    url = (f"{GRAPH}/{IG_USER_ID}/media"
-           f"?fields=id,media_type,media_product_type,timestamp,permalink,caption,media_url"
-           f"&limit=100&access_token={token}")
+    out, url = [], (
+        f"{GRAPH}/{IG_USER_ID}/media"
+        f"?fields=id,media_type,media_product_type,timestamp,permalink,caption,media_url"
+        f"&limit=100&access_token={token}")
     while url and len(out) < 1000:
         r = requests.get(url, timeout=60)
         r.raise_for_status()
@@ -117,7 +114,6 @@ def ig_midias(token):
 # ------------------------------------------------------------------- gemini
 
 def gemini_upload(api_key, video_bytes, mime="video/mp4"):
-    """Upload resumable pro Files API. Devolve o file_uri."""
     start = requests.post(
         f"{GEMINI_BASE}/upload/v1beta/files?key={api_key}",
         headers={
@@ -127,208 +123,216 @@ def gemini_upload(api_key, video_bytes, mime="video/mp4"):
             "X-Goog-Upload-Header-Content-Type": mime,
             "Content-Type": "application/json",
         },
-        json={"file": {"display_name": "criativo"}},
-        timeout=60,
-    )
+        json={"file": {"display_name": "criativo"}}, timeout=60)
     start.raise_for_status()
-    upload_url = start.headers["X-Goog-Upload-URL"]
-
     up = requests.post(
-        upload_url,
+        start.headers["X-Goog-Upload-URL"],
         headers={
             "Content-Length": str(len(video_bytes)),
             "X-Goog-Upload-Offset": "0",
             "X-Goog-Upload-Command": "upload, finalize",
         },
-        data=video_bytes,
-        timeout=300,
-    )
+        data=video_bytes, timeout=300)
     up.raise_for_status()
     info = up.json()["file"]
-
-    # esperar o processamento sair de PROCESSING
-    name, uri = info["name"], info["uri"]
     for _ in range(60):
-        st = requests.get(f"{GEMINI_BASE}/v1beta/{name}?key={api_key}", timeout=30).json()
+        st = requests.get(f"{GEMINI_BASE}/v1beta/{info['name']}?key={api_key}", timeout=30).json()
         if st.get("state") == "ACTIVE":
-            return uri
+            return info["uri"]
         if st.get("state") == "FAILED":
             raise RuntimeError("Gemini falhou ao processar o video")
         time.sleep(3)
-    raise TimeoutError("video ficou preso em PROCESSING")
+    raise TimeoutError("video preso em PROCESSING")
 
 
 def gemini_triar(api_key, file_uri):
-    body = {
-        "contents": [{"parts": [
-            {"file_data": {"mime_type": "video/mp4", "file_uri": file_uri}},
-            {"text": PROMPT},
-        ]}],
-        "generationConfig": {
-            "temperature": 0,
-            "responseMimeType": "application/json",
-            "thinkingConfig": {"thinkingBudget": 0},
-        },
-    }
     r = requests.post(
         f"{GEMINI_BASE}/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}",
-        json=body, timeout=180,
-    )
+        json={
+            "contents": [{"parts": [
+                {"file_data": {"mime_type": "video/mp4", "file_uri": file_uri}},
+                {"text": PROMPT},
+            ]}],
+            "generationConfig": {
+                "temperature": 0,
+                "responseMimeType": "application/json",
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
+        }, timeout=180)
     r.raise_for_status()
-    txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-    return json.loads(txt)
+    return json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
 
 
-# ------------------------------------------------------------------- sheets
+# ---------------------------------------------------------- fila (fonte json)
 
-def ler_planilha(sheets, sid):
+def carregar_fila():
+    if os.path.exists(FILA_PATH):
+        with open(FILA_PATH, encoding="utf-8") as f:
+            return json.load(f)["registros"]
+    return None
+
+
+def salvar_fila(registros):
+    os.makedirs(os.path.dirname(FILA_PATH), exist_ok=True)
+    registros.sort(key=lambda r: r["data_post"], reverse=True)
+    with open(FILA_PATH, "w", encoding="utf-8") as f:
+        json.dump({
+            "atualizado_em": HOJE.isoformat(),
+            "total": len(registros),
+            "registros": registros,
+        }, f, ensure_ascii=False, indent=1)
+
+
+def bootstrap_do_sheet(sheets, sid):
+    """Primeira migracao: a planilha ja tinha dados antes do JSON existir."""
     try:
-        r = sheets.values().get(spreadsheetId=sid, range=f"{SHEET_NAME}!A1:Q").execute()
+        vals = sheets.values().get(
+            spreadsheetId=sid, range=f"{SHEET_NAME}!A1:Q").execute().get("values", [])
     except Exception:
-        return {}, []
-    vals = r.get("values", [])
-    if not vals or vals[0] != HEADERS:
-        return {}, []
-    linhas = [v + [""] * (len(HEADERS) - len(v)) for v in vals[1:]]
-    return {l[COL["media_id"]]: l for l in linhas if l[COL["media_id"]]}, linhas
+        return []
+    if len(vals) < 2 or vals[0] != CAMPOS:
+        return []
+    regs = []
+    for linha in vals[1:]:
+        linha = linha + [""] * (len(CAMPOS) - len(linha))
+        r = dict(zip(CAMPOS, linha))
+        if r["media_id"]:
+            regs.append(r)
+    print(f"bootstrap: {len(regs)} registros recuperados da planilha")
+    return regs
 
 
-def gravar_planilha(sheets, sid, linhas):
+# ------------------------------------------------------------ espelho sheets
+
+def espelhar(sheets, sid, registros):
+    meta = sheets.get(spreadsheetId=sid).execute()
+    if not any(s["properties"]["title"] == SHEET_NAME for s in meta["sheets"]):
+        sheets.batchUpdate(spreadsheetId=sid, body={
+            "requests": [{"addSheet": {"properties": {"title": SHEET_NAME}}}]}).execute()
+    linhas = [[str(r.get(c, "")) for c in CAMPOS] for r in registros]
     sheets.values().update(
         spreadsheetId=sid, range=f"{SHEET_NAME}!A1",
-        valueInputOption="RAW", body={"values": [HEADERS]},
-    ).execute()
+        valueInputOption="RAW", body={"values": [CAMPOS]}).execute()
     sheets.values().clear(spreadsheetId=sid, range=f"{SHEET_NAME}!A2:Q").execute()
     if linhas:
         sheets.values().update(
             spreadsheetId=sid, range=f"{SHEET_NAME}!A2",
-            valueInputOption="RAW", body={"values": linhas},
-        ).execute()
-
-
-def garantir_aba(sheets, sid):
-    meta = sheets.get(spreadsheetId=sid).execute()
-    if any(s["properties"]["title"] == SHEET_NAME for s in meta["sheets"]):
-        return
-    sheets.batchUpdate(
-        spreadsheetId=sid,
-        body={"requests": [{"addSheet": {"properties": {"title": SHEET_NAME}}}]},
-    ).execute()
-    print(f"aba '{SHEET_NAME}' criada")
+            valueInputOption="RAW", body={"values": linhas}).execute()
+    print(f"espelhado na planilha: {len(linhas)} linhas")
 
 
 # --------------------------------------------------------------------- main
 
 def main():
     sid = os.environ["SPREADSHEET_ID"]
-    ig_token = os.environ["IG_ACCESS_TOKEN"]
-    gem_key = os.environ["GEMINI_API_KEY"]
-
     creds = Credentials.from_service_account_info(
         json.loads(os.environ["GOOGLE_SHEETS_CREDS"]),
-        scopes=["https://www.googleapis.com/auth/spreadsheets"],
-    )
+        scopes=["https://www.googleapis.com/auth/spreadsheets"])
     sheets = build("sheets", "v4", credentials=creds, cache_discovery=False).spreadsheets()
-    garantir_aba(sheets, sid)
 
-    conhecidos, linhas = ler_planilha(sheets, sid)
-    print(f"planilha: {len(linhas)} linhas ja existentes")
+    registros = carregar_fila()
+    if registros is None:
+        print(f"{FILA_PATH} nao existe — tentando bootstrap da planilha")
+        registros = bootstrap_do_sheet(sheets, sid)
+    print(f"fila carregada: {len(registros)} registros | MODE={MODE}")
 
-    # ---- 1. inserir midias novas
+    if MODE == "mirror":
+        # o Claude deu push no JSON — so reespelha e sai (nao gasta cota do Gemini)
+        espelhar(sheets, sid, registros)
+        return
+
+    ig_token = os.environ["IG_ACCESS_TOKEN"]
+    gem_key = os.environ["GEMINI_API_KEY"]
+    por_id = {r["media_id"]: r for r in registros}
+    limite = (HOJE - timedelta(days=JANELA_DIAS)).isoformat()
+
+    # 1. inserir midias novas
     midias = ig_midias(ig_token)
-    limite = (HOJE - timedelta(days=JANELA_ANOS_DIAS)).isoformat()
     novas = 0
     for m in midias:
         if m.get("media_type") != "VIDEO":
             continue
         dia = m["timestamp"][:10]
-        if dia < limite or m["id"] in conhecidos:
+        if dia < limite or m["id"] in por_id:
             continue
-        linha = [""] * len(HEADERS)
-        linha[COL["media_id"]] = m["id"]
-        linha[COL["data_post"]] = dia
-        linha[COL["media_type"]] = m.get("media_product_type", "VIDEO")
-        linha[COL["permalink"]] = m.get("permalink", "")
-        linha[COL["caption"]] = (m.get("caption") or "").replace("\n", " ")[:300]
-        linha[COL["status"]] = "NAO_TRIADO"
-        linhas.append(linha)
-        conhecidos[m["id"]] = linha
+        r = {c: "" for c in CAMPOS}
+        r.update({
+            "media_id": m["id"], "data_post": dia,
+            "media_type": m.get("media_product_type", "VIDEO"),
+            "permalink": m.get("permalink", ""),
+            "caption": (m.get("caption") or "").replace("\n", " ")[:300],
+            "status": "NAO_TRIADO",
+        })
+        registros.append(r)
+        por_id[m["id"]] = r
         novas += 1
     print(f"midias novas inseridas: {novas}")
 
-    # ---- 2. expirar quem passou dos 2 anos e ainda nao foi promovido
+    # 2. expirar
     expirados = 0
-    for l in linhas:
-        if l[COL["status"]] in ("APROVADO_FILA", "REPESCAGEM", "NAO_TRIADO") \
-                and l[COL["data_post"]] < limite:
-            l[COL["status"]] = "EXPIRADO"
+    for r in registros:
+        if r["status"] in ("APROVADO_FILA", "REPESCAGEM", "NAO_TRIADO") and r["data_post"] < limite:
+            r["status"] = "EXPIRADO"
             expirados += 1
     if expirados:
         print(f"⚠️  {expirados} criativos expiraram (2 anos) sem chegar a ser testados")
 
-    # ---- 3. triar, dos mais NOVOS pros mais velhos
-    pendentes = sorted(
-        [l for l in linhas if l[COL["status"]] == "NAO_TRIADO"],
-        key=lambda l: l[COL["data_post"]], reverse=True,
-    )
-    print(f"pendentes de triagem: {len(pendentes)} | teto desta rodada: {MAX_POR_RODADA}")
-
-    por_id = {m["id"]: m for m in midias}
+    # 3. triar, dos mais NOVOS pros mais velhos
+    pendentes = sorted([r for r in registros if r["status"] == "NAO_TRIADO"],
+                       key=lambda r: r["data_post"], reverse=True)
+    print(f"pendentes: {len(pendentes)} | teto desta rodada: {MAX_POR_RODADA}")
+    midia_por_id = {m["id"]: m for m in midias}
     triados = aprovados = 0
-    for l in pendentes[:MAX_POR_RODADA]:
-        mid = l[COL["media_id"]]
-        m = por_id.get(mid, {})
-        url = m.get("media_url")
+
+    for r in pendentes[:MAX_POR_RODADA]:
+        url = midia_por_id.get(r["media_id"], {}).get("media_url")
         if not url:
-            l[COL["status"]] = "REPROVADO_GEMINI"
-            l[COL["motivo_reprova"]] = "sem media_url (video indisponivel na API)"
-            l[COL["data_triagem"]] = HOJE.isoformat()
+            r.update({"status": "REPROVADO_GEMINI",
+                      "motivo_reprova": "sem media_url (video indisponivel na API)",
+                      "data_triagem": HOJE.isoformat()})
             continue
         try:
             vid = requests.get(url, timeout=180).content
             if len(vid) > 90 * 1024 * 1024:
                 raise ValueError("video acima de 90MB")
-            r = gemini_triar(gem_key, gemini_upload(gem_key, vid))
+            g = gemini_triar(gem_key, gemini_upload(gem_key, vid))
 
-            reprova_hard = (
-                r.get("conteudo_ia_celebridade") is True
-                or r.get("momento_datado", "nenhum") != "nenhum"
-            )
-            aprovado = bool(r.get("aprovado")) and not reprova_hard
+            reprova_hard = (g.get("conteudo_ia_celebridade") is True
+                            or g.get("momento_datado", "nenhum") != "nenhum")
+            ok = bool(g.get("aprovado")) and not reprova_hard
 
-            l[COL["nota_gemini"]] = str(r.get("nota", ""))
-            l[COL["flags"]] = "|".join(filter(None, [
-                f"datado:{r.get('momento_datado')}" if r.get("momento_datado", "nenhum") != "nenhum" else "",
-                f"sazon:{r.get('sazonalidade')}" if r.get("sazonalidade", "nenhuma") != "nenhuma" else "",
-                "IA_CELEBRIDADE" if r.get("conteudo_ia_celebridade") else "",
-                f"tema:{r.get('tema', '')}",
+            r["nota_gemini"] = str(g.get("nota", ""))
+            r["flags"] = "|".join(filter(None, [
+                f"datado:{g.get('momento_datado')}" if g.get("momento_datado", "nenhum") != "nenhum" else "",
+                f"sazon:{g.get('sazonalidade')}" if g.get("sazonalidade", "nenhuma") != "nenhuma" else "",
+                "IA_CELEBRIDADE" if g.get("conteudo_ia_celebridade") else "",
+                f"tema:{g.get('tema', '')}",
             ]))
-            l[COL["data_triagem"]] = HOJE.isoformat()
-            if aprovado:
-                l[COL["status"]] = "APROVADO_FILA"
-                l[COL["conjunto_sugerido"]] = r.get("conjunto_sugerido", "qualquer")
+            r["data_triagem"] = HOJE.isoformat()
+            if ok:
+                r["status"] = "APROVADO_FILA"
+                r["conjunto_sugerido"] = g.get("conjunto_sugerido", "qualquer")
                 aprovados += 1
             else:
-                l[COL["status"]] = "REPROVADO_GEMINI"
-                l[COL["motivo_reprova"]] = str(r.get("motivo", ""))[:200]
+                r["status"] = "REPROVADO_GEMINI"
+                r["motivo_reprova"] = str(g.get("motivo", ""))[:200]
             triados += 1
-            print(f"  {l[COL['data_post']]} {mid} -> {l[COL['status']]} ({r.get('tema', '')})")
+            print(f"  {r['data_post']} {r['media_id']} -> {r['status']} ({g.get('tema', '')})")
         except Exception as e:
-            print(f"  {mid} ERRO: {str(e)[:160]}", file=sys.stderr)
+            print(f"  {r['media_id']} ERRO: {str(e)[:160]}", file=sys.stderr)
         time.sleep(4)  # free tier: 15 RPM
 
-    print(f"\ntriados nesta rodada: {triados} | aprovados: {aprovados}")
     resumo = {}
-    for l in linhas:
-        resumo[l[COL["status"]]] = resumo.get(l[COL["status"]], 0) + 1
+    for r in registros:
+        resumo[r["status"]] = resumo.get(r["status"], 0) + 1
+    print(f"\ntriados: {triados} | aprovados: {aprovados}")
     print("estado da fila:", json.dumps(resumo, ensure_ascii=False))
 
     if DRY_RUN:
-        print("DRY_RUN — nada gravado na planilha")
+        print("DRY_RUN — nada gravado")
         return
-    linhas.sort(key=lambda l: l[COL["data_post"]], reverse=True)
-    gravar_planilha(sheets, sid, linhas)
-    print("planilha atualizada")
+    salvar_fila(registros)
+    espelhar(sheets, sid, registros)
 
 
 if __name__ == "__main__":
