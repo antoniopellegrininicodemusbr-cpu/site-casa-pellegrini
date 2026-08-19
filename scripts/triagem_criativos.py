@@ -299,10 +299,15 @@ def main():
 
             reprova_hard = (g.get("conteudo_ia_celebridade") is True
                             or g.get("momento_datado", "nenhum") != "nenhum")
-            ok = bool(g.get("aprovado")) and not reprova_hard
+            gemini_disse = bool(g.get("aprovado"))
+            ok = gemini_disse and not reprova_hard
 
             r["nota_gemini"] = str(g.get("nota", ""))
             r["flags"] = "|".join(filter(None, [
+                # AUDITORIA: separa o que o Gemini reprovou do que a MINHA trava dura derrubou.
+                # Sem isso nao da pra saber quantos criativos bons a trava esta matando.
+                f"gemini_aprovou:{'sim' if gemini_disse else 'nao'}",
+                "TRAVA_DURA_DERRUBOU" if (gemini_disse and reprova_hard) else "",
                 f"datado:{g.get('momento_datado')}" if g.get("momento_datado", "nenhum") != "nenhum" else "",
                 f"sazon:{g.get('sazonalidade')}" if g.get("sazonalidade", "nenhuma") != "nenhuma" else "",
                 "IA_CELEBRIDADE" if g.get("conteudo_ia_celebridade") else "",
