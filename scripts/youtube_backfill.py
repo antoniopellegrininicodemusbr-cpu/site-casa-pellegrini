@@ -172,6 +172,78 @@ def build_slideshow(image_blobs, workdir="/tmp/slides"):
     subprocess.run(cmd, check=True, capture_output=True)
     return open(out, "rb").read()
 
+SHORTS_MAX_SEG = 180          # limite do YouTube Shorts (3 min)
+
+def _garante_ffmpeg():
+    import shutil, subprocess
+    if shutil.which("ffmpeg"):
+        return
+    print("  instalando ffmpeg no runner...")
+    r = subprocess.run(["sudo", "apt-get", "install", "-y", "-qq", "ffmpeg"], capture_output=True)
+    if r.returncode != 0:
+        subprocess.run(["sudo", "apt-get", "update", "-qq"], capture_output=True)
+        subprocess.run(["sudo", "apt-get", "install", "-y", "-qq", "ffmpeg"], check=True, capture_output=True)
+
+def sondar_video(caminho):
+    """Devolve (duracao_seg, largura, altura) via ffprobe."""
+    import subprocess
+    _garante_ffmpeg()
+    r = subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "v:0",
+         "-show_entries", "stream=width,height:format=duration",
+         "-of", "json", caminho],
+        capture_output=True, text=True, check=True)
+    d = json.loads(r.stdout or "{}")
+    fluxo = (d.get("streams") or [{}])[0]
+    dur = float((d.get("format") or {}).get("duration") or 0)
+    return dur, int(fluxo.get("width") or 0), int(fluxo.get("height") or 0)
+
+def para_vertical(video_bytes, workdir="/tmp/vert"):
+    """
+    Deixa o video elegivel pra Shorts. O YouTube classifica como Short por
+    duracao (<=3 min) E formato (vertical/quadrado) — a hashtag #Shorts no
+    titulo nao forca nada. Video horizontal virava video comum e nao contava
+    view de Short (descoberto em 21/08/2026).
+    Horizontal -> 1080x1920 com fundo desfocado, mesma tecnica do build_slideshow.
+    Vertical passa direto, sem reencodar. Devolve (bytes, nota).
+    """
+    import shutil, subprocess
+    _garante_ffmpeg()
+    shutil.rmtree(workdir, ignore_errors=True)
+    os.makedirs(workdir, exist_ok=True)
+    entrada = f"{workdir}/in.mp4"
+    open(entrada, "wb").write(video_bytes)
+
+    dur, w, h = sondar_video(entrada)
+    if dur > SHORTS_MAX_SEG:
+        raise RuntimeError(
+            f"video de {dur:.0f}s passa do limite de Shorts ({SHORTS_MAX_SEG}s) — pulado")
+    if w == 0 or h == 0:
+        return video_bytes, "sem stream de video legivel; enviado como veio"
+    if h > w:
+        return video_bytes, f"ja vertical ({w}x{h}, {dur:.0f}s)"
+
+    saida = f"{workdir}/out.mp4"
+    fc = ("[0:v]split[a][b];"
+          "[a]scale=1080:1920:force_original_aspect_ratio=increase,"
+          "crop=1080:1920,boxblur=20:2[bg];"
+          "[b]scale=1000:1700:force_original_aspect_ratio=decrease[fg];"
+          "[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30[vout]")
+    cmd = ["ffmpeg", "-y", "-i", entrada, "-filter_complex", fc,
+           "-map", "[vout]", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+           "-preset", "veryfast"]
+    # so mapeia audio se existir, senao o ffmpeg aborta
+    tem_audio = subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "a:0",
+         "-show_entries", "stream=codec_type", "-of", "csv=p=0", entrada],
+        capture_output=True, text=True).stdout.strip()
+    if tem_audio:
+        cmd += ["-map", "0:a:0", "-c:a", "aac", "-b:a", "128k"]
+    cmd += [saida]
+    subprocess.run(cmd, check=True, capture_output=True)
+    return open(saida, "rb").read(), f"convertido {w}x{h} -> 1080x1920 (fundo desfocado), {dur:.0f}s"
+
+
 def yt_upload(token, video_bytes, title, description):
     meta = {"snippet": {"title": title, "description": description[:4900], "tags": TAGS,
                         "categoryId": "22", "defaultLanguage": "pt-BR", "defaultAudioLanguage": "pt-BR"},
@@ -181,8 +253,13 @@ def yt_upload(token, video_bytes, title, description):
         data=json.dumps(meta).encode("utf-8"), method="POST",
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json; charset=UTF-8",
                  "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": str(len(video_bytes))})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        upload_url = r.headers["Location"]
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            upload_url = r.headers["Location"]
+    except urllib.error.HTTPError as e:
+        # sem isso o erro chega como "HTTP Error 400: Bad Request", sem motivo
+        corpo = e.read().decode("utf-8", "ignore")[:300]
+        raise RuntimeError(f"HTTP {e.code} ao abrir a sessao de upload: {corpo}") from None
     d = http(upload_url, data=video_bytes, method="PUT",
              headers={"Authorization": f"Bearer {token}", "Content-Type": "video/mp4"})
     return d.get("id")
@@ -229,6 +306,8 @@ def main():
                     raise RuntimeError("sem media_url (provavel copyright/indisponivel)")
                 print(f"[{rotulo}] baixando {vid_id} ({ts})")
                 data = http(murl, raw=True)
+                data, nota = para_vertical(data)
+                print(f"  [formato] {nota}")
             title = (make_title(v.get("caption"))
                      or gemini_title(v.get("thumbnail_url"))
                      or fallback_title(ts))
