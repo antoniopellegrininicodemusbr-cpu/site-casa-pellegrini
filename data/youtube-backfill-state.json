@@ -242,7 +242,11 @@
   "17946613649262446",
   "17970371467835187",
   "18256279558108089",
-  "17908198169565477"
+  "17908198169565477",
+  "18213301750164257",
+  "17988184108548870",
+  "17956116455310987",
+  "17954559041155543"
  ],
  "failed": {
   "17978040793056788": "HTTP Error 400: Bad Request",
@@ -256,8 +260,9 @@
   "18210782707089513": "sem media_url (provavel copyright/indisponivel)",
   "17923098959530259": "HTTP 429: ",
   "18312964540040733": "sem media_url (provavel copyright/indisponivel)",
-  "17960154919989179": "sem media_url (provavel copyright/indisponivel)"
+  "17960154919989179": "sem media_url (provavel copyright/indisponivel)",
+  "17952848066176517": "sem media_url (provavel copyright/indisponivel)"
  },
- "day": "2026-08-20",
- "day_count": 5
+ "day": "2026-08-21",
+ "day_count": 4
 }
