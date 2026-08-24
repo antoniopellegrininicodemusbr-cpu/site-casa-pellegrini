@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-08-23",
- "total": 304,
+ "atualizado_em": "2026-08-24",
+ "total": 305,
  "registros": [
+  {
+   "media_id": "18101959219965187",
+   "data_post": "2026-08-23",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DcZsM04vPTq/",
+   "caption": "Papo de utilidade pública ‼️  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "3",
+   "motivo_reprova": "O vídeo é um meme/esquete humorística encenada, o que viola o critério de não usar memes ou piadas internas.",
+   "flags": "gemini_aprovou:nao|tema:Esquete humorística de acidente",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-08-24",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18065212763753160",
    "data_post": "2026-08-21",
