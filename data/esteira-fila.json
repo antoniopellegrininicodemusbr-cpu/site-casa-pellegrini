@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-08-24",
- "total": 305,
+ "atualizado_em": "2026-08-25",
+ "total": 306,
  "registros": [
+  {
+   "media_id": "18004969679968916",
+   "data_post": "2026-08-24",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DccOlCTPsbl/",
+   "caption": "Só um caldinho pra salvar da friaca ☃️  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9",
+   "motivo_reprova": "",
+   "flags": "gemini_aprovou:sim|sazon:frio|tema:sopa no inverno",
+   "conjunto_sugerido": "noite",
+   "data_triagem": "2026-08-25",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18101959219965187",
    "data_post": "2026-08-23",
