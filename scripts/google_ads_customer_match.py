@@ -195,39 +195,41 @@ def main():
     except Exception as e:
         print("[seasonal-negatives] erro:", e)
     lista = get_or_create_list(ver, tok)
-    d, code = gads_call(ver, tok, "/offlineUserDataJobs:create",
-                        {"job": {"type": "CUSTOMER_MATCH_USER_LIST",
-                                 "customerMatchUserListMetadata": {
-                                     "userList": lista,
-                                     "consent": {"adUserData": "GRANTED", "adPersonalization": "GRANTED"}}}})
-    if code >= 400:
-        if "CUSTOMER_NOT_ALLOWLISTED" in json.dumps(d):
-            print("[gads] Conta ainda NAO ELEGIVEL pro Customer Match (Google exige ~90 dias de historico; "
-                  "conta ativa desde ~abril/2026 -> deve liberar ~fim de julho). A lista ja existe; "
-                  "o cron diario tenta de novo automaticamente e comeca a subir a base quando liberar.")
-            return
-        raise RuntimeError(f"criar job falhou {code}: {json.dumps(d)[:300]}")
-    job = d["resourceName"]
-    print(f"[gads] job: {job}")
-    ops = [{"removeAll": True}] + users
-    for i in range(0, len(ops), 10000):
-        d, code = http(f"https://googleads.googleapis.com/{ver}/{job}:addOperations",
-                       data=json.dumps({"operations": ops[i:i+10000], "enablePartialFailure": True}).encode(),
-                       method="POST",
-                       headers={"Authorization": f"Bearer {tok}",
-                                "developer-token": os.environ["GADS_DEVELOPER_TOKEN"],
-                                "login-customer-id": LOGIN_CUSTOMER,
-                                "Content-Type": "application/json"})
+    users_dm = []
+    for u in users:
+        ids = []
+        for ident in u["create"]["userIdentifiers"]:
+            if "hashedEmail" in ident:
+                ids.append({"emailAddress": ident["hashedEmail"]})
+            if "hashedPhoneNumber" in ident:
+                ids.append({"phoneNumber": ident["hashedPhoneNumber"]})
+        if ids:
+            users_dm.append({"userData": {"userIdentifiers": ids}})
+    list_id = lista.split("/")[-1]
+    dest = {"operatingAccount": {"accountType": "GOOGLE_ADS", "accountId": CUSTOMER}, "productDestinationId": list_id}
+    d0, code0 = http("https://datamanager.googleapis.com/v1/audienceMembers:removeAll",
+                     data=json.dumps({"destinations": [dest]}).encode(), method="POST",
+                     headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json"})
+    if code0 >= 400:
+        print("[datamanager] removeAll falhou (segue sem replace):", json.dumps(d0)[:200])
+    else:
+        print("[datamanager] removeAll ok")
+    total = 0
+    for i in range(0, len(users_dm), 10000):
+        payload = {"destinations": [dest],
+                   "audienceMembers": users_dm[i:i+10000],
+                   "consent": {"adUserData": "CONSENT_GRANTED", "adPersonalization": "CONSENT_GRANTED"},
+                   "encoding": "HEX",
+                   "termsOfService": {"customerMatchTermsOfServiceStatus": "ACCEPTED"}}
+        d, code = http("https://datamanager.googleapis.com/v1/audienceMembers:ingest",
+                       data=json.dumps(payload).encode(), method="POST",
+                       headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json"})
         if code >= 400:
-            raise RuntimeError(f"addOperations falhou {code}: {json.dumps(d)[:300]}")
-    d, code = http(f"https://googleads.googleapis.com/{ver}/{job}:run", data=b"{}", method="POST",
-                   headers={"Authorization": f"Bearer {tok}",
-                            "developer-token": os.environ["GADS_DEVELOPER_TOKEN"],
-                            "login-customer-id": LOGIN_CUSTOMER,
-                            "Content-Type": "application/json"})
-    if code >= 400:
-        raise RuntimeError(f"run falhou {code}: {json.dumps(d)[:300]}")
-    print(f"[gads] job rodando — {len(users)} usuarios (replace). Matching leva ate 24h; ver em Publicos-alvo no painel.")
+            raise RuntimeError("datamanager ingest falhou: " + json.dumps(d)[:300])
+        total += len(users_dm[i:i+10000])
+        print("[datamanager] lote ok, requestId:", d.get("requestId"))
+    print("[datamanager] enviados " + str(total) + " membros pra lista " + list_id + " (matching aparece em 24-48h)")
+
 
 if __name__ == "__main__":
     main()
