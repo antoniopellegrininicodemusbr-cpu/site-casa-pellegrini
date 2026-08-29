@@ -286,7 +286,12 @@
   "17971244179951931",
   "17975981617918315",
   "17976153658904689",
-  "18333984430010736"
+  "18333984430010736",
+  "18010440958513256",
+  "17937338777553455",
+  "18037950592416720",
+  "17883974897781340",
+  "17990517622664498"
  ],
  "failed": {
   "18159851395114721": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The request metadata specifies an invalid video description.\",\n    \"errors\": [\n      {\n        \"message\": \"The req",
@@ -298,7 +303,7 @@
   "17988428455627897": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The request metadata specifies an invalid or empty video title.\",\n    \"errors\": [\n      {\n        \"message\": \"The ",
   "17950676699204086": "sem media_url (provavel copyright/indisponivel)"
  },
- "day": "2026-08-28",
+ "day": "2026-08-29",
  "day_count": 5,
  "failed_historico_21_08": {
   "17978040793056788": "HTTP Error 400: Bad Request",
