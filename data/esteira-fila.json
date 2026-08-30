@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-08-29",
+ "atualizado_em": "2026-08-30T00:34:15.679026+00:00",
  "total": 332,
  "registros": [
   {
@@ -8,18 +8,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DccOlCTPsbl/",
    "caption": "Só um caldinho pra salvar da friaca ☃️  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "EM_TESTE",
+   "status": "PROMOVIDO",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|sazon:frio|tema:sopa no inverno",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-25",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "",
-   "compras_teste": "",
-   "ctr_teste": "",
-   "data_veredito": "",
-   "ad_id_promovido": "[V-teste] Caldinho Friaca=120255775975890460"
+   "gasto_teste": "36.54",
+   "compras_teste": "2",
+   "ctr_teste": "2.93",
+   "data_veredito": "2026-08-29",
+   "ad_id_promovido": "[V-noite] Caldinho Friaca=120255832454130460"
   },
   {
    "media_id": "18101959219965187",
@@ -1383,9 +1383,9 @@
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
-   "gasto_teste": "7.22",
+   "gasto_teste": "7.93",
    "compras_teste": "0",
-   "ctr_teste": "2.34",
+   "ctr_teste": "2.67",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Chicken Salad=120255615678010460"
   },
@@ -4670,9 +4670,9 @@
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-21",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "0.00",
+   "gasto_teste": "2.66",
    "compras_teste": "0",
-   "ctr_teste": "",
+   "ctr_teste": "3.70",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Quitanda=120255723671550460"
   },
@@ -6107,18 +6107,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/C_tg-8FvJMS/",
    "caption": "Um hambúrguer honesto",
-   "status": "APROVADO_FILA",
+   "status": "EM_TESTE",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:hambúrguer artesanal",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-22",
-   "data_entrada_teste": "",
+   "data_entrada_teste": "2026-08-29",
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
    "data_veredito": "",
-   "ad_id_promovido": ""
+   "ad_id_promovido": "[V-teste] Hamburguer Honesto=120255832454890460"
   },
   {
    "media_id": "17856064077253650",
@@ -6133,9 +6133,9 @@
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-22",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "",
-   "compras_teste": "",
-   "ctr_teste": "",
+   "gasto_teste": "5.11",
+   "compras_teste": "0",
+   "ctr_teste": "1.40",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Bora Brindar=120255776012230460"
   },
