@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-08-30T00:34:15.679026+00:00",
- "total": 332,
+ "atualizado_em": "2026-08-30",
+ "total": 333,
  "registros": [
+  {
+   "media_id": "18110534375101169",
+   "data_post": "2026-08-30",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DcqaGY6OaEi/",
+   "caption": "Bora correr amanhã e dps parar aqui 👍  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "4",
+   "motivo_reprova": "O vídeo mostra pessoas com roupas de corrida e medalhas, indicando um evento esportivo específico com data marcada.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:calor|tema:Pós-corrida na Casa Pellegrini",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-08-30",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18004969679968916",
    "data_post": "2026-08-24",
