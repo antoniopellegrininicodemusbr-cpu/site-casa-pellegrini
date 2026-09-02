@@ -11,8 +11,10 @@ esteira nas rodadas de terca/sexta com o PC do Antonio desligado. O push dele di
 esta Action pelo gatilho `on: push: paths`, que reespelha na planilha em segundos.
 
 MODOS (env MODE):
-  full   (padrao) - insere midias novas, expira, tria no Gemini, grava JSON e espelha
+  full   (padrao) - insere midias novas, expira, tria no Gemini, grava JSON e espelha.
+                    No fim roda tambem o re-passe de LEGENDA nos aprovados que ainda nao passaram por ele.
   mirror          - so espelha o JSON na planilha (usado no gatilho de push)
+  legendas        - SO o re-passe de legenda nos APROVADO_FILA/REPESCAGEM (barato, texto puro, sem video)
 
 Secrets: GEMINI_API_KEY, IG_ACCESS_TOKEN, GOOGLE_SHEETS_CREDS
 Env:     SPREADSHEET_ID, MODE, MAX_POR_RODADA (default 100), DRY_RUN
@@ -42,6 +44,17 @@ CAMPOS = [
     "ctr_teste", "data_veredito", "ad_id_promovido",
 ]
 
+# Itens/linhas que SAIRAM do cardapio. Um criativo que anuncia qualquer um deles nao pode ir pro ar,
+# por melhor que seja o video. Manter sincronizado com o PDF do Drive (memoria cardapio_sync_pdf_07-08-2026).
+ITENS_FORA_DO_CARDAPIO = [
+    "drinks do Zodiaco (linha inteira: aries, touro, gemeos, cancer, leao, virgem, libra, escorpiao, "
+    "sagitario, capricornio, aquario, peixes) — viraram os '5 Autorais'",
+    "Drinks Polemicos — mesma extincao dos Zodiacos",
+    "Provolone Burger",
+    "Gnocchi",
+    "qualquer prato anunciado como 'a vontade' / rodizio",
+]
+
 JANELA_DIAS = 730
 MAX_POR_RODADA = int(os.environ.get("MAX_POR_RODADA", "100"))
 MODE = os.environ.get("MODE", "full").strip().lower()
@@ -55,8 +68,17 @@ ESTACAO = "inverno" if HOJE.month in (6, 7, 8, 9) else (
 # ----------------------------------------------------------------- prompt v3
 
 PROMPT = f"""Voce e o triador de criativos de anuncio da Casa Pellegrini, um restaurante/bar/hamburgueria
-no Centro Historico de Petropolis (RJ). Assista ao video (imagem E audio) e decida se ele serve como
-ANUNCIO PAGO EVERGREEN, ou seja, um video que pode rodar em qualquer semana do ano sem ficar estranho.
+no Centro Historico de Petropolis (RJ). Assista ao video (imagem E audio) E leia a LEGENDA do post, e decida
+se ele serve como ANUNCIO PAGO EVERGREEN, ou seja, algo que pode rodar em qualquer semana do ano sem ficar
+estranho.
+
+⚠️ A LEGENDA CONTA TANTO QUANTO O VIDEO. Isto vira um anuncio impulsionado a partir do post original, entao
+a legenda vai junto pro ar exatamente como esta. Um video impecavel com legenda vencida ("ate dia 31 de
+Outubro", "em breve lancaremos", "so essa semana", preco antigo) REPROVA. Julgue os dois.
+
+ITENS QUE SAIRAM DO CARDAPIO — se o video OU a legenda anuncia qualquer um destes, REPROVE
+(motivo: "item fora do cardapio"):
+{chr(10).join("- " + i for i in ITENS_FORA_DO_CARDAPIO)}
 
 CONTEXTO DE HOJE: data {HOJE.isoformat()}, estacao no Brasil = {ESTACAO}.
 
@@ -64,8 +86,11 @@ REPROVE SEMPRE (criterio rigido — "na duvida, reprova, temos conteudo bom de s
 - QUALQUER indicio de data ou contexto comemorativo: aniversario da casa, mesversario, Dia das Maes/Pais,
   Dia do Trabalhador, Natal, Ano Novo, Pascoa/Semana Santa, Dia dos Namorados, Dia do Garcom, festa junina,
   Bauernfest, Copa do Mundo, eleicao, eventos com data marcada, corridas, estreias de serie/filme.
-- Texto na tela ou fala citando dia da semana / horario especifico ("quarta as 12h", "so hoje", "amanha").
-- Promocao com prazo ou preco que pode mudar.
+- Texto na tela, fala OU LEGENDA citando dia da semana / horario especifico / data ("quarta as 12h",
+  "so hoje", "amanha", "ate dia 31 de outubro").
+- Promocao com prazo ou preco que pode mudar — inclusive preco escrito na LEGENDA.
+- Promessa que ja venceu: "em breve", "vem ai", "lancaremos", "novidade chegando". O post e antigo; o
+  "em breve" dele ja aconteceu ha muito tempo e hoje soa velho.
 - CAFE DA MANHA em qualquer forma — a casa so serve cafe aos domingos e feriados das 7h45 as 11h, e as
   janelas dos conjuntos de anuncio comecam as 10h. O anuncio prometeria algo que quase nunca esta disponivel.
 - DELIVERY / iFood — a campanha e para visita fisica na casa.
@@ -89,10 +114,94 @@ Responda SOMENTE com JSON valido, sem markdown, neste formato exato:
  "nota": 0-10,
  "motivo": "uma frase curta em portugues",
  "conjunto_sugerido": "dia"|"noite"|"qualquer",
- "momento_datado": "nenhum"|"aniversario"|"mesversario"|"promocao_com_prazo"|"evento_unico"|"cafe_da_manha",
+ "momento_datado": "nenhum"|"aniversario"|"mesversario"|"promocao_com_prazo"|"evento_unico"|"cafe_da_manha"|"promessa_vencida"|"item_fora_do_cardapio",
  "sazonalidade": "nenhuma"|"calor"|"frio"|"data_especifica",
  "conteudo_ia_celebridade": true|false,
  "tema": "2-4 palavras descrevendo o video"}}"""
+
+
+# ------------------------------------------------- re-passe de legenda (texto)
+#
+# Por que existe: ate 01/09/2026 a caption NAO ia no prompt do fluxo de video — o Gemini julgava so a
+# imagem/audio. Isso deixou passar o "Em breve, lancaremos um novo cardapio ... ate o dia 31 de Outubro"
+# com nota 9 (post de out/2024), pego a mao pelo Antonio. Como o anuncio e um post impulsionado, a legenda
+# vai pro ar junto. Este passe reavalia SO O TEXTO dos que ja estao aprovados. E barato (sem upload de
+# video) e idempotente: quem passa ganha a flag legenda_v2:ok e nunca mais e reavaliado.
+
+PROMPT_LEGENDA = f"""Voce revisa LEGENDAS de posts do Instagram da Casa Pellegrini (restaurante/bar em
+Petropolis) que serao impulsionados como anuncio HOJE, {HOJE.isoformat()}. O post e antigo; a legenda vai
+pro ar exatamente como esta escrita.
+
+REPROVE a legenda se ela tiver QUALQUER um destes:
+- data, prazo ou janela ("ate dia 31", "so hoje", "essa semana", "quarta as 12h", mes especifico);
+- preco em reais (preco velho no ar gera reclamacao no balcao);
+- promessa ja vencida ("em breve", "vem ai", "lancaremos", "novidade chegando", "aguardem");
+- ocasiao comemorativa datada (dia das maes, natal, festa junina, Bauernfest, copa, eleicao, corrida);
+- cafe da manha (a casa so serve domingo/feriado 7h45-11h e o anuncio roda a partir das 10h);
+- delivery ou iFood (a campanha e pra visita fisica);
+- qualquer ITEM QUE SAIU DO CARDAPIO:
+{chr(10).join("- " + i for i in ITENS_FORA_DO_CARDAPIO)}
+
+APROVE qualquer legenda atemporal — descricao de comida/bebida, convite generico, hashtags, endereco,
+telefone. Na duvida entre "atemporal" e "so uma frase solta", APROVE: o video ja foi aprovado antes.
+
+Responda SOMENTE JSON valido:
+{{"ok": true|false, "motivo": "uma frase curta em portugues"}}"""
+
+
+def gemini_legenda(api_key, caption):
+    r = requests.post(
+        f"{GEMINI_BASE}/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}",
+        json={
+            "contents": [{"parts": [
+                {"text": PROMPT_LEGENDA + "\n\nLEGENDA:\n" + (caption or "").strip()},
+            ]}],
+            "generationConfig": {
+                "temperature": 0,
+                "responseMimeType": "application/json",
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
+        }, timeout=90)
+    r.raise_for_status()
+    return json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+
+
+def repassar_legendas(registros, gem_key):
+    """Reavalia a legenda dos aprovados que ainda nao passaram pelo passe v2. Retorna (vistos, reprovados)."""
+    alvo = [r for r in registros
+            if r["status"] in ("APROVADO_FILA", "REPESCAGEM")
+            and "legenda_v2:ok" not in (r.get("flags") or "")]
+    if not alvo:
+        print("re-passe de legenda: nada pendente")
+        return 0, 0
+    print(f"re-passe de legenda: {len(alvo)} aprovados a revisar")
+    vistos = reprovados = 0
+    for r in alvo:
+        cap = (r.get("caption") or "").strip()
+        try:
+            if not cap:
+                g = {"ok": True, "motivo": "sem legenda"}
+            else:
+                g = gemini_legenda(gem_key, cap)
+                time.sleep(4)  # free tier: 15 RPM
+        except Exception as e:
+            print(f"  {r['media_id']} ERRO no re-passe: {str(e)[:140]}", file=sys.stderr)
+            continue
+        vistos += 1
+        fl = [x for x in (r.get("flags") or "").split("|") if x]
+        if g.get("ok"):
+            fl.append("legenda_v2:ok")
+            r["flags"] = "|".join(fl)
+        else:
+            fl.append("RECHECK_LEGENDA_REPROVOU")
+            r["flags"] = "|".join(fl)
+            r["status"] = "REPROVADO_GEMINI"
+            r["motivo_reprova"] = ("legenda: " + str(g.get("motivo", ""))[:180])
+            r["data_triagem"] = HOJE.isoformat()
+            reprovados += 1
+            print(f"  ✂️  {r['data_post']} {r['media_id']} REPROVADO — {g.get('motivo')}")
+    print(f"re-passe de legenda: {vistos} revisados, {reprovados} reprovados")
+    return vistos, reprovados
 
 
 # ----------------------------------------------------------------- instagram
@@ -145,13 +254,14 @@ def gemini_upload(api_key, video_bytes, mime="video/mp4"):
     raise TimeoutError("video preso em PROCESSING")
 
 
-def gemini_triar(api_key, file_uri):
+def gemini_triar(api_key, file_uri, caption=""):
+    legenda = (caption or "").strip() or "(o post nao tem legenda)"
     r = requests.post(
         f"{GEMINI_BASE}/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}",
         json={
             "contents": [{"parts": [
                 {"file_data": {"mime_type": "video/mp4", "file_uri": file_uri}},
-                {"text": PROMPT},
+                {"text": PROMPT + "\n\nLEGENDA DO POST (vai pro ar junto do video):\n" + legenda},
             ]}],
             "generationConfig": {
                 "temperature": 0,
@@ -241,6 +351,16 @@ def main():
         espelhar(sheets, sid, registros)
         return
 
+    if MODE == "legendas":
+        # so o re-passe de legenda, sem tocar no Instagram nem baixar video nenhum
+        repassar_legendas(registros, os.environ["GEMINI_API_KEY"])
+        if DRY_RUN:
+            print("DRY_RUN — nada gravado")
+            return
+        salvar_fila(registros)
+        espelhar(sheets, sid, registros)
+        return
+
     ig_token = os.environ["IG_ACCESS_TOKEN"]
     gem_key = os.environ["GEMINI_API_KEY"]
     por_id = {r["media_id"]: r for r in registros}
@@ -295,7 +415,7 @@ def main():
             vid = requests.get(url, timeout=180).content
             if len(vid) > 90 * 1024 * 1024:
                 raise ValueError("video acima de 90MB")
-            g = gemini_triar(gem_key, gemini_upload(gem_key, vid))
+            g = gemini_triar(gem_key, gemini_upload(gem_key, vid), r.get("caption", ""))
 
             reprova_hard = (g.get("conteudo_ia_celebridade") is True
                             or g.get("momento_datado", "nenhum") != "nenhum")
@@ -317,6 +437,8 @@ def main():
             if ok:
                 r["status"] = "APROVADO_FILA"
                 r["conjunto_sugerido"] = g.get("conjunto_sugerido", "qualquer")
+                # o prompt v4 ja julgou a legenda junto do video -> nao precisa do re-passe
+                r["flags"] += "|legenda_v2:ok"
                 aprovados += 1
             else:
                 r["status"] = "REPROVADO_GEMINI"
@@ -326,6 +448,9 @@ def main():
         except Exception as e:
             print(f"  {r['media_id']} ERRO: {str(e)[:160]}", file=sys.stderr)
         time.sleep(4)  # free tier: 15 RPM
+
+    # 4. re-passe de legenda no passivo (aprovados antes do prompt v4). Idempotente: roda ate zerar.
+    repassar_legendas(registros, gem_key)
 
     resumo = {}
     for r in registros:

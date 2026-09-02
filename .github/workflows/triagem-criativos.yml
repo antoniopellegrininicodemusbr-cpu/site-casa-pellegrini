@@ -4,8 +4,9 @@
 #
 # FONTE DA VERDADE = data/esteira-fila.json (o Claude le e escreve via git, com o PC do Antonio desligado).
 # A planilha e um espelho somente-leitura.
-#   - schedule/dispatch -> MODE=full   (tria no Gemini, grava JSON, espelha, commita)
-#   - push no JSON      -> MODE=mirror (so reespelha na planilha, nao gasta cota do Gemini)
+#   - schedule/dispatch -> MODE=full     (tria no Gemini, grava JSON, espelha, commita)
+#   - push no JSON      -> MODE=mirror   (so reespelha na planilha, nao gasta cota do Gemini)
+#   - dispatch c/ modo  -> MODE=legendas (so o re-passe de legenda nos aprovados; barato, sem video)
 # O commit feito por esta Action usa o GITHUB_TOKEN, e o GitHub NAO redispara workflow nesse caso —
 # entao nao existe loop. Push do Claude (PAT) dispara normalmente.
 name: Triagem de Criativos
@@ -26,6 +27,11 @@ on:
       dry_run:
         description: "true = tria e mostra, mas nao grava"
         default: "false"
+      modo:
+        description: "full = triagem completa | legendas = so re-passe de legenda nos aprovados"
+        default: "full"
+        type: choice
+        options: ["full", "legendas"]
 
 permissions:
   contents: write
@@ -53,7 +59,7 @@ jobs:
           IG_ACCESS_TOKEN:     ${{ secrets.IG_ACCESS_TOKEN }}
           GOOGLE_SHEETS_CREDS: ${{ secrets.GOOGLE_SHEETS_CREDS }}
           SPREADSHEET_ID:      '1FZ9ufFd92IVNuFYoRF8UsKi_v7C_gXIxaqgwI5CocIY'
-          MODE:                ${{ github.event_name == 'push' && 'mirror' || 'full' }}
+          MODE:                ${{ github.event_name == 'push' && 'mirror' || (github.event.inputs.modo || 'full') }}
           MAX_POR_RODADA:      ${{ github.event.inputs.max_por_rodada || '100' }}
           DRY_RUN:             ${{ github.event.inputs.dry_run || 'false' }}
         run: python scripts/triagem_criativos.py
