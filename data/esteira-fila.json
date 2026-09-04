@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-03",
- "total": 334,
+ "atualizado_em": "2026-09-04",
+ "total": 335,
  "registros": [
+  {
+   "media_id": "18063363809772624",
+   "data_post": "2026-09-03",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/Dc1HUW4PUR-/",
+   "caption": "Só venha 🍻  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "4",
+   "motivo_reprova": "O vídeo cita preço fixo de Happy Hour na tela e aborda o tema calor durante o inverno",
+   "flags": "gemini_aprovou:nao|datado:promocao_com_prazo|sazon:calor|tema:Happy Hour e Chopp",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-04",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18101861585205857",
    "data_post": "2026-09-01",
