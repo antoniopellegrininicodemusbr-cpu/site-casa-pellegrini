@@ -329,7 +329,11 @@
   "18019251712517162",
   "17944903808604485",
   "18040472695438187",
-  "18052557559398985"
+  "18052557559398985",
+  "17957466626452050",
+  "17987244100796562",
+  "17955498674324800",
+  "17981188316028418"
  ],
  "failed": {
   "18159851395114721": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The request metadata specifies an invalid video description.\",\n    \"errors\": [\n      {\n        \"message\": \"The req",
@@ -341,10 +345,11 @@
   "17988428455627897": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The request metadata specifies an invalid or empty video title.\",\n    \"errors\": [\n      {\n        \"message\": \"The ",
   "17950676699204086": "sem media_url (provavel copyright/indisponivel)",
   "17975489936026840": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The user has exceeded the number of videos they may upload.\",\n    \"errors\": [\n      {\n        \"message\": \"The user",
-  "18009772240524914": "sem media_url (provavel copyright/indisponivel)"
+  "18009772240524914": "sem media_url (provavel copyright/indisponivel)",
+  "18204236377218497": "sem media_url (provavel copyright/indisponivel)"
  },
- "day": "2026-09-05",
- "day_count": 5,
+ "day": "2026-09-06",
+ "day_count": 4,
  "failed_historico_21_08": {
   "17978040793056788": "HTTP Error 400: Bad Request",
   "17998537129115430": "HTTP Error 400: Bad Request",
