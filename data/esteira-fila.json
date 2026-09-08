@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-06",
- "total": 335,
+ "atualizado_em": "2026-09-08",
+ "total": 336,
  "registros": [
+  {
+   "media_id": "18206711002369234",
+   "data_post": "2026-09-07",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/Dc-9LgmRWs9/",
+   "caption": "Comunicado importante 🚨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "O vídeo faz referência direta ao feriado de 7 de Setembro e ao STF, sendo um conteúdo datado e político.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_especifica|tema:Comunicado de feriado",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-08",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18063363809772624",
    "data_post": "2026-09-03",
