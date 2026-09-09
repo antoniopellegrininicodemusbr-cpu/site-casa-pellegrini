@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-09",
+ "atualizado_em": "2026-09-09T14:03:40",
  "total": 336,
  "registros": [
   {
@@ -1053,7 +1053,7 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DYzjlf3OjUe/",
    "caption": "Tem gente que come pra viver, mais eu vivo pra comer! Almocinho na rua é forte demais, tá maluco!  #RestaurantePetropolis #BarPetropolis #CentroHistoricoPetropolis #AlmoçoExecutivo #HappyHour",
-   "status": "PROMOVIDO",
+   "status": "ZUMBI_DELETADO",
    "nota_gemini": "",
    "motivo_reprova": "",
    "flags": "",
@@ -1063,7 +1063,7 @@
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
-   "data_veredito": "",
+   "data_veredito": "2026-09-09",
    "ad_id_promovido": "[V-dia] Almoco Vive pra Comer=120255084578100460"
   },
   {
@@ -1459,9 +1459,9 @@
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
-   "gasto_teste": "10.20",
+   "gasto_teste": "11.50",
    "compras_teste": "1",
-   "ctr_teste": "2.35",
+   "ctr_teste": "2.24",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Chicken Salad=120255615678010460"
   },
@@ -4746,9 +4746,9 @@
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-21",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "4.13",
+   "gasto_teste": "15.31",
    "compras_teste": "0",
-   "ctr_teste": "2.97",
+   "ctr_teste": "2.78",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Quitanda=120255723671550460"
   },
@@ -6050,18 +6050,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DARgfI9vHKV/",
    "caption": "Brazuca Burger, um dos mais vendidos do cardápio!  Ele é composto por carne, cheddar, bacon, ovo e molho de alho da casa. Muito suculento e saboroso! 🤤  Venha experimentar:  📍: Rua Treze de Maio, 184 📞 (24) 2231-6110",
-   "status": "APROVADO_FILA",
+   "status": "EM_TESTE",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:Montagem de hambúrguer|legenda_v2:ok",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-22",
-   "data_entrada_teste": "",
+   "data_entrada_teste": "2026-09-09",
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
    "data_veredito": "",
-   "ad_id_promovido": ""
+   "ad_id_promovido": "[V-teste] Brazuca Burger 120255983041120460"
   },
   {
    "media_id": "17843094819320986",
@@ -6183,17 +6183,17 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/C_tg-8FvJMS/",
    "caption": "Um hambúrguer honesto",
-   "status": "EM_TESTE",
+   "status": "REPESCAGEM",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:hambúrguer artesanal",
+   "flags": "gemini_aprovou:sim|tema:hambúrguer artesanal|veredito:CPA_42.44_vs_linha_21.52|expirado_2anos:2026-09-09",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-22",
    "data_entrada_teste": "2026-08-29",
-   "gasto_teste": "17.01",
-   "compras_teste": "0",
-   "ctr_teste": "2.83",
-   "data_veredito": "",
+   "gasto_teste": "84.88",
+   "compras_teste": "2",
+   "ctr_teste": "2.05",
+   "data_veredito": "2026-09-09",
    "ad_id_promovido": "[V-teste] Hamburguer Honesto=120255832454890460"
   },
   {
@@ -6209,9 +6209,9 @@
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-22",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "8.54",
+   "gasto_teste": "9.67",
    "compras_teste": "0",
-   "ctr_teste": "1.98",
+   "ctr_teste": "1.86",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Bora Brindar=120255776012230460"
   },
