@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-09T14:03:40",
- "total": 336,
+ "atualizado_em": "2026-09-10",
+ "total": 337,
  "registros": [
+  {
+   "media_id": "17914581417446681",
+   "data_post": "2026-09-09",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DdFUChXP7P6/",
+   "caption": "Podem experimentar, indico pô ✅  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9",
+   "motivo_reprova": "",
+   "flags": "gemini_aprovou:sim|tema:Pastel de doce de leite|legenda_v2:ok",
+   "conjunto_sugerido": "qualquer",
+   "data_triagem": "2026-09-10",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18206711002369234",
    "data_post": "2026-09-07",
@@ -6183,7 +6202,7 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/C_tg-8FvJMS/",
    "caption": "Um hambúrguer honesto",
-   "status": "REPESCAGEM",
+   "status": "EXPIRADO",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:hambúrguer artesanal|veredito:CPA_42.44_vs_linha_21.52|expirado_2anos:2026-09-09",
