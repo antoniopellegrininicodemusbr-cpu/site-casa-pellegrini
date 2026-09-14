@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-13",
+ "atualizado_em": "2026-09-14",
  "total": 337,
  "registros": [
   {
@@ -8,18 +8,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DdFUChXP7P6/",
    "caption": "Podem experimentar, indico pô ✅  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "APROVADO_FILA",
+   "status": "EM_TESTE",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:Pastel de doce de leite|legenda_v2:ok",
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-09-10",
-   "data_entrada_teste": "",
+   "data_entrada_teste": "2026-09-14",
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
    "data_veredito": "",
-   "ad_id_promovido": ""
+   "ad_id_promovido": "[V-teste] Pastel Doce de Leite=120256053162840460"
   },
   {
    "media_id": "18206711002369234",
@@ -1478,9 +1478,9 @@
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
-   "gasto_teste": "11.50",
+   "gasto_teste": "12.07",
    "compras_teste": "1",
-   "ctr_teste": "2.24",
+   "ctr_teste": "2.21",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Chicken Salad=120255615678010460"
   },
@@ -4758,18 +4758,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DGGRmJBusBZ/",
    "caption": "Por isso não vou na quitanda...  #RestaurantePetropolis #BarPetropolis #CentroHistoricoPetropolis #AlmocoExecutivo #hamburgueria",
-   "status": "EM_TESTE",
+   "status": "PROMOVIDO",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:chopp e humor",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-21",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "15.31",
-   "compras_teste": "0",
-   "ctr_teste": "2.78",
-   "data_veredito": "",
-   "ad_id_promovido": "[V-teste] Quitanda=120255723671550460"
+   "gasto_teste": "56.59",
+   "compras_teste": "4",
+   "ctr_teste": "1.91",
+   "data_veredito": "2026-09-14",
+   "ad_id_promovido": "[V-noite] Quitanda=120256053158470460"
   },
   {
    "media_id": "18043277315366720",
@@ -6076,9 +6076,9 @@
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-22",
    "data_entrada_teste": "2026-09-09",
-   "gasto_teste": "",
-   "compras_teste": "",
-   "ctr_teste": "",
+   "gasto_teste": "9.30",
+   "compras_teste": "0",
+   "ctr_teste": "2.51",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Brazuca Burger 120255983041120460"
   },
@@ -6228,9 +6228,9 @@
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-22",
    "data_entrada_teste": "2026-08-25",
-   "gasto_teste": "9.67",
+   "gasto_teste": "11.23",
    "compras_teste": "0",
-   "ctr_teste": "1.86",
+   "ctr_teste": "1.83",
    "data_veredito": "",
    "ad_id_promovido": "[V-teste] Bora Brindar=120255776012230460"
   },
