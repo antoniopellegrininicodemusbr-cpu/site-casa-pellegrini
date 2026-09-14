@@ -1,7 +1,26 @@
 {
  "atualizado_em": "2026-09-14",
- "total": 337,
+ "total": 338,
  "registros": [
+  {
+   "media_id": "18145547803485029",
+   "data_post": "2026-09-13",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DdPtCh2P40S/",
+   "caption": "Regras da votação:  1) Um voto por pessoa (não adianta comentar várias vezes) ✅  2) Se um candidato não tiver 50% +1 dos votos haverá segundo turno ✅  3) Data de encerramento do 1o turno: 20/09 ✅  Boa sorte ❤️  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #Happ",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "1",
+   "motivo_reprova": "O vídeo e a legenda fazem referência direta a eleições e votação com prazo definido.",
+   "flags": "gemini_aprovou:nao|datado:promocao_com_prazo|tema:Votação de funcionários",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-14",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "17914581417446681",
    "data_post": "2026-09-09",
