@@ -70,6 +70,21 @@
   #login #btn-fb-login:hover{background:#166fe5}
   #login-ou{color:var(--txt2);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
   #login-dica{color:var(--txt2);font-size:12px;max-width:340px;text-align:center;line-height:1.55}
+  /* ===== idioma + legendas (App Review) ===== */
+  .lang-toggle{display:inline-flex;border:1px solid var(--linha);border-radius:8px;overflow:hidden}
+  .lang-toggle button{background:var(--card2);color:var(--txt2);border:none;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
+  .lang-toggle button.ativo{background:var(--ouro);color:#14100c}
+  #login .lang-toggle{position:absolute;top:16px;right:16px}
+  #login .lang-toggle button{border-radius:0;padding:6px 12px;font-weight:700;background:var(--card2);color:var(--txt2)}
+  #login .lang-toggle button.ativo{background:var(--ouro);color:#14100c}
+  #login{padding:16px} #login h1{text-align:center}
+  /* barra fixa no rodapé que ocupa espaço próprio (não cobre a caixa de resposta) */
+  #legenda{display:none;position:relative;z-index:50;flex:none;background:#080604;color:#fff;
+    border-top:2px solid var(--ouro);padding:12px 20px;font-size:16px;line-height:1.45}
+  #legenda b.passo{color:var(--ouro);margin-right:6px}
+  body.demo #legenda{display:block}
+  .destaque{outline:3px solid var(--ouro)!important;outline-offset:3px;animation:pulsa 1.4s ease-in-out infinite}
+  @keyframes pulsa{0%,100%{outline-color:var(--ouro)}50%{outline-color:rgba(201,162,75,.25)}}
   @media(max-width:700px){
     #lista{width:100%;min-width:0}
     #chat{position:fixed;inset:0;z-index:5;display:none}
@@ -79,48 +94,50 @@
 </head>
 <body>
 <div id="login">
-  <h1 style="color:var(--ouro)">🍻 Atendimento Casa Pellegrini</h1>
-  <input id="chave" type="password" placeholder="Chave de acesso" autocomplete="off">
+  <div class="lang-toggle"><button data-lang="pt">PT</button><button data-lang="en">EN</button></div>
+  <h1 style="color:var(--ouro)" data-i18n="login_titulo">🍻 Atendimento Casa Pellegrini</h1>
+  <input id="chave" type="password" data-i18n-ph="login_chave" placeholder="Chave de acesso" autocomplete="off">
   <div class="erro" id="login-erro"></div>
-  <button onclick="entrar()">Entrar</button>
+  <button id="btn-entrar" onclick="entrar()" data-i18n="login_entrar">Entrar</button>
 
-  <div id="login-ou">ou</div>
-  <button id="btn-fb-login" onclick="loginFacebook()" title="Conectar a Pagina do Facebook e o Instagram">
+  <div id="login-ou" data-i18n="login_ou">ou</div>
+  <button id="btn-fb-login" onclick="loginFacebook()" data-i18n-title="fb_title" title="Conectar a Pagina do Facebook e o Instagram">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
-    Continuar com o Facebook
+    <span data-i18n="fb_botao">Continuar com o Facebook</span>
   </button>
-  <div id="login-dica">Administradores: use este botao para conectar a Pagina do Facebook e a conta do Instagram ao atendimento.<br><span style="opacity:.7">App reviewers: use this Facebook login button to connect the Page and the Instagram account.</span></div>
+  <div id="login-dica" data-i18n-html="login_dica">Administradores: use este botao para conectar a Pagina do Facebook e a conta do Instagram ao atendimento.<br><span style="opacity:.7">App reviewers: use this Facebook login button to connect the Page and the Instagram account.</span></div>
 </div>
 
 <header>
-  <h1>🍻 Atendimento</h1>
+  <h1 data-i18n="hdr_titulo">🍻 Atendimento</h1>
   <span class="status-conexao" id="conexao">carregando…</span>
-  <button id="btn-som" onclick="alternarSom()" title="Ligar/desligar alerta sonoro" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔔 Som</button>
-  <button id="btn-bot" onclick="abrirConfigBot()" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
-  <button id="btn-conectar" onclick="conectarMeta()" title="Conectar a Página do Facebook e o Instagram ao atendimento" style="margin-left:8px;background:#1877f2;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔗 Conectar</button>
+  <div class="lang-toggle" style="margin-left:12px"><button data-lang="pt">PT</button><button data-lang="en">EN</button></div>
+  <button id="btn-som" onclick="alternarSom()" data-i18n-title="som_title" title="Ligar/desligar alerta sonoro" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔔 Som</button>
+  <button id="btn-bot" onclick="abrirConfigBot()" data-i18n-title="bot_title" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
+  <button id="btn-conectar" onclick="conectarMeta()" data-i18n-title="conectar_title" title="Conectar a Página do Facebook e o Instagram ao atendimento" style="margin-left:8px;background:#1877f2;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer" data-i18n="conectar">🔗 Conectar</button>
 </header>
 <div id="modal-bot" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:22px;width:320px">
-    <h2 style="color:var(--ouro);font-size:16px;margin-bottom:6px">🤖 Bot de atendimento</h2>
-    <p style="color:var(--txt2);font-size:12px;margin-bottom:16px">Escolha em quais canais o bot responde sozinho. Onde estiver desligado, tudo cai na fila pra vocês.</p>
+    <h2 style="color:var(--ouro);font-size:16px;margin-bottom:6px" data-i18n="modal_titulo">🤖 Bot de atendimento</h2>
+    <p style="color:var(--txt2);font-size:12px;margin-bottom:16px" data-i18n="modal_desc">Escolha em quais canais o bot responde sozinho. Onde estiver desligado, tudo cai na fila pra vocês.</p>
     <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-facebook"> Facebook Messenger</label>
-    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-instagram"> Instagram <span style="color:var(--txt2);font-size:11px">(só após o corte do ManyChat)</span></label>
-    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-whatsapp"> WhatsApp <span style="color:var(--txt2);font-size:11px">(só após migrar o número)</span></label>
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-instagram"> Instagram <span style="color:var(--txt2);font-size:11px" data-i18n="modal_ig">(só após o corte do ManyChat)</span></label>
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px"><input type="checkbox" id="bot-whatsapp"> WhatsApp <span style="color:var(--txt2);font-size:11px" data-i18n="modal_wa">(só após migrar o número)</span></label>
     <div style="display:flex;gap:8px;margin-top:18px">
-      <button onclick="salvarConfigBot()" style="flex:1;background:var(--ouro);color:#14100c;border:none;border-radius:10px;padding:10px;font-weight:700;cursor:pointer">Salvar</button>
-      <button onclick="document.getElementById('modal-bot').style.display='none'" style="background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:10px;padding:10px 16px;cursor:pointer">Fechar</button>
+      <button onclick="salvarConfigBot()" style="flex:1;background:var(--ouro);color:#14100c;border:none;border-radius:10px;padding:10px;font-weight:700;cursor:pointer" data-i18n="salvar">Salvar</button>
+      <button onclick="document.getElementById('modal-bot').style.display='none'" style="background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:10px;padding:10px 16px;cursor:pointer" data-i18n="fechar_modal">Fechar</button>
     </div>
   </div>
 </div>
 <main>
   <div id="lista">
     <div id="filtros">
-      <button data-f="todas" class="ativo">Todas</button>
-      <button data-f="precisa_humano">🙋 Precisa humano <span class="fbadge" id="fb-precisa_humano"></span></button>
-      <button data-f="nao_lida">🔴 Não lidas <span class="fbadge" id="fb-nao_lida"></span></button>
-      <button data-f="aguardando_confirmacao">🟣 Reservas <span class="fbadge" id="fb-aguardando_confirmacao"></span></button>
-      <button data-f="respondida">🟢 Respondidas</button>
-      <button data-f="fechada">Fechadas</button>
+      <button data-f="todas" class="ativo"><span data-i18n="f_todas">Todas</span></button>
+      <button data-f="precisa_humano"><span data-i18n="f_precisa_humano">🙋 Precisa humano</span> <span class="fbadge" id="fb-precisa_humano"></span></button>
+      <button data-f="nao_lida"><span data-i18n="f_nao_lida">🔴 Não lidas</span> <span class="fbadge" id="fb-nao_lida"></span></button>
+      <button data-f="aguardando_confirmacao"><span data-i18n="f_aguardando_confirmacao">🟣 Reservas</span> <span class="fbadge" id="fb-aguardando_confirmacao"></span></button>
+      <button data-f="respondida"><span data-i18n="f_respondida">🟢 Respondidas</span></button>
+      <button data-f="fechada"><span data-i18n="f_fechada">Fechadas</span></button>
     </div>
     <div id="conversas"></div>
   </div>
@@ -133,22 +150,153 @@
       </div>
       <span id="chat-modo" class="modo-badge" style="display:none"></span>
       <div class="acoes">
-        <button id="btn-devolver" onclick="devolverBot()" style="display:none">🤖 Devolver ao bot</button>
-        <button onclick="mudarStatus('respondida')">✓ Lida</button>
-        <button onclick="mudarStatus('fechada')">Fechar</button>
+        <button id="btn-devolver" onclick="devolverBot()" style="display:none" data-i18n="devolver" data-i18n-title="devolver_title">🤖 Devolver ao bot</button>
+        <button id="btn-lida" onclick="mudarStatus('respondida')" data-i18n="lida" data-i18n-title="lida_title">✓ Lida</button>
+        <button id="btn-fechar" onclick="mudarStatus('fechada')" data-i18n="fechar" data-i18n-title="fechar_title">Fechar</button>
       </div>
     </div>
-    <div id="mensagens"><div id="vazio">Selecione uma conversa</div></div>
+    <div id="mensagens"><div id="vazio" data-i18n="selecione">Selecione uma conversa</div></div>
     <div id="resposta">
-      <textarea id="texto" placeholder="Escreva a resposta… (Enter envia, Shift+Enter quebra linha)"></textarea>
-      <button id="enviar" onclick="responder()">Enviar</button>
+      <textarea id="texto" data-i18n-ph="texto_ph" placeholder="Escreva a resposta… (Enter envia, Shift+Enter quebra linha)"></textarea>
+      <button id="enviar" onclick="responder()" data-i18n="enviar" data-i18n-title="enviar_title">Enviar</button>
     </div>
   </div>
 </main>
+<div id="legenda" aria-live="polite"></div>
 
 <script>
+
+// ===== IDIOMA (PT/EN) =====
+// Modo em inglês criado pro screencast do App Review da Meta (exigência:
+// interface em inglês). Uso: ?lang=en (fica salvo) ou botões PT/EN.
+// ?demo=1 liga a barra de legendas que explica cada passo/botão no vídeo.
+const TXT = {
+  pt: {
+    doc_titulo:"Atendimento — Casa Pellegrini",
+    login_titulo:"🍻 Atendimento Casa Pellegrini", login_chave:"Chave de acesso",
+    login_entrar:"Entrar", login_ou:"ou", login_erro:"Chave incorreta.",
+    fb_botao:"Continuar com o Facebook", fb_title:"Conectar a Página do Facebook e o Instagram",
+    login_dica:'Administradores: use este botão para conectar a Página do Facebook e a conta do Instagram ao atendimento.<br><span style="opacity:.7">App reviewers: use this Facebook login button to connect the Page and the Instagram account.</span>',
+    hdr_titulo:"🍻 Atendimento", carregando:"carregando…", atualizado:"atualizado ", sem_conexao:"⚠️ sem conexão",
+    som:"🔔 Som", mudo:"🔕 Mudo", som_title:"Ligar/desligar alerta sonoro",
+    bot_title:"Escolher em quais canais o bot responde sozinho",
+    bot_on:"🤖 Bot: ", bot_off:"🤖 Bot: desligado",
+    conectar:"🔗 Conectar", conectar_title:"Conectar a Página do Facebook e o Instagram ao atendimento",
+    conectado_title:"Conectado. Clique pra reconectar/atualizar o acesso.",
+    modal_titulo:"🤖 Bot de atendimento",
+    modal_desc:"Escolha em quais canais o bot responde sozinho. Onde estiver desligado, tudo cai na fila pra vocês.",
+    modal_ig:"(só após o corte do ManyChat)", modal_wa:"(só após migrar o número)",
+    salvar:"Salvar", fechar_modal:"Fechar",
+    f_todas:"Todas", f_precisa_humano:"🙋 Precisa humano", f_nao_lida:"🔴 Não lidas",
+    f_aguardando_confirmacao:"🟣 Reservas", f_respondida:"🟢 Respondidas", f_fechada:"Fechadas",
+    st_nao_lida:"não lida", st_precisa_humano:"precisa humano", st_aguardando_confirmacao:"aguardando confirmação",
+    st_respondida:"respondida", st_fechada:"fechada",
+    devolver:"🤖 Devolver ao bot", devolver_title:"O bot volta a responder esta conversa",
+    lida:"✓ Lida", lida_title:"Marcar como lida/respondida",
+    fechar:"Fechar", fechar_title:"Encerrar a conversa",
+    modo_humano:"👤 ATENDENTE", modo_bot:"🤖 BOT",
+    selecione:"Selecione uma conversa",
+    texto_ph:"Escreva a resposta… (Enter envia, Shift+Enter quebra linha)",
+    enviar:"Enviar", enviar_title:"Enviar a resposta ao cliente",
+    envio_falhou:"Envio falhou: ", agora:"agora", midia:"mídia",
+    locale:"pt-BR",
+  },
+  en: {
+    doc_titulo:"Customer Inbox — Casa Pellegrini",
+    login_titulo:"🍻 Casa Pellegrini — Customer Inbox", login_chave:"Access key",
+    login_entrar:"Sign in", login_ou:"or", login_erro:"Wrong access key.",
+    fb_botao:"Continue with Facebook", fb_title:"Connect the Facebook Page and the Instagram account",
+    login_dica:"Admins and app reviewers: use this Facebook Login button to connect the Casa Pellegrini Facebook Page and Instagram account to the inbox.",
+    hdr_titulo:"🍻 Customer Inbox", carregando:"loading…", atualizado:"updated ", sem_conexao:"⚠️ offline",
+    som:"🔔 Sound", mudo:"🔕 Muted", som_title:"Turn the new-message sound alert on/off",
+    bot_title:"Choose which channels the automatic bot answers",
+    bot_on:"🤖 Bot: ", bot_off:"🤖 Bot: off",
+    conectar:"🔗 Connect", conectar_title:"Connect the Facebook Page and the Instagram account to the inbox",
+    conectado_title:"Connected. Click to reconnect/refresh access.",
+    modal_titulo:"🤖 Automatic bot",
+    modal_desc:"Choose the channels where the bot replies automatically. Where it is off, every message goes to the human agents' queue.",
+    modal_ig:"(after the ManyChat migration)", modal_wa:"(after the number migration)",
+    salvar:"Save", fechar_modal:"Close",
+    f_todas:"All", f_precisa_humano:"🙋 Needs human", f_nao_lida:"🔴 Unread",
+    f_aguardando_confirmacao:"🟣 Reservations", f_respondida:"🟢 Replied", f_fechada:"Closed",
+    st_nao_lida:"unread", st_precisa_humano:"needs human", st_aguardando_confirmacao:"pending confirmation",
+    st_respondida:"replied", st_fechada:"closed",
+    devolver:"🤖 Hand back to bot", devolver_title:"The bot resumes answering this conversation",
+    lida:"✓ Mark read", lida_title:"Mark this conversation as read/replied",
+    fechar:"Close", fechar_title:"Close this conversation",
+    modo_humano:"👤 HUMAN AGENT", modo_bot:"🤖 BOT",
+    selecione:"Select a conversation",
+    texto_ph:"Type your reply… (Enter sends, Shift+Enter adds a new line)",
+    enviar:"Send", enviar_title:"Send this reply to the customer",
+    envio_falhou:"Sending failed: ", agora:"now", midia:"media",
+    locale:"en-US",
+  },
+};
+// Legendas do screencast (só aparecem com ?demo=1).
+const LEGENDAS = {
+  pt: {
+    relogin:"<b class='passo'>3.</b> De volta ao painel: o atendente entra com a chave de acesso da equipe.",
+    login:"<b class='passo'>1.</b> Tela de entrada do atendimento. O botão azul <b>Continuar com o Facebook</b> faz o Login do Facebook e conecta a Página e o Instagram.",
+    lista:"<b class='passo'>3.</b> Caixa de entrada: todas as mensagens do Messenger e do Instagram. O filtro <b>🙋 Precisa humano</b> mostra o que o bot não resolve.",
+    conversa:"<b class='passo'>4.</b> Um atendente da equipe abre a conversa e lê a mensagem do cliente. O selo mostra se quem responde é o bot ou um atendente humano.",
+    digitando:"<b class='passo'>5.</b> O atendente escreve a resposta e clica em <b>Enviar</b>.",
+    enviado:"<b class='passo'>6.</b> Resposta enviada: ela chega ao cliente no Messenger/Instagram, com o selo 👤 ATENDENTE na conversa.",
+  },
+  en: {
+    relogin:"<b class='passo'>Step 3.</b> Back in the inbox, the staff member signs in with the team access key.",
+    login:"<b class='passo'>Step 1.</b> Inbox sign-in screen. The blue <b>Continue with Facebook</b> button runs Facebook Login to connect our Facebook Page and Instagram account.",
+    lista:"<b class='passo'>Step 3.</b> Inbox: every Messenger and Instagram message sent to Casa Pellegrini. The <b>🙋 Needs human</b> filter lists questions the bot can't answer, which our staff must reply to.",
+    conversa:"<b class='passo'>Step 4.</b> A human agent from our restaurant team opens the conversation and reads the customer's message. The badge shows whether the bot or a <b>HUMAN AGENT</b> is handling it.",
+    digitando:"<b class='passo'>Step 5.</b> The human agent types a personal reply and clicks <b>Send</b>. Our staff often answer after service hours, which is why we need the <b>human_agent</b> permission (reply window of up to 7 days).",
+    enviado:"<b class='passo'>Step 6.</b> The reply is sent through the Messenger/Instagram Send API and delivered to the customer's inbox. The conversation is now marked 👤 HUMAN AGENT.",
+  },
+};
+const qs = new URLSearchParams(location.search);
+function lerLS(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function gravarLS(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+let LANG = (qs.get("lang") || lerLS("atd_lang") || "pt").toLowerCase().startsWith("en") ? "en" : "pt";
+if (qs.get("lang")) gravarLS("atd_lang", LANG);
+const DEMO = qs.get("demo") === "1";
+const T = (k) => (TXT[LANG][k] !== undefined ? TXT[LANG][k] : TXT.pt[k] !== undefined ? TXT.pt[k] : k);
+
+function aplicarIdioma(){
+  document.documentElement.lang = LANG === "en" ? "en" : "pt-BR";
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = T(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => { el.innerHTML = T(el.dataset.i18nHtml); });
+  document.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = T(el.dataset.i18nPh); });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => { el.title = T(el.dataset.i18nTitle); });
+  document.querySelectorAll(".lang-toggle button").forEach((b) => b.classList.toggle("ativo", b.dataset.lang === LANG));
+  const btnSom = document.getElementById("btn-som");
+  if (btnSom) btnSom.textContent = somLigado ? T("som") : T("mudo");
+  if (typeof conversas !== "undefined" && conversas.length){ desenharLista(); }
+  if (convSel){ const c = conversas.find((x) => x.id === convSel); if (c) setCabecalho(c); carregarMensagens(); }
+  atualizarTitulo();
+  if (DEMO) legenda(passoAtual);
+}
+function trocarIdioma(l){
+  LANG = l; gravarLS("atd_lang", l);
+  const u = new URL(location.href); u.searchParams.set("lang", l); history.replaceState(null, "", u);
+  aplicarIdioma();
+  if (CHAVE && document.getElementById("login").style.display === "none"){ atualizarBotBadge(); carregarConexao(); }
+}
+let pendentesTitulo = 0;
+function atualizarTitulo(){ document.title = (pendentesTitulo ? "(" + pendentesTitulo + ") " : "") + T("doc_titulo"); }
+
+// ===== LEGENDAS (modo demo) =====
+let passoAtual = "login";
+const ALVOS = {relogin:"btn-entrar", login:"btn-fb-login", lista:"filtros", conversa:"chat-modo", digitando:"enviar", enviado:"mensagens"};
+function legenda(passo){
+  passoAtual = passo;
+  if (!DEMO) return;
+  document.body.classList.add("demo");
+  document.getElementById("legenda").innerHTML = LEGENDAS[LANG][passo] || "";
+  document.querySelectorAll(".destaque").forEach((e) => e.classList.remove("destaque"));
+  const alvo = document.getElementById(ALVOS[passo]);
+  if (alvo) alvo.classList.add("destaque");
+}
+
 const API = "/api/atendimento";
-let CHAVE = localStorage.getItem("atd_chave") || "";
+let CHAVE = lerLS("atd_chave") || "";
 let convSel = null, filtro = "todas", conversas = [];
 
 const $ = (id) => document.getElementById(id);
@@ -158,7 +306,7 @@ function headers(extra){ return Object.assign({"X-Painel-Key": CHAVE}, extra||{}
 // ===== ALERTA SONORO =====
 // Conversas nesses status precisam de um atendente humano.
 const PRECISA_HUMANO = ["nao_lida","precisa_humano","aguardando_confirmacao"];
-let somLigado = localStorage.getItem("atd_som") !== "off";
+let somLigado = lerLS("atd_som") !== "off";
 let audioCtx = null;
 let pendentesAntes = null;
 function initAudio(){
@@ -185,8 +333,8 @@ function tocarAlerta(){
 }
 function alternarSom(){
   somLigado = !somLigado;
-  localStorage.setItem("atd_som", somLigado ? "on" : "off");
-  $("btn-som").textContent = somLigado ? "🔔 Som" : "🔕 Mudo";
+  gravarLS("atd_som", somLigado ? "on" : "off");
+  $("btn-som").textContent = somLigado ? T("som") : T("mudo");
   if (somLigado){ initAudio(); tocarAlerta(); } // toca pra confirmar
 }
 // desbloqueia o áudio no primeiro clique/tecla (política do navegador)
@@ -197,9 +345,10 @@ async function entrar(){
   CHAVE = $("chave").value.trim();
   initAudio();
   const r = await fetch(API + "/conversas", {headers: headers()});
-  if (r.status === 401){ $("login-erro").textContent = "Chave incorreta."; return; }
-  localStorage.setItem("atd_chave", CHAVE);
+  if (r.status === 401){ $("login-erro").textContent = T("login_erro"); return; }
+  gravarLS("atd_chave", CHAVE);
   $("login").style.display = "none";
+  legenda("lista");
   ciclo();
 }
 
@@ -207,15 +356,15 @@ function tempoRel(ts){
   if (!ts) return "";
   const d = ts._seconds ? new Date(ts._seconds*1000) : new Date(ts);
   const dif = (Date.now() - d.getTime())/60000;
-  if (dif < 1) return "agora";
+  if (dif < 1) return T("agora");
   if (dif < 60) return Math.floor(dif) + "min";
   if (dif < 1440) return Math.floor(dif/60) + "h";
-  return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+  return d.toLocaleDateString(T("locale"),{day:"2-digit",month:"2-digit"});
 }
 function horaMsg(ts){
   if (!ts) return "";
   const d = ts._seconds ? new Date(ts._seconds*1000) : new Date(ts);
-  return d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  return d.toLocaleString(T("locale"),{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
 }
 const rotuloCanal = {whatsapp:"WhatsApp", instagram:"Instagram", facebook:"Facebook"};
 
@@ -224,12 +373,12 @@ async function carregarConversas(){
     const r = await fetch(API + "/conversas", {headers: headers()});
     if (!r.ok) throw new Error(r.status);
     conversas = (await r.json()).conversas || [];
-    $("conexao").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    $("conexao").textContent = T("atualizado") + new Date().toLocaleTimeString(T("locale"),{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     // alerta sonoro: se aumentou o nº de conversas que precisam de humano, toca
     const pend = conversas.filter((c) => PRECISA_HUMANO.includes(c.status)).length;
     if (pendentesAntes !== null && pend > pendentesAntes) tocarAlerta();
     pendentesAntes = pend;
-    document.title = (pend ? "(" + pend + ") " : "") + "Atendimento — Casa Pellegrini";
+    pendentesTitulo = pend; atualizarTitulo();
     atualizarBadgesFiltro();
     desenharLista();
     // mantém o cabeçalho da conversa aberta em dia (nome/modo)
@@ -237,7 +386,7 @@ async function carregarConversas(){
       const aberta = conversas.find((x) => x.id === convSel);
       if (aberta) setCabecalho(aberta);
     }
-  }catch(e){ $("conexao").textContent = "⚠️ sem conexão"; }
+  }catch(e){ $("conexao").textContent = T("sem_conexao"); }
 }
 
 function atualizarBadgesFiltro(){
@@ -259,7 +408,7 @@ function desenharLista(){
       div.innerHTML =
         '<div class="topo"><span class="nome">' + (c.nome || c.usuarioId) + '</span>' +
         (c.naoLidas ? '<span class="naoLidas">' + c.naoLidas + "</span>" : "") +
-        '<span class="badge b-' + c.status + '">' + (c.status||"").replace("_"," ") + "</span></div>" +
+        '<span class="badge b-' + c.status + '">' + T("st_" + c.status) + "</span></div>" +
         '<div class="previa">' + (c.ultimaMensagem || "") + "</div>" +
         '<div class="meta"><span class="canal ' + c.canal + '">' + (rotuloCanal[c.canal]||c.canal) + "</span><span>" + tempoRel(c.ultimaEm) + "</span></div>";
       div.onclick = () => abrirConversa(c.id);
@@ -274,6 +423,7 @@ async function abrirConversa(id){
   document.body.classList.add("vendo-chat");
   if (window.innerWidth <= 700) $("voltar").style.display = "block";
   desenharLista();
+  legenda("conversa");
   await carregarMensagens();
   if (c.naoLidas) fetch(API + "/status", {method:"POST", headers: headers({"Content-Type":"application/json"}), body: JSON.stringify({conv:id, status: c.status === "nao_lida" ? "respondida" : c.status})});
 }
@@ -287,7 +437,7 @@ async function carregarMensagens(){
   ms.forEach((m) => {
     const div = document.createElement("div");
     div.className = "msg m-" + (m.de || "cliente");
-    div.textContent = m.texto || "[" + (m.tipo||"mídia") + "]";
+    div.textContent = m.texto || "[" + (m.tipo||T("midia")) + "]";
     const h = document.createElement("span");
     h.className = "hora"; h.textContent = horaMsg(m.timestamp);
     div.appendChild(h);
@@ -304,10 +454,11 @@ async function responder(){
     const r = await fetch(API + "/responder", {method:"POST", headers: headers({"Content-Type":"application/json"}), body: JSON.stringify({conv: convSel, texto})});
     if (!r.ok){
       const j = await r.json().catch(() => ({}));
-      alert("Envio falhou: " + JSON.stringify(j.detalhe || j.erro || r.status));
+      alert(T("envio_falhou") + JSON.stringify(j.detalhe || j.erro || r.status));
     } else {
       $("texto").value = "";
       await carregarMensagens(); await carregarConversas();
+      legenda("enviado");
     }
   } finally { $("enviar").disabled = false; }
 }
@@ -343,7 +494,7 @@ async function atualizarBotBadge(){
     if(!r.ok) return;
     const c = (await r.json()).bot_canais || {};
     const on = Object.keys(c).filter(k => c[k]);
-    $("btn-bot").textContent = on.length ? "🤖 Bot: " + on.join(", ") : "🤖 Bot: desligado";
+    $("btn-bot").textContent = on.length ? T("bot_on") + on.join(", ") : T("bot_off");
   }catch(e){}
 }
 function setCabecalho(c){
@@ -351,10 +502,10 @@ function setCabecalho(c){
   $("chat-canal").textContent = rotuloCanal[c.canal] || c.canal || "";
   const badge = $("chat-modo");
   if (c.modo === "humano"){
-    badge.textContent = "👤 ATENDENTE";
+    badge.textContent = T("modo_humano");
     badge.className = "modo-badge mb-humano";
   } else {
-    badge.textContent = "🤖 BOT";
+    badge.textContent = T("modo_bot");
     badge.className = "modo-badge mb-bot";
   }
   badge.style.display = "inline-block";
@@ -369,6 +520,7 @@ async function devolverBot(){
   if (c) setCabecalho(c); // atualiza o selo pra 🤖 BOT na hora
 }
 
+$("texto").addEventListener("input", () => { if (DEMO && $("texto").value.trim() && passoAtual !== "digitando") legenda("digitando"); });
 $("texto").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); responder(); }
 });
@@ -380,7 +532,8 @@ document.querySelectorAll("#filtros button").forEach((b) => {
 });
 
 function ciclo(){
-  $("btn-som").textContent = somLigado ? "🔔 Som" : "🔕 Mudo";
+  $("btn-som").textContent = somLigado ? T("som") : T("mudo");
+  $("conexao").textContent = T("carregando");
   carregarConversas();
   atualizarBotBadge();
   carregarConexao();
@@ -405,7 +558,7 @@ function urlLoginFacebook(d){
     + "?client_id=" + encodeURIComponent(d.appId || FB_APP_ID)
     + "&redirect_uri=" + encodeURIComponent(d.redirect || FB_REDIRECT)
     + "&response_type=code"
-    + "&state=" + Math.random().toString(36).slice(2);
+    + "&state=" + encodeURIComponent(LANG + (DEMO ? "-demo" : "") + "." + Math.random().toString(36).slice(2));
   // Login do Facebook para Empresas usa config_id; sem ele, cai no scope.
   if (d.configId) url += "&config_id=" + encodeURIComponent(d.configId);
   else url += "&scope=" + encodeURIComponent(d.scopes || FB_SCOPES);
@@ -432,15 +585,20 @@ async function carregarConexao(){
       const ig = d.conexao.instagram ? " · @" + d.conexao.instagram : "";
       b.textContent = "🔗 " + d.conexao.pagina + ig;
       b.style.background = "#166534";
-      b.title = "Conectado. Clique pra reconectar/atualizar o acesso.";
+      b.title = T("conectado_title");
     }
   }catch(e){ /* mantém o botão padrão */ }
 }
 
+document.querySelectorAll(".lang-toggle button").forEach((b) => { b.onclick = () => trocarIdioma(b.dataset.lang); });
+aplicarIdioma();
+legenda(qs.get("conectado") === "1" ? "relogin" : "login");
+
 if (CHAVE){
   $("login").style.display = "none";
+  legenda("lista");
   fetch(API + "/conversas", {headers: headers()}).then((r) => {
-    if (r.status === 401){ $("login").style.display = "flex"; localStorage.removeItem("atd_chave"); }
+    if (r.status === 401){ $("login").style.display = "flex"; try{ localStorage.removeItem("atd_chave"); }catch(e){} legenda(qs.get("conectado") === "1" ? "relogin" : "login"); }
     else ciclo();
   });
 }
