@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-15",
+ "atualizado_em": "2026-09-16",
  "total": 338,
  "registros": [
   {
@@ -4663,10 +4663,10 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DGid5uvupYj/",
    "caption": "Esse não tem erro!  #RestaurantePetropolis #BarPetropolis #CentroHistoricoPetropolis #AlmocoExecutivo #hamburgueria",
-   "status": "PROMOVIDO",
+   "status": "CORTADO_RESULTADO",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:Frango à parmegiana",
+   "flags": "gemini_aprovou:sim|tema:Frango à parmegiana;cortado_regua_B:2026-09-16;saida:R$68,26/8214imp/3c/CPA22,75=1,95x;c_mil:0,66=0,49x_base;recuperacao_7d_revertida:R$15,37/0c",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-08-21",
    "data_entrada_teste": "2026-08-21",
