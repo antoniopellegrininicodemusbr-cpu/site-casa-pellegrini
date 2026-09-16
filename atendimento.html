@@ -55,7 +55,11 @@
   .m-cliente{background:var(--card2);align-self:flex-start;border-bottom-left-radius:3px}
   .m-atendente{background:#3e5c41;align-self:flex-end;border-bottom-right-radius:3px}
   .m-bot{background:#2e4257;align-self:flex-end;border-bottom-right-radius:3px}
-  .m-bot::before{content:"🤖 bot";font-size:10px;color:rgba(255,255,255,.5);display:block}
+  .m-pagina{background:#3a3550;align-self:flex-end;border-bottom-right-radius:3px}
+  .msg .rotulo{display:block;font-size:10px;color:rgba(255,255,255,.55);margin-bottom:2px}
+  .msg img.midia,.msg video.midia{display:block;max-width:240px;max-height:320px;border-radius:8px;margin-top:2px;cursor:pointer}
+  .msg a{color:#8ec5ff}
+  .msg .aviso{font-style:italic;color:var(--txt2)}
   #resposta{display:flex;gap:8px;padding:12px;background:var(--card);border-top:1px solid var(--linha)}
   #resposta textarea{flex:1;background:var(--card2);border:1px solid var(--linha);border-radius:10px;color:var(--txt);padding:10px;font-size:14px;resize:none;height:60px}
   #resposta button{background:var(--ouro);color:#14100c;border:none;border-radius:10px;padding:0 22px;font-weight:700;font-size:14px;cursor:pointer}
@@ -199,6 +203,8 @@ const TXT = {
     texto_ph:"Escreva a resposta… (Enter envia, Shift+Enter quebra linha)",
     enviar:"Enviar", enviar_title:"Enviar a resposta ao cliente",
     envio_falhou:"Envio falhou: ", agora:"agora", midia:"mídia",
+    rot_bot:"🤖 bot", rot_atendente:"👤 atendente (painel)", rot_pagina:"📱 Página (Business Suite / ManyChat)",
+    indisponivel:"conteúdo indisponível", abrir_link:"abrir link", arquivo:"arquivo",
     locale:"pt-BR",
   },
   en: {
@@ -229,6 +235,8 @@ const TXT = {
     texto_ph:"Type your reply… (Enter sends, Shift+Enter adds a new line)",
     enviar:"Send", enviar_title:"Send this reply to the customer",
     envio_falhou:"Sending failed: ", agora:"now", midia:"media",
+    rot_bot:"🤖 bot", rot_atendente:"👤 human agent (inbox)", rot_pagina:"📱 Page (Business Suite / ManyChat)",
+    indisponivel:"content unavailable", abrir_link:"open link", arquivo:"file",
     locale:"en-US",
   },
 };
@@ -300,6 +308,11 @@ let CHAVE = lerLS("atd_chave") || "";
 let convSel = null, filtro = "todas", conversas = [];
 
 const $ = (id) => document.getElementById(id);
+// escapa texto vindo de clientes antes de montar HTML (evita injeção no painel)
+const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, (ch) =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[ch]);
+// "[fallback]" = conteúdo que a Meta não entrega (mensagem expirada etc.)
+const previa = (t) => (t === "[fallback]" ? "[" + T("indisponivel") + "]" : (t || ""));
 
 function headers(extra){ return Object.assign({"X-Painel-Key": CHAVE}, extra||{}); }
 
@@ -406,11 +419,11 @@ function desenharLista(){
       const div = document.createElement("div");
       div.className = "conv" + (c.id === convSel ? " sel" : "");
       div.innerHTML =
-        '<div class="topo"><span class="nome">' + (c.nome || c.usuarioId) + '</span>' +
+        '<div class="topo"><span class="nome">' + esc(c.nome || c.usuarioId) + '</span>' +
         (c.naoLidas ? '<span class="naoLidas">' + c.naoLidas + "</span>" : "") +
         '<span class="badge b-' + c.status + '">' + T("st_" + c.status) + "</span></div>" +
-        '<div class="previa">' + (c.ultimaMensagem || "") + "</div>" +
-        '<div class="meta"><span class="canal ' + c.canal + '">' + (rotuloCanal[c.canal]||c.canal) + "</span><span>" + tempoRel(c.ultimaEm) + "</span></div>";
+        '<div class="previa">' + esc(previa(c.ultimaMensagem)) + "</div>" +
+        '<div class="meta"><span class="canal ' + esc(c.canal) + '">' + esc(rotuloCanal[c.canal]||c.canal) + "</span><span>" + tempoRel(c.ultimaEm) + "</span></div>";
       div.onclick = () => abrirConversa(c.id);
       el.appendChild(div);
     });
@@ -435,9 +448,34 @@ async function carregarMensagens(){
   const ms = (await r.json()).mensagens || [];
   const el = $("mensagens"); el.innerHTML = "";
   ms.forEach((m) => {
+    const de = ["cliente","bot","atendente","pagina"].includes(m.de) ? m.de : "cliente";
     const div = document.createElement("div");
-    div.className = "msg m-" + (m.de || "cliente");
-    div.textContent = m.texto || "[" + (m.tipo||T("midia")) + "]";
+    div.className = "msg m-" + de;
+    if (de !== "cliente"){
+      const rot = document.createElement("span");
+      rot.className = "rotulo"; rot.textContent = T("rot_" + de);
+      div.appendChild(rot);
+    }
+    const seguro = (u) => /^https:\/\//i.test(u || "");
+    if ((m.tipo === "image" || m.tipo === "video") && seguro(m.midia)){
+      const el = document.createElement(m.tipo === "image" ? "img" : "video");
+      el.className = "midia"; el.src = m.midia;
+      if (m.tipo === "video") el.controls = true;
+      else el.onclick = () => window.open(m.midia, "_blank", "noopener");
+      div.appendChild(el);
+      if (m.texto){ const t = document.createElement("div"); t.textContent = m.texto; div.appendChild(t); }
+    } else if (m.tipo === "compartilhamento" || m.tipo === "arquivo"){
+      const t = document.createElement("div");
+      t.className = m.link || m.midia ? "" : "aviso";
+      t.textContent = (m.tipo === "arquivo" ? "📎 " : "🔗 ") + (m.texto || T(m.tipo === "arquivo" ? "arquivo" : "indisponivel"));
+      div.appendChild(t);
+      const url = m.link || m.midia;
+      if (seguro(url)){ const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = T("abrir_link"); div.appendChild(a); }
+    } else if (m.tipo === "fallback" && !m.texto){
+      const t = document.createElement("div"); t.className = "aviso"; t.textContent = "[" + T("indisponivel") + "]"; div.appendChild(t);
+    } else {
+      div.appendChild(document.createTextNode(m.texto || "[" + (m.tipo||T("midia")) + "]"));
+    }
     const h = document.createElement("span");
     h.className = "hora"; h.textContent = horaMsg(m.timestamp);
     div.appendChild(h);
