@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-16",
- "total": 338,
+ "atualizado_em": "2026-09-17",
+ "total": 339,
  "registros": [
+  {
+   "media_id": "18352534756174143",
+   "data_post": "2026-09-15",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DdUuthfvG6Z/",
+   "caption": "Hoje tá batendo 14ºc, tá liberado pedir caldinho. Estamos no ifood também ✅  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "A legenda cita explicitamente o serviço de delivery/iFood, o que é proibido para campanhas de visita física.",
+   "flags": "gemini_aprovou:nao|sazon:frio|IA_CELEBRIDADE|tema:Caldinho no frio",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-17",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18145547803485029",
    "data_post": "2026-09-13",
