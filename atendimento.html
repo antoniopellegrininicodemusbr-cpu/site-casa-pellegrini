@@ -58,6 +58,10 @@
   .m-pagina{background:#3a3550;align-self:flex-end;border-bottom-right-radius:3px}
   .msg .rotulo{display:block;font-size:10px;color:rgba(255,255,255,.55);margin-bottom:2px}
   .msg img.midia,.msg video.midia{display:block;max-width:240px;max-height:320px;border-radius:8px;margin-top:2px;cursor:pointer}
+  .msg audio.midia{display:block;width:260px;margin-top:2px}
+  .msg .transcricao{display:block;font-size:13px;opacity:.85;margin-top:4px;font-style:italic}
+  .msg .arquivo{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid var(--linha);border-radius:10px;padding:8px 12px;text-decoration:none;color:var(--txt);margin-top:2px}
+  .msg .arquivo:hover{border-color:var(--ouro)}
   .msg a{color:#8ec5ff}
   .msg .aviso{font-style:italic;color:var(--txt2)}
   #resposta{display:flex;gap:8px;padding:12px;background:var(--card);border-top:1px solid var(--linha)}
@@ -204,6 +208,7 @@ const TXT = {
     enviar:"Enviar", enviar_title:"Enviar a resposta ao cliente",
     envio_falhou:"Envio falhou: ", agora:"agora", midia:"mídia",
     rot_bot:"🤖 bot", rot_atendente:"👤 atendente (painel)", rot_pagina:"📱 Página (Business Suite / ManyChat)",
+    audio:"🎤 áudio", sem_transcricao:"(sem transcrição)", baixar:"abrir arquivo",
     indisponivel:"conteúdo indisponível", abrir_link:"abrir link", arquivo:"arquivo",
     locale:"pt-BR",
   },
@@ -236,6 +241,7 @@ const TXT = {
     enviar:"Send", enviar_title:"Send this reply to the customer",
     envio_falhou:"Sending failed: ", agora:"now", midia:"media",
     rot_bot:"🤖 bot", rot_atendente:"👤 human agent (inbox)", rot_pagina:"📱 Page (Business Suite / ManyChat)",
+    audio:"🎤 voice message", sem_transcricao:"(no transcript)", baixar:"open file",
     indisponivel:"content unavailable", abrir_link:"open link", arquivo:"file",
     locale:"en-US",
   },
@@ -405,6 +411,7 @@ async function carregarConversas(){
 function atualizarBadgesFiltro(){
   const cont = {precisa_humano:0, nao_lida:0, aguardando_confirmacao:0};
   conversas.forEach((c) => { if (cont[c.status] !== undefined) cont[c.status]++; });
+  cont.precisa_humano += cont.aguardando_confirmacao; // reservas entram na fila única
   Object.keys(cont).forEach((s) => {
     const el = $("fb-" + s);
     if (el){ el.textContent = cont[s] || ""; el.style.display = cont[s] ? "inline-block" : "none"; }
@@ -414,7 +421,12 @@ function atualizarBadgesFiltro(){
 function desenharLista(){
   const el = $("conversas"); el.innerHTML = "";
   conversas
-    .filter((c) => filtro === "todas" ? c.status !== "fechada" : c.status === filtro)
+    // 🙋 Precisa humano é a fila única de "tem gente esperando": inclui as
+    // reservas prontas (aguardando confirmação do atendente).
+    .filter((c) => filtro === "todas" ? c.status !== "fechada" :
+      filtro === "precisa_humano" ?
+        (c.status === "precisa_humano" || c.status === "aguardando_confirmacao") :
+        c.status === filtro)
     .forEach((c) => {
       const div = document.createElement("div");
       div.className = "conv" + (c.id === convSel ? " sel" : "");
@@ -457,11 +469,32 @@ async function carregarMensagens(){
       div.appendChild(rot);
     }
     const seguro = (u) => /^https:\/\//i.test(u || "");
-    if ((m.tipo === "image" || m.tipo === "video") && seguro(m.midia)){
+    // WhatsApp manda ID de mídia (buscamos pela rota /midia, com a chave na
+    // query porque <audio>/<img> não mandam cabeçalho); FB/IG mandam URL.
+    const urlMidia = m.midiaId ?
+      (API + "/midia?id=" + encodeURIComponent(m.midiaId) +
+        "&key=" + encodeURIComponent(CHAVE)) :
+      (seguro(m.midia) ? m.midia : null);
+    if (m.tipo === "audio" && urlMidia){
+      const a = document.createElement("audio");
+      a.className = "midia"; a.controls = true; a.preload = "none"; a.src = urlMidia;
+      div.appendChild(a);
+      if (m.texto){
+        const t = document.createElement("span");
+        t.className = "transcricao"; t.textContent = m.texto;
+        div.appendChild(t);
+      }
+    } else if ((m.tipo === "document" || m.tipo === "file") && urlMidia){
+      const a = document.createElement("a");
+      a.className = "arquivo"; a.href = urlMidia; a.target = "_blank"; a.rel = "noopener";
+      a.textContent = "📎 " + (m.nomeArquivo || T("baixar"));
+      div.appendChild(a);
+      if (m.texto){ const t = document.createElement("div"); t.textContent = m.texto; div.appendChild(t); }
+    } else if ((m.tipo === "image" || m.tipo === "video") && urlMidia){
       const el = document.createElement(m.tipo === "image" ? "img" : "video");
-      el.className = "midia"; el.src = m.midia;
+      el.className = "midia"; el.src = urlMidia;
       if (m.tipo === "video") el.controls = true;
-      else el.onclick = () => window.open(m.midia, "_blank", "noopener");
+      else el.onclick = () => window.open(urlMidia, "_blank", "noopener");
       div.appendChild(el);
       if (m.texto){ const t = document.createElement("div"); t.textContent = m.texto; div.appendChild(t); }
     } else if (m.tipo === "compartilhamento" || m.tipo === "arquivo"){
