@@ -142,9 +142,8 @@
     <div id="filtros">
       <button data-f="todas" class="ativo"><span data-i18n="f_todas">Todas</span></button>
       <button data-f="precisa_humano"><span data-i18n="f_precisa_humano">🙋 Precisa humano</span> <span class="fbadge" id="fb-precisa_humano"></span></button>
-      <button data-f="nao_lida"><span data-i18n="f_nao_lida">🔴 Não lidas</span> <span class="fbadge" id="fb-nao_lida"></span></button>
       <button data-f="aguardando_confirmacao"><span data-i18n="f_aguardando_confirmacao">🟣 Reservas</span> <span class="fbadge" id="fb-aguardando_confirmacao"></span></button>
-      <button data-f="respondida"><span data-i18n="f_respondida">🟢 Respondidas</span></button>
+      <button data-f="respondida" data-i18n-title="f_respondida_title"><span data-i18n="f_respondida">🟢 Resolvidas</span></button>
       <button data-f="fechada"><span data-i18n="f_fechada">Fechadas</span></button>
     </div>
     <div id="conversas"></div>
@@ -159,6 +158,7 @@
       <span id="chat-modo" class="modo-badge" style="display:none"></span>
       <div class="acoes">
         <button id="btn-devolver" onclick="devolverBot()" style="display:none" data-i18n="devolver" data-i18n-title="devolver_title">🤖 Devolver ao bot</button>
+        <button id="btn-pro-humano" onclick="mudarStatus('precisa_humano')" data-i18n="pro_humano" data-i18n-title="pro_humano_title" style="border-color:#e8933a">🙋 Pro humano</button>
         <button id="btn-lida" onclick="mudarStatus('respondida')" data-i18n="lida" data-i18n-title="lida_title">✓ Lida</button>
         <button id="btn-fechar" onclick="mudarStatus('fechada')" data-i18n="fechar" data-i18n-title="fechar_title">Fechar</button>
       </div>
@@ -196,10 +196,14 @@ const TXT = {
     modal_ig:"(só após o corte do ManyChat)", modal_wa:"(só após migrar o número)",
     salvar:"Salvar", fechar_modal:"Fechar",
     f_todas:"Todas", f_precisa_humano:"🙋 Precisa humano", f_nao_lida:"🔴 Não lidas",
-    f_aguardando_confirmacao:"🟣 Reservas", f_respondida:"🟢 Respondidas", f_fechada:"Fechadas",
+    f_aguardando_confirmacao:"🟣 Reservas", f_respondida:"🟢 Resolvidas",
+    f_respondida_title:"Já respondidas — pelo bot ou por um atendente",
+    f_fechada:"Fechadas",
     st_nao_lida:"não lida", st_precisa_humano:"precisa humano", st_aguardando_confirmacao:"aguardando confirmação",
     st_respondida:"respondida", st_fechada:"fechada",
+    st_reserva:"reserva em andamento", st_reserva_parada:"reserva parada",
     devolver:"🤖 Devolver ao bot", devolver_title:"O bot volta a responder esta conversa",
+    pro_humano:"🙋 Pro humano", pro_humano_title:"Manda pra fila Precisa humano e tira do bot",
     lida:"✓ Lida", lida_title:"Marcar como lida/respondida",
     fechar:"Fechar", fechar_title:"Encerrar a conversa",
     modo_humano:"👤 ATENDENTE", modo_bot:"🤖 BOT",
@@ -229,10 +233,14 @@ const TXT = {
     modal_ig:"(after the ManyChat migration)", modal_wa:"(after the number migration)",
     salvar:"Save", fechar_modal:"Close",
     f_todas:"All", f_precisa_humano:"🙋 Needs human", f_nao_lida:"🔴 Unread",
-    f_aguardando_confirmacao:"🟣 Reservations", f_respondida:"🟢 Replied", f_fechada:"Closed",
+    f_aguardando_confirmacao:"🟣 Reservations", f_respondida:"🟢 Handled",
+    f_respondida_title:"Already answered — by the bot or by a human agent",
+    f_fechada:"Closed",
     st_nao_lida:"unread", st_precisa_humano:"needs human", st_aguardando_confirmacao:"pending confirmation",
     st_respondida:"replied", st_fechada:"closed",
+    st_reserva:"booking in progress", st_reserva_parada:"booking stalled",
     devolver:"🤖 Hand back to bot", devolver_title:"The bot resumes answering this conversation",
+    pro_humano:"🙋 To human", pro_humano_title:"Send to the Needs human queue and take it off the bot",
     lida:"✓ Mark read", lida_title:"Mark this conversation as read/replied",
     fechar:"Close", fechar_title:"Close this conversation",
     modo_humano:"👤 HUMAN AGENT", modo_bot:"🤖 BOT",
@@ -322,9 +330,27 @@ const previa = (t) => (t === "[fallback]" ? "[" + T("indisponivel") + "]" : (t |
 
 function headers(extra){ return Object.assign({"X-Painel-Key": CHAVE}, extra||{}); }
 
+// ===== REGRAS DA FILA =====
+// Reserva "parada": o bot fez uma pergunta da reserva e o cliente sumiu.
+const MIN_RESERVA_PARADA = 30; // minutos
+function minutosDesde(ts){
+  if (!ts) return 0;
+  const d = ts._seconds ? new Date(ts._seconds*1000) : new Date(ts);
+  return (Date.now() - d.getTime()) / 60000;
+}
+// Está coletando reserva (desde a primeira mensagem sobre reserva).
+const emReserva = (c) => c.modo === "reserva" || c.status === "aguardando_confirmacao";
+// Reserva que travou no meio das perguntas.
+const reservaParada = (c) => c.modo === "reserva" &&
+  minutosDesde(c.ultimaEm) > MIN_RESERVA_PARADA;
+// Fila única de "tem gente esperando um humano": inclui reserva pronta
+// (aguardando confirmação) e reserva parada no meio.
+const precisaHumano = (c) => c.status === "precisa_humano" ||
+  c.status === "aguardando_confirmacao" || reservaParada(c);
+
 // ===== ALERTA SONORO =====
-// Conversas nesses status precisam de um atendente humano.
-const PRECISA_HUMANO = ["nao_lida","precisa_humano","aguardando_confirmacao"];
+// Só toca/conta o que realmente precisa de um atendente (nunca o que o bot
+// já vai responder sozinho).
 let somLigado = lerLS("atd_som") !== "off";
 let audioCtx = null;
 let pendentesAntes = null;
@@ -394,7 +420,7 @@ async function carregarConversas(){
     conversas = (await r.json()).conversas || [];
     $("conexao").textContent = T("atualizado") + new Date().toLocaleTimeString(T("locale"),{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     // alerta sonoro: se aumentou o nº de conversas que precisam de humano, toca
-    const pend = conversas.filter((c) => PRECISA_HUMANO.includes(c.status)).length;
+    const pend = conversas.filter(precisaHumano).length;
     if (pendentesAntes !== null && pend > pendentesAntes) tocarAlerta();
     pendentesAntes = pend;
     pendentesTitulo = pend; atualizarTitulo();
@@ -409,9 +435,11 @@ async function carregarConversas(){
 }
 
 function atualizarBadgesFiltro(){
-  const cont = {precisa_humano:0, nao_lida:0, aguardando_confirmacao:0};
-  conversas.forEach((c) => { if (cont[c.status] !== undefined) cont[c.status]++; });
-  cont.precisa_humano += cont.aguardando_confirmacao; // reservas entram na fila única
+  const cont = {precisa_humano:0, aguardando_confirmacao:0};
+  conversas.forEach((c) => {
+    if (precisaHumano(c)) cont.precisa_humano++;
+    if (emReserva(c) && c.status !== "fechada") cont.aguardando_confirmacao++;
+  });
   Object.keys(cont).forEach((s) => {
     const el = $("fb-" + s);
     if (el){ el.textContent = cont[s] || ""; el.style.display = cont[s] ? "inline-block" : "none"; }
@@ -423,17 +451,27 @@ function desenharLista(){
   conversas
     // 🙋 Precisa humano é a fila única de "tem gente esperando": inclui as
     // reservas prontas (aguardando confirmação do atendente).
-    .filter((c) => filtro === "todas" ? c.status !== "fechada" :
-      filtro === "precisa_humano" ?
-        (c.status === "precisa_humano" || c.status === "aguardando_confirmacao") :
-        c.status === filtro)
+    .filter((c) => {
+      if (filtro === "todas") return c.status !== "fechada";
+      // 🙋 Precisa humano = fila única (inclui reserva pronta e reserva parada).
+      if (filtro === "precisa_humano") return precisaHumano(c);
+      // 🟣 Reservas = desde a primeira mensagem sobre reserva até a confirmação.
+      if (filtro === "aguardando_confirmacao") {
+        return emReserva(c) && c.status !== "fechada";
+      }
+      return c.status === filtro;
+    })
     .forEach((c) => {
       const div = document.createElement("div");
       div.className = "conv" + (c.id === convSel ? " sel" : "");
       div.innerHTML =
         '<div class="topo"><span class="nome">' + esc(c.nome || c.usuarioId) + '</span>' +
         (c.naoLidas ? '<span class="naoLidas">' + c.naoLidas + "</span>" : "") +
-        '<span class="badge b-' + c.status + '">' + T("st_" + c.status) + "</span></div>" +
+        '<span class="badge b-' + (reservaParada(c) ? "precisa_humano" :
+          emReserva(c) ? "aguardando_confirmacao" : c.status) + '">' +
+          (reservaParada(c) ? T("st_reserva_parada") :
+            (c.modo === "reserva" ? T("st_reserva") : T("st_" + c.status))) +
+        "</span></div>" +
         '<div class="previa">' + esc(previa(c.ultimaMensagem)) + "</div>" +
         '<div class="meta"><span class="canal ' + esc(c.canal) + '">' + esc(rotuloCanal[c.canal]||c.canal) + "</span><span>" + tempoRel(c.ultimaEm) + "</span></div>";
       div.onclick = () => abrirConversa(c.id);
