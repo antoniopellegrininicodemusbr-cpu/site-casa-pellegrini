@@ -237,6 +237,14 @@
    "permalink": "https://www.instagram.com/reel/DcZsM04vPTq/",
    "timestamp": "2026-08-23T23:42:37+0000"
   },
+  "18103939154340090": {
+   "bluesky": true,
+   "discord": true,
+   "linkedin": true,
+   "media_type": "VIDEO",
+   "permalink": "https://www.instagram.com/reel/Ddg3pyOuNqf/",
+   "timestamp": "2026-09-20T15:07:53+0000"
+  },
   "18107640724838089": {
    "bluesky": true,
    "discord": true,
@@ -295,6 +303,7 @@
    "linkedin": true,
    "media_type": "CAROUSEL_ALBUM",
    "permalink": "https://www.instagram.com/p/DdXGeMqnzcG/",
+   "tiktok": true,
    "timestamp": "2026-09-16T20:04:12+0000"
   },
   "18145547803485029": {
@@ -303,6 +312,7 @@
    "linkedin": true,
    "media_type": "VIDEO",
    "permalink": "https://www.instagram.com/reel/DdPtCh2P40S/",
+   "tiktok": true,
    "timestamp": "2026-09-13T23:10:47+0000"
   },
   "18166406800459927": {
@@ -347,6 +357,7 @@
    "linkedin": true,
    "media_type": "VIDEO",
    "permalink": "https://www.instagram.com/reel/DdUuthfvG6Z/",
+   "tiktok": true,
    "timestamp": "2026-09-15T21:59:23+0000"
   },
   "18537855724075733": {
@@ -385,5 +396,5 @@
    "timestamp": "2026-08-02T15:04:49+0000"
   }
  },
- "updated_at": "2026-09-19T23:54:16.157994+00:00"
+ "updated_at": "2026-09-20T18:39:54.320049+00:00"
 }
