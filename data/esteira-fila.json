@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-19",
- "total": 339,
+ "atualizado_em": "2026-09-20",
+ "total": 340,
  "registros": [
+  {
+   "media_id": "18125218948881413",
+   "data_post": "2026-09-19",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DdeP5YUuoRA/",
+   "caption": "Quando o cliente tá com sede ⚡️  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "4",
+   "motivo_reprova": "O vídeo é focado em um meme/brincadeira interna com garrafas de cerveja, sem apelo direto de produto ou consumo real.",
+   "flags": "gemini_aprovou:nao|tema:Brincadeira com garrafas",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-20",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18352534756174143",
    "data_post": "2026-09-15",
