@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-22T12:45",
+ "atualizado_em": "2026-09-22",
  "total": 341,
  "registros": [
   {
@@ -1110,10 +1110,10 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DY94tgMu_sL/",
    "caption": "Pessoal, e aí… já fizeram o cadastro? 👀  Não dá mole igual o Sobrinho, hein? Faz seu cadastro, acumule pontos e garanta seus prêmios com a gente 🍻  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "PROMOVIDO",
+   "status": "CORTADO_RESULTADO",
    "nota_gemini": "",
    "motivo_reprova": "",
-   "flags": "",
+   "flags": ";cortado_regua_B_0.7x:2026-09-22;saida:R$139,98/8c/CPA17,50=1,62x;c_mil:0,57x_base",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
@@ -1566,10 +1566,10 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DW_ro-7jjqj/",
    "caption": "Equipe de 🌽🌽  #RestaurantePetropolis #BarPetropolis #CentroHistoricoPetropolis #AlmocoExecutivo #Hamburguer",
-   "status": "PROMOVIDO",
+   "status": "CORTADO_RESULTADO",
    "nota_gemini": "",
    "motivo_reprova": "",
-   "flags": "",
+   "flags": ";cortado_regua_B_0.7x:2026-09-22;saida:R$446,20/18c/CPA22,31=1,80x;c_mil:0,66x_base;7d:R$121,64/2c/CPA60,82;38%_da_verba_VDia",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
