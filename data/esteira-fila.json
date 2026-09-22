@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-21",
+ "atualizado_em": "2026-09-22",
  "total": 341,
  "registros": [
   {
@@ -8,12 +8,12 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/Ddg3pyOuNqf/",
    "caption": "Sol + boa companhia + Smoked + Philadelphia + suquinho natural. Absurdo ✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "NAO_TRIADO",
-   "nota_gemini": "",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "",
-   "conjunto_sugerido": "",
-   "data_triagem": "",
+   "flags": "gemini_aprovou:sim|tema:Hambúrguer e wrap|legenda_v2:ok",
+   "conjunto_sugerido": "dia",
+   "data_triagem": "2026-09-22",
    "data_entrada_teste": "",
    "gasto_teste": "",
    "compras_teste": "",
