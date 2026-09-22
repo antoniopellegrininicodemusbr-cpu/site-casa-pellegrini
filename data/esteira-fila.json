@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-22",
+ "atualizado_em": "2026-09-22T12:45",
  "total": 341,
  "registros": [
   {
@@ -6148,7 +6148,7 @@
    "status": "EM_TESTE",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:Montagem de hambúrguer|legenda_v2:ok",
+   "flags": "gemini_aprovou:sim|tema:Montagem de hambúrguer|legenda_v2:ok|expira_2anos:2026-09-23(em_teste;se_reprovar_nao_reentra)",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-22",
    "data_entrada_teste": "2026-09-09",
