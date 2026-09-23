@@ -423,6 +423,13 @@ const rcpf = document.getElementById('rcpf');
 rcpf.addEventListener('input', () => {
   rcpf.value = rcpf.value.replace(/[^\d]/g,'').slice(0,11);
 });
+/* veio do botão "Não tenho ou esqueci a senha" da /minha-conta: traz o que
+   a pessoa já tinha digitado lá, pra não pedir de novo */
+try{
+  const veio = sessionStorage.getItem('cp_ident_login');
+  if (veio && !rcpf.value){ rcpf.value = veio.slice(0,11); }
+  sessionStorage.removeItem('cp_ident_login');
+}catch(e){}
 function identValido(d){
   return (d.length===11 && cpfValido(d)) || ((d.length===10||d.length===11) && d[2]==='9');
 }

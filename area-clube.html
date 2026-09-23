@@ -150,6 +150,14 @@
   .link{background:none;border:none;color:var(--dourado);font-size:13.5px;
         padding:10px 0 0;width:auto;font-weight:500;cursor:pointer;font-family:inherit}
   .link:hover{filter:none;text-decoration:underline}
+  /* "Não tenho ou esqueci a senha" — botão de verdade, não link.
+     Quem vem do Fidelizi se vê como "já sou do Clube", cai aqui sem senha
+     e precisa achar a saída sem procurar. */
+  .btSenha{width:100%;background:transparent;color:var(--dourado);
+           border:1.5px solid var(--dourado);border-radius:10px;padding:12px;
+           font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px}
+  .btSenha:hover{background:rgba(242,183,5,.08);filter:none}
+  .dicaSenha{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:7px;text-align:center}
   #carregando{text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
 </style>
 </head>
@@ -193,6 +201,8 @@
           <label for="senha">Senha</label>
           <input type="password" id="senha" name="password" autocomplete="current-password"
                  placeholder="Sua senha" required>
+          <button type="button" class="btSenha" onclick="irRecuperar()">Não tenho ou esqueci a senha</button>
+          <div class="dicaSenha">Já era do Clube antes? Seus pontos estão aqui — é só criar sua senha.</div>
         </div>
 
         <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
@@ -200,9 +210,6 @@
         <button type="submit" id="btEntrar">Entrar</button>
       </form>
 
-      <div style="text-align:center">
-        <button class="link" onclick="location.href='/cadastro#recuperar'">Esqueci ou ainda não tenho senha</button>
-      </div>
     </div>
 
     <div class="vazio">
@@ -659,6 +666,13 @@ function desenharVelhos(lista){
   if(token()) abrirConta();
   else { $('carregando').style.display = 'none'; $('telaLogin').style.display = 'block'; }
 })();
+</script>
+<script>
+function irRecuperar(){
+  try{ const d=(document.getElementById('login').value||'').replace(/\D/g,'');
+       if(d) sessionStorage.setItem('cp_ident_login', d); }catch(e){}
+  location.href='/cadastro#recuperar';
+}
 </script>
 </body>
 </html>
