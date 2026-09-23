@@ -86,6 +86,14 @@
   button:hover{filter:brightness(1.07)}
   button:disabled{opacity:.55;cursor:default}
 
+  /* ---------- tela inicial: entrar OU cadastrar ---------- */
+  #pInicio{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;padding:22px 18px;text-align:center}
+  #pInicio h2{font-family:'Playfair Display',serif;color:var(--creme);font-size:19px;margin-bottom:18px}
+  .btSec{background:transparent;color:var(--dourado);border:1.5px solid var(--dourado);margin-top:12px}
+  .btSec:hover{background:rgba(242,183,5,.08);filter:none}
+  .sub{display:block;color:var(--muted);font-size:12.5px;margin-top:6px;font-weight:400}
+  .link{color:var(--muted);font-size:13px}
+
   .msg{border-radius:10px;padding:13px 14px;font-size:14px;line-height:1.5;
        margin-bottom:16px;display:none}
   .msg.err{display:block;background:rgba(255,92,92,.12);border:1px solid rgba(255,92,92,.35);color:#FFB3B3}
@@ -132,7 +140,29 @@
 
   <div class="msg" id="aviso"></div>
 
-  <form id="form" onsubmit="enviar(event)" autocomplete="on">
+  <!-- ============ TELA INICIAL — ENTRAR OU CADASTRAR ============
+       Um link só pra tudo (pedido do Antonio, 23/09). Antes a página abria
+       direto no formulário de cadastro: quem já era do Clube (inclusive os
+       4 mil que vêm do Fidelizi) tentava se cadastrar de novo, esbarrava no
+       "CPF já existe" e não entendia o que fazer. Agora a pessoa escolhe o
+       caminho antes de digitar qualquer coisa. -->
+  <div id="pInicio">
+    <h2>Como você quer continuar?</h2>
+    <button type="button" onclick="location.href='/minha-conta'">
+      Já sou do Clube — entrar
+      <span class="sub" style="color:#5a4508">Ver pontos e resgatar prêmios</span>
+    </button>
+    <button type="button" class="btSec" onclick="verPainel('form')">
+      Quero me cadastrar
+      <span class="sub">Leva menos de 1 minuto</span>
+    </button>
+    <div style="margin-top:18px">
+      <a href="#" class="link" onclick="verPainel('recuperar');return false">
+        Sou do Clube mas não tenho senha (ou esqueci)</a>
+    </div>
+  </div>
+
+  <form id="form" onsubmit="enviar(event)" autocomplete="on" style="display:none">
     <div class="campo">
       <label for="nome">Nome completo <span class="req">*</span></label>
       <input type="text" id="nome" name="name" autocomplete="name" placeholder="Seu nome" required>
@@ -193,8 +223,8 @@
 
     <button type="submit" id="btn">Criar minha conta</button>
     <div style="text-align:center;margin-top:14px">
-      <a href="#" onclick="verPainel('recuperar');return false"
-         style="color:var(--muted);font-size:13px">Já tenho conta ou esqueci minha senha</a>
+      <a href="#" onclick="verPainel('inicio');return false"
+         style="color:var(--muted);font-size:13px">← Voltar</a>
     </div>
   </form>
 
@@ -217,7 +247,7 @@
     <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
     <button type="submit" id="btnRec">Enviar código</button>
     <div style="text-align:center;margin-top:14px">
-      <a href="#" onclick="verPainel('form');return false" style="color:var(--muted);font-size:13px">Voltar</a>
+      <a href="#" onclick="verPainel('inicio');return false" style="color:var(--muted);font-size:13px">← Voltar</a>
     </div>
   </form>
 
@@ -336,17 +366,28 @@ function aviso(txt){
 }
 
 /* ---------- troca de painel ---------- */
-const PAINEIS = {form:'form', recuperar:'pRecuperar', definir:'pDefinir'};
+const PAINEIS = {inicio:'pInicio', form:'form', recuperar:'pRecuperar', definir:'pDefinir'};
 function verPainel(qual){
-  const alvo = PAINEIS[qual] || 'form';
+  const alvo = PAINEIS[qual] || 'pInicio';
   Object.values(PAINEIS).forEach(id=>{
     document.getElementById(id).style.display = (id===alvo) ? 'block' : 'none';
   });
-  document.getElementById('benef').style.display = (alvo==='form') ? 'block' : 'none';
+  // benefícios aparecem na escolha e no cadastro — é onde a pessoa decide
+  document.getElementById('benef').style.display =
+    (alvo==='form' || alvo==='pInicio') ? 'block' : 'none';
   document.getElementById('aviso').className='msg';
   if (window.turnstile) window.turnstile.reset();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+/* Link direto pra um painel: /cadastro#cadastrar e /cadastro#recuperar.
+   É o que a /minha-conta usa nos botões "criar conta" e "esqueci a senha",
+   pra ninguém ter que passar pela tela de escolha de novo. */
+(function(){
+  const h = (location.hash||'').replace('#','');
+  if (h==='cadastrar') verPainel('form');
+  else if (h==='recuperar') verPainel('recuperar');
+})();
 
 /* máscara do CPF na tela de recuperação */
 const rcpf = document.getElementById('rcpf');
@@ -466,10 +507,14 @@ async function enviar(e){
       if (window.turnstile) window.turnstile.reset();
       // CPF já na base (migrado do Fidelizi ou criado no caixa): manda pro
       // fluxo de recuperação, que é o único jeito seguro de definir senha.
-      if (j.jaExiste){
+      // ⚠️ ORDEM IMPORTA: verPainel() limpa o aviso. Antes o aviso vinha
+      // primeiro e sumia na hora — a pessoa trocava de tela sem saber por quê.
+      if (j.jaExiste || j.irParaRecuperacao){
         rcpf.value = cpf.value;
-        aviso(j.erro);
         verPainel('recuperar');
+        aviso('Este CPF já está cadastrado no Clube. Para entrar ou criar sua ' +
+              'senha, toque em "Enviar código" abaixo — ele chega no WhatsApp ' +
+              'do seu cadastro. Já tem senha? Entre em casapellegrini.com.br/minha-conta');
         return;
       }
       return aviso(j.erro || 'Não consegui criar sua conta agora. Tenta de novo?');
