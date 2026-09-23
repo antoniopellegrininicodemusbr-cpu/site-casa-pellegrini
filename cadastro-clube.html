@@ -240,8 +240,9 @@
       que é você pelo WhatsApp do seu cadastro — leva um toque.</p>
 
     <div class="campo">
-      <label for="rcpf">Seu CPF</label>
-      <input type="text" id="rcpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required>
+      <label for="rcpf">Seu CPF ou celular</label>
+      <input type="text" id="rcpf" inputmode="numeric" placeholder="CPF ou (24) 99999-9999" maxlength="15" required>
+      <div class="dica">Veio do programa antigo? Use o celular — é por ele que a gente te encontra.</div>
     </div>
 
     <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
@@ -415,13 +416,16 @@ function verPainel(qual){
   else if (h==='recuperar') verPainel('recuperar');
 })();
 
-/* máscara do CPF na tela de recuperação */
+/* recuperação aceita CPF OU celular — contas vindas do Fidelizi não têm CPF.
+   Sem máscara de propósito: 11 dígitos podem ser um ou outro, e forçar a
+   máscara de CPF num celular confunde. Só limpa o que não for dígito. */
 const rcpf = document.getElementById('rcpf');
 rcpf.addEventListener('input', () => {
-  let d = rcpf.value.replace(/\D/g,'').slice(0,11);
-  rcpf.value = d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2')
-                .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  rcpf.value = rcpf.value.replace(/[^\d]/g,'').slice(0,11);
 });
+function identValido(d){
+  return (d.length===11 && cpfValido(d)) || ((d.length===10||d.length===11) && d[2]==='9');
+}
 document.getElementById('codigo').addEventListener('input', e => {
   e.target.value = e.target.value.replace(/\D/g,'').slice(0,6);
 });
@@ -436,13 +440,13 @@ async function pedirCodigo(e){
   e.preventDefault();
   const btn=document.getElementById('btnRec');
   const c=rcpf.value.replace(/\D/g,'');
-  if(!cpfValido(c)) return aviso('Confere o CPF — parece que tem algum dígito errado.');
+  if(!identValido(c)) return aviso('Confere: CPF com 11 dígitos ou celular com DDD.');
 
   btn.disabled=true; btn.textContent='Um instante...';
   try{
     const r=await fetch(API+'/recuperar',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({cpf:c,turnstile:tokenTurnstile()})});
+      body:JSON.stringify({ident:c,turnstile:tokenTurnstile()})});
     const j=await r.json();
     btn.disabled=false; btn.textContent='Continuar';
     if(j.ok===false && j.erro) return aviso(j.erro);
@@ -523,7 +527,7 @@ async function definirSenha(e){
   try{
     const r=await fetch(API+'/definir-senha',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({cpf:c,codigo:cod,senha:nova})});
+      body:JSON.stringify({ident:c,codigo:cod,senha:nova})});
     const j=await r.json();
     if(!j.ok){ btn.disabled=false; btn.textContent='Salvar senha e entrar';
                return aviso(j.erro||'Não consegui salvar. Tenta de novo?'); }
@@ -592,7 +596,8 @@ async function enviar(e){
       // ⚠️ ORDEM IMPORTA: verPainel() limpa o aviso. Antes o aviso vinha
       // primeiro e sumia na hora — a pessoa trocava de tela sem saber por quê.
       if (j.jaExiste || j.irParaRecuperacao){
-        rcpf.value = cpf.value;
+        // preenche com o dado que BATEU: conta do Fidelizi só se acha pelo celular
+        rcpf.value = (j.via==='tel' ? tel.value : cpf.value).replace(/\D/g,'');
         verPainel('recuperar');
         aviso('Este CPF já está cadastrado no Clube. Para entrar ou criar sua ' +
               'senha, toque em "Continuar" abaixo e confirme pelo WhatsApp do seu ' +
