@@ -236,8 +236,8 @@
     <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
       Criar ou recuperar senha</h2>
     <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
-      Já é do Clube mas ainda não tem senha? É por aqui também. Vamos mandar um
-      código no WhatsApp que está no seu cadastro.</p>
+      Já é do Clube mas ainda não tem senha? É por aqui também. Vamos confirmar
+      que é você pelo WhatsApp do seu cadastro — leva um toque.</p>
 
     <div class="campo">
       <label for="rcpf">Seu CPF</label>
@@ -245,20 +245,45 @@
     </div>
 
     <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
-    <button type="submit" id="btnRec">Enviar código</button>
+    <button type="submit" id="btnRec">Continuar</button>
     <div style="text-align:center;margin-top:14px">
       <a href="#" onclick="verPainel('inicio');return false" style="color:var(--muted);font-size:13px">← Voltar</a>
     </div>
   </form>
+
+  <!-- ============ CONFIRMAR PELO WHATSAPP ============
+       Confirmação INVERTIDA (23/09/2026): é o cliente que manda a mensagem
+       pra casa, não o contrário. O código na tela não é segredo — o que prova
+       a identidade é sair do celular do cadastro. Ver /publico/recuperar. -->
+  <div id="pConfirmar" style="display:none;background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;padding:22px 18px;text-align:center">
+    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
+      Confirme pelo WhatsApp</h2>
+    <p style="color:#C9D0E0;font-size:14px;line-height:1.6;margin-bottom:18px">
+      Toque no botão abaixo e <strong>envie a mensagem que já vai escrita</strong>.
+      Ela precisa sair do celular que está no seu cadastro.</p>
+    <div id="codVisivel" style="font-size:26px;letter-spacing:4px;font-weight:700;
+         background:var(--navy2);border-radius:10px;padding:14px;margin-bottom:16px">CLUBE ------</div>
+    <a id="btnWa" href="#" target="_blank" rel="noopener"
+       style="display:block;background:#25D366;color:#06260f;border-radius:10px;padding:15px;
+              font-size:16px;font-weight:700;text-decoration:none">
+      Abrir WhatsApp e enviar</a>
+    <p id="confStatus" style="color:var(--muted);font-size:13px;margin-top:16px;line-height:1.5">
+      ⏳ Esperando sua mensagem… esta tela avança sozinha.</p>
+    <div style="margin-top:14px">
+      <a href="#" onclick="pararConfirmacao();verPainel('recuperar');return false"
+         style="color:var(--muted);font-size:13px">← Voltar</a>
+    </div>
+  </div>
 
   <!-- ============ DIGITAR CÓDIGO + NOVA SENHA ============ -->
   <form id="pDefinir" style="display:none" onsubmit="definirSenha(event)">
     <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
       Sua nova senha</h2>
     <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px" id="txtEnviado">
-      Se o CPF estiver na nossa base, o código chegou no WhatsApp cadastrado. Ele vale por 15 minutos.</p>
+      Confirmado ✅ Agora é só escolher sua senha.</p>
 
-    <div class="campo">
+    <!-- o código já veio da confirmação pelo WhatsApp: fica escondido -->
+    <div class="campo" id="campoCodigo" style="display:none">
       <label for="codigo">Código de 6 dígitos</label>
       <input type="text" id="codigo" inputmode="numeric" autocomplete="one-time-code"
              placeholder="000000" maxlength="6" required
@@ -274,7 +299,7 @@
 
     <button type="submit" id="btnDef">Salvar senha e entrar</button>
     <div style="text-align:center;margin-top:14px">
-      <a href="#" onclick="verPainel('recuperar');return false" style="color:var(--muted);font-size:13px">Não recebi o código</a>
+      <a href="#" onclick="verPainel('recuperar');return false" style="color:var(--muted);font-size:13px">← Recomeçar</a>
     </div>
   </form>
 
@@ -366,7 +391,8 @@ function aviso(txt){
 }
 
 /* ---------- troca de painel ---------- */
-const PAINEIS = {inicio:'pInicio', form:'form', recuperar:'pRecuperar', definir:'pDefinir'};
+const PAINEIS = {inicio:'pInicio', form:'form', recuperar:'pRecuperar',
+                 confirmar:'pConfirmar', definir:'pDefinir'};
 function verPainel(qual){
   const alvo = PAINEIS[qual] || 'pInicio';
   Object.values(PAINEIS).forEach(id=>{
@@ -412,21 +438,76 @@ async function pedirCodigo(e){
   const c=rcpf.value.replace(/\D/g,'');
   if(!cpfValido(c)) return aviso('Confere o CPF — parece que tem algum dígito errado.');
 
-  btn.disabled=true; btn.textContent='Enviando...';
+  btn.disabled=true; btn.textContent='Um instante...';
   try{
     const r=await fetch(API+'/recuperar',{method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({cpf:c,turnstile:tokenTurnstile()})});
     const j=await r.json();
-    btn.disabled=false; btn.textContent='Enviar código';
+    btn.disabled=false; btn.textContent='Continuar';
     if(j.ok===false && j.erro) return aviso(j.erro);
+    if(!j.codigo) return aviso('Não consegui gerar a confirmação. Tenta de novo?');
     sessionStorage.setItem('cp_cpf_rec', c);
-    verPainel('definir');
+    sessionStorage.setItem('cp_cod_rec', j.codigo);
+    sessionStorage.setItem('cp_cod_ts', String(Date.now()));
+    abrirConfirmacao(j.codigo, j.whatsapp, j.mensagem);
   }catch(err){
-    btn.disabled=false; btn.textContent='Enviar código';
+    btn.disabled=false; btn.textContent='Continuar';
     aviso('Sem conexão com o servidor. Tenta de novo?');
   }
 }
+
+/* ---------- confirmação invertida pelo WhatsApp ----------
+   A tela pergunta ao servidor a cada 3s se a mensagem já chegou. Para
+   sozinha em 15 min (validade do código) — não fica consultando pra sempre
+   numa aba esquecida. */
+let timerConf = null;
+function pararConfirmacao(){ if (timerConf){ clearInterval(timerConf); timerConf=null; } }
+
+function abrirConfirmacao(codigo, numero, mensagem){
+  document.getElementById('codVisivel').textContent = mensagem;
+  document.getElementById('btnWa').href =
+    'https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagem);
+  const st = document.getElementById('confStatus');
+  st.textContent = '⏳ Esperando sua mensagem… esta tela avança sozinha.';
+  verPainel('confirmar');
+
+  pararConfirmacao();
+  const inicio = Date.now();
+  timerConf = setInterval(async () => {
+    const passou = Date.now() - inicio;
+    if (passou > 15*60000){
+      pararConfirmacao();
+      st.textContent = 'O código expirou. Volte e peça outro.';
+      return;
+    }
+    // depois de 1 min sem confirmar, lembra do motivo mais comum
+    if (passou > 60000 && passou < 64000){
+      st.innerHTML = '⏳ Ainda esperando… <br>Lembre: a mensagem precisa sair do ' +
+        '<strong>celular que está no seu cadastro</strong>.';
+    }
+    try{
+      const r = await fetch(API+'/confirmacao',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({codigo})});
+      const j = await r.json();
+      if (j.confirmado){
+        pararConfirmacao();
+        document.getElementById('codigo').value = codigo;
+        verPainel('definir');
+        document.getElementById('nsenha').focus();
+      }
+    }catch(e){ /* rede oscilou: tenta no próximo ciclo */ }
+  }, 3000);
+}
+
+/* Quem volta do WhatsApp às vezes recarrega a aba — retoma de onde parou. */
+(function(){
+  const cod = sessionStorage.getItem('cp_cod_rec');
+  const ts = +(sessionStorage.getItem('cp_cod_ts')||0);
+  if (cod && sessionStorage.getItem('cp_cpf_rec') && Date.now()-ts < 15*60000)
+    abrirConfirmacao(cod, '552422316110', 'CLUBE ' + cod);
+})();
 
 /* ---------- definir a senha com o código ---------- */
 async function definirSenha(e){
@@ -448,6 +529,7 @@ async function definirSenha(e){
                return aviso(j.erro||'Não consegui salvar. Tenta de novo?'); }
     if(j.token) localStorage.setItem('cp_sessao', j.token);
     sessionStorage.removeItem('cp_cpf_rec');
+    sessionStorage.removeItem('cp_cod_rec');
     document.getElementById('pDefinir').style.display='none';
     document.getElementById('oNome').textContent=(j.nome||'').split(' ')[0]||'tudo certo';
     document.getElementById('sucesso').style.display='block';
@@ -513,8 +595,8 @@ async function enviar(e){
         rcpf.value = cpf.value;
         verPainel('recuperar');
         aviso('Este CPF já está cadastrado no Clube. Para entrar ou criar sua ' +
-              'senha, toque em "Enviar código" abaixo — ele chega no WhatsApp ' +
-              'do seu cadastro. Já tem senha? Entre em casapellegrini.com.br/minha-conta');
+              'senha, toque em "Continuar" abaixo e confirme pelo WhatsApp do seu ' +
+              'cadastro. Já tem senha? Entre em casapellegrini.com.br/minha-conta');
         return;
       }
       return aviso(j.erro || 'Não consegui criar sua conta agora. Tenta de novo?');
