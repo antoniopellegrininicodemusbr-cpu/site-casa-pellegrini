@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-23",
- "total": 341,
+ "atualizado_em": "2026-09-24",
+ "total": 342,
  "registros": [
+  {
+   "media_id": "18422506849151245",
+   "data_post": "2026-09-23",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DdogOVEua9s/",
+   "caption": "Segundo turno da disputa: quem ganha um pix de 50 reais?  Vote nos comentários escrevendo o número do candidato:  89 Giovani  05 Cristiano   Regras da votação   1) um voto por pessoa  2) data de enceramento 27/09  Boa sorte ✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #Almoc",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "1",
+   "motivo_reprova": "O vídeo e a legenda tratam de uma votação fictícia de eleições com data de encerramento marcada.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_especifica|tema:Eleições fictícias Pellegrini",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-24",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18103939154340090",
    "data_post": "2026-09-20",
