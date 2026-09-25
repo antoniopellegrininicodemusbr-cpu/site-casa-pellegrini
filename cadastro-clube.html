@@ -257,17 +257,21 @@
        pra casa, não o contrário. O código na tela não é segredo — o que prova
        a identidade é sair do celular do cadastro. Ver /publico/recuperar. -->
   <div id="pConfirmar" style="display:none;background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;padding:22px 18px;text-align:center">
-    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
-      Confirme pelo WhatsApp</h2>
-    <p style="color:#C9D0E0;font-size:14px;line-height:1.6;margin-bottom:18px">
-      Toque no botão abaixo e <strong>envie a mensagem que já vai escrita</strong>.
-      Ela precisa sair do celular que está no seu cadastro.</p>
-    <div id="codVisivel" style="font-size:26px;letter-spacing:4px;font-weight:700;
-         background:var(--navy2);border-radius:10px;padding:14px;margin-bottom:16px">CLUBE ------</div>
+    <!-- SIMPLIFICADO 25/09/2026 (Antonio achou o "CLUBE 123456" complicado):
+         some o código da tela — ele vai escondido dentro da mensagem pronta.
+         Pro cliente é só: tocar no botão verde → tocar em enviar. -->
+    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:21px;margin-bottom:6px">
+      Falta só um toque 👇</h2>
+    <p style="color:#C9D0E0;font-size:14.5px;line-height:1.6;margin-bottom:18px">
+      Pra sua segurança, confirmamos pelo seu WhatsApp.</p>
     <a id="btnWa" href="#" target="_blank" rel="noopener"
-       style="display:block;background:#25D366;color:#06260f;border-radius:10px;padding:15px;
-              font-size:16px;font-weight:700;text-decoration:none">
-      Abrir WhatsApp e enviar</a>
+       style="display:block;background:#25D366;color:#06260f;border-radius:12px;padding:18px;
+              font-size:17px;font-weight:700;text-decoration:none">
+      Confirmar pelo WhatsApp</a>
+    <p style="color:#C9D0E0;font-size:13.5px;line-height:1.6;margin-top:14px">
+      O WhatsApp abre com a mensagem pronta —<br>é só tocar em <strong>enviar ➤</strong> e voltar pra cá.</p>
+    <!-- código fica guardado aqui só pro JS; não aparece -->
+    <div id="codVisivel" style="display:none"></div>
     <p id="confStatus" style="color:var(--muted);font-size:13px;margin-top:16px;line-height:1.5">
       ⏳ Esperando sua mensagem… esta tela avança sozinha.</p>
     <div style="margin-top:14px">
@@ -476,11 +480,13 @@ let timerConf = null;
 function pararConfirmacao(){ if (timerConf){ clearInterval(timerConf); timerConf=null; } }
 
 function abrirConfirmacao(codigo, numero, mensagem){
-  document.getElementById('codVisivel').textContent = mensagem;
+  // mensagem com cara de gente (o webhook só procura "clube" + 6 dígitos)
+  const texto = 'Oi! Quero liberar minha senha do Clube ' + codigo;
+  document.getElementById('codVisivel').textContent = texto;
   document.getElementById('btnWa').href =
-    'https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagem);
+    'https://wa.me/' + numero + '?text=' + encodeURIComponent(texto);
   const st = document.getElementById('confStatus');
-  st.textContent = '⏳ Esperando sua mensagem… esta tela avança sozinha.';
+  st.textContent = '⏳ Assim que a mensagem chegar, esta tela avança sozinha.';
   verPainel('confirmar');
 
   pararConfirmacao();
