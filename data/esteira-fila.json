@@ -1094,7 +1094,7 @@
    "status": "PROMOVIDO",
    "nota_gemini": "",
    "motivo_reprova": "",
-   "flags": "",
+   "flags": "cortado_regua_A+B_noite:2026-09-25;saida_noite:R$22,44/1c/CPA22,44=2,10x;c_mil:0,28x_base;versao_dia_segue_ativa_CPA9,85",
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
