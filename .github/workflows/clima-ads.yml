@@ -1,0 +1,32 @@
+name: clima-ads
+# Robo de clima (Antonio 25/09/2026): liga/desliga anuncios sazon:frio/calor
+# conforme a previsao real do dia em Petropolis. Docs: memoria/marketing/esteira-triagem-criativos.md §20
+on:
+  schedule:
+    - cron: "0 9 * * *"   # 06:00 BRT, antes dos conjuntos abrirem as 10h
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra o que faria"
+        default: "false"
+jobs:
+  clima:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: rodar robo de clima
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GOOGLE_WEATHER_KEY: ${{ secrets.GOOGLE_WEATHER_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python3 scripts/clima_ads.py
+      - name: persistir estado
+        run: |
+          git config user.name "clima-bot"
+          git config user.email "clima-bot@users.noreply.github.com"
+          git add data/clima-state.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "clima-ads: estado do dia [skip ci]"
+          git push

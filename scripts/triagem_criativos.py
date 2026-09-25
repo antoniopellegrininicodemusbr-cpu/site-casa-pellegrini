@@ -97,8 +97,11 @@ REPROVE SEMPRE (criterio rigido — "na duvida, reprova, temos conteudo bom de s
 - Conteudo gerado por IA envolvendo celebridade ou pessoa publica (deepfake). Politica da Meta + risco
   juridico. Se aparece um famoso improvavel num restaurante de Petropolis, assuma que e IA.
 - Meme, trend passageira, piada interna, homenagem a funcionario, conteudo pessoal dos socios.
-- Sazonalidade FORA DE EPOCA: solucao para calor rodando no inverno, ou para frio rodando no verao.
-  Sazonal DENTRO da epoca atual ({ESTACAO}) esta OK.
+- (CLIMA calor/frio NAO reprova mais — decisao Antonio 25/09/2026: marque em 'sazonalidade' e o robo
+  de clima liga/desliga o anuncio conforme o tempo REAL do dia em Petropolis. 'calor' = tema/visual
+  EXPLICITO de calor: sol forte, piscina, suor, "refrescar", vibe de verao. 'frio' = caldos, fondue,
+  "friozinho", se aquecer. Chopp/cerveja/happy hour GENERICO sem vibe de verao explicita = 'nenhuma'.
+  Sazonalidade de DATA — Natal, Bauernfest, Copa, festas — continua REPROVANDO via momento_datado.)
 - Qualidade ruim: audio inaudivel, imagem tremida, video cortado no meio.
 
 APROVE: comida/bebida apetitosa, ambiente cheio, happy hour, chopp, atendimento, fachada, prova social
