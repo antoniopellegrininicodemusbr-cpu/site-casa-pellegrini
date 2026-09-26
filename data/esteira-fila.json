@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-25",
- "total": 342,
+ "atualizado_em": "2026-09-26",
+ "total": 343,
  "registros": [
+  {
+   "media_id": "17887074336474868",
+   "data_post": "2026-09-25",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DdtzLQvP8yw/",
+   "caption": "Sextou ✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "A legenda cita o dia da semana 'Sextou', o que impede o uso como anúncio evergreen em qualquer dia.",
+   "flags": "gemini_aprovou:nao|datado:promocao_com_prazo|tema:Chopp e água na mesa",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-26",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18422506849151245",
    "data_post": "2026-09-23",
