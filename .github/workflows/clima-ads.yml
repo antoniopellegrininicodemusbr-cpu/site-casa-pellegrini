@@ -3,7 +3,7 @@ name: clima-ads
 # conforme a previsao real do dia em Petropolis. Docs: memoria/marketing/esteira-triagem-criativos.md §20
 on:
   schedule:
-    - cron: "0 9 * * *"   # 06:00 BRT, antes dos conjuntos abrirem as 10h
+    - cron: "47 7 * * *"   # 04:47 BRT, minuto fora da hora cheia (runs no minuto 0 atrasam horas ou sao descartados pelo GitHub); folga ate as 10h
   workflow_dispatch:
     inputs:
       dry_run:
