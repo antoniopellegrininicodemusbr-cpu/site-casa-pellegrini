@@ -19,9 +19,13 @@ Nunca mexe em anuncio pausado por regua/humano. So toca ads listados na fila
 (status PROMOVIDO ou EM_TESTE) com flag sazon:frio|calor.
 
 Clima: usa Google Weather API se GOOGLE_WEATHER_KEY existir; senao MET Norway (gratis, sem chave).
+Historico (28/09/2026): cada execucao grava em data/clima-state.json -> historico[] com
+data, veredito, tmax, chuva_mm/prob, fonte e acoes do dia (ultimos 60 dias). E a fonte do
+relatorio do robo na rodada de terca/sexta — antes so dava pra saber o veredito, nao o numero.
 Env: META_ADS_TOKEN (preferido) ou IG_ACCESS_TOKEN; GOOGLE_WEATHER_KEY (opcional); DRY_RUN.
 """
 import json, os, re, sys, urllib.request
+from datetime import datetime, timedelta, timezone
 
 LAT, LON = -22.5054, -43.1786  # Centro Historico de Petropolis
 FRIO_TMAX, CALOR_TMAX = 19.0, 24.0
@@ -67,7 +71,7 @@ def veredito():
     elif tmax >= CALOR_TMAX: v = "CALOR"
     else: v = "AMENO"
     print(f"clima ({fonte}): tmax={tmax:.1f}C prob={prob} mm={mm:.1f} chuva={chuva} -> {v}")
-    return v
+    return v, round(tmax, 1), prob, round(mm or 0, 1), fonte
 
 def ads_por_sazon():
     regs = json.load(open(FILA))
@@ -93,7 +97,7 @@ def fb_set(aid, status):
 
 def main():
     if not TOKEN: sys.exit("sem token Meta (META_ADS_TOKEN/IG_ACCESS_TOKEN)")
-    v = veredito()
+    v, tmax, prob, mm, fonte = veredito()
     pool = ads_por_sazon()
     print(f"pool frio={pool['frio']} calor={pool['calor']}")
     state = {"pausados_por_clima": []}
@@ -113,9 +117,18 @@ def main():
         st = fb_status(aid)
         if st.get("status") == "PAUSED":
             if fb_set(aid, "ACTIVE"): meus.discard(aid); acoes.append(f"reativou {aid}")
-    state = {"pausados_por_clima": sorted(meus), "ultimo_veredito": v, "ultima_execucao": os.environ.get("GITHUB_RUN_ID", "local")}
+    hoje = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime("%Y-%m-%d")  # dia em BRT
+    hist = [h for h in state.get("historico", []) if h.get("data") != hoje]  # re-run do mesmo dia sobrescreve
+    hist.append({"data": hoje, "veredito": v, "tmax": tmax, "chuva_mm": mm, "chuva_prob": prob,
+                 "fonte": fonte, "acoes": acoes or [], "pausados_apos": sorted(meus),
+                 "run_id": os.environ.get("GITHUB_RUN_ID", "local")})
+    hist = sorted(hist, key=lambda h: h["data"])[-60:]  # ~2 meses
+    state = {"pausados_por_clima": sorted(meus), "ultimo_veredito": v,
+             "ultima_execucao": os.environ.get("GITHUB_RUN_ID", "local"),
+             "ultimo_clima": {"data": hoje, "tmax": tmax, "chuva_mm": mm, "chuva_prob": prob, "fonte": fonte},
+             "historico": hist}
     if not DRY:
-        json.dump(state, open(STATE, "w"), indent=1)
+        json.dump(state, open(STATE, "w"), indent=1, ensure_ascii=False)
     print(f"veredito={v} acoes={acoes or 'nenhuma'} pausados_por_clima={sorted(meus)}")
 
 if __name__ == "__main__":
