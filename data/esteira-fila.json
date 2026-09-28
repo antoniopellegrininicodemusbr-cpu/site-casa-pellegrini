@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-09-27",
+ "atualizado_em": "2026-09-28",
  "total": 343,
  "registros": [
   {
@@ -46,18 +46,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/Ddg3pyOuNqf/",
    "caption": "Sol + boa companhia + Smoked + Philadelphia + suquinho natural. Absurdo ✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "EM_TESTE",
+   "status": "PROMOVIDO",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:Hambúrguer e wrap|legenda_v2:ok|entrada:novo_aprovado_semana",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-09-22",
    "data_entrada_teste": "2026-09-22",
-   "gasto_teste": "",
-   "compras_teste": "",
-   "ctr_teste": "",
-   "data_veredito": "",
-   "ad_id_promovido": "[V-teste] Smoked Philadelphia=120256177786430460"
+   "gasto_teste": "48.28",
+   "compras_teste": "4",
+   "ctr_teste": "2.39",
+   "data_veredito": "2026-09-28",
+   "ad_id_promovido": "[V-dia] Smoked Philadelphia=120256275920860460"
   },
   {
    "media_id": "18125218948881413",
@@ -1091,10 +1091,10 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DZKfbuhuQtQ/",
    "caption": "Holiday magic ✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "PROMOVIDO",
+   "status": "CORTADO_RESULTADO",
    "nota_gemini": "",
    "motivo_reprova": "",
-   "flags": "",
+   "flags": "cortado:2026-09-28|regua:A+B|saida:R$31.01/3806imp/1c/CPA31.01=3.04x/cmil0.42=0.27x",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-08-19",
    "data_entrada_teste": "2026-07-26",
@@ -5974,18 +5974,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DBJeMpPvXuR/",
    "caption": "Projeto verão tá on 🔥",
-   "status": "APROVADO_FILA",
+   "status": "EM_TESTE",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:Montagem de salada|legenda_v2:ok",
+   "flags": "gemini_aprovou:sim|tema:Montagem de salada|legenda_v2:ok|entrada:resgate_prazo|vence_2anos:2026-10-15",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-08-22",
-   "data_entrada_teste": "",
+   "data_entrada_teste": "2026-09-28",
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
    "data_veredito": "",
-   "ad_id_promovido": ""
+   "ad_id_promovido": "[V-teste] Projeto Verao=120256275938850460"
   },
   {
    "media_id": "18024361874388766",
