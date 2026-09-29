@@ -3,5 +3,27 @@
   "120255084584690460"
  ],
  "ultimo_veredito": "CALOR",
- "ultima_execucao": "36325797285"
+ "ultima_execucao": "36581990190",
+ "ultimo_clima": {
+  "data": "2026-09-29",
+  "tmax": 29.4,
+  "chuva_mm": 0.4,
+  "chuva_prob": null,
+  "fonte": "met.no"
+ },
+ "historico": [
+  {
+   "data": "2026-09-29",
+   "veredito": "CALOR",
+   "tmax": 29.4,
+   "chuva_mm": 0.4,
+   "chuva_prob": null,
+   "fonte": "met.no",
+   "acoes": [],
+   "pausados_apos": [
+    "120255084584690460"
+   ],
+   "run_id": "36581990190"
+  }
+ ]
 }
