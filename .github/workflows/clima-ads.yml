@@ -3,7 +3,7 @@ name: clima-ads
 # conforme a previsao real do dia em Petropolis. Docs: memoria/marketing/esteira-triagem-criativos.md §20
 on:
   schedule:
-    - cron: "47 7 * * *"   # 04:47 BRT, minuto fora da hora cheia (runs no minuto 0 atrasam horas ou sao descartados pelo GitHub); folga ate as 10h
+    - cron: "7 0 * * *"    # 00:07 UTC = 21h07 BRT: decide na noite ANTERIOR, pro dia seguinte. O agendador do GitHub atrasa 4-7h em TODOS os workflows deste repo (medido 30/09), entao rodar de noite e o que garante decisao antes das 10h BRT
   workflow_dispatch:
     inputs:
       dry_run:
