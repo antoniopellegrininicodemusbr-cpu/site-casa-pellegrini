@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-09-29",
- "total": 345,
+ "atualizado_em": "2026-09-30",
+ "total": 346,
  "registros": [
+  {
+   "media_id": "18117913426962188",
+   "data_post": "2026-09-29",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/Dd4JPwFP7PU/",
+   "caption": "Happy Hour tá diferente 👀  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "3",
+   "motivo_reprova": "O vídeo cita horários específicos de happy hour que podem mudar e a fala é confusa sobre o funcionamento.",
+   "flags": "gemini_aprovou:nao|datado:promocao_com_prazo|tema:Happy hour e chopp",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-09-30",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "17861886582695565",
    "data_post": "2026-09-28",
