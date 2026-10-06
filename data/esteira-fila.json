@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-10-05",
+ "atualizado_em": "2026-10-06",
  "total": 347,
  "registros": [
   {
@@ -198,10 +198,10 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DdFUChXP7P6/",
    "caption": "Podem experimentar, indico pô ✅  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "PROMOVIDO",
+   "status": "CORTADO_RESULTADO",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:Pastel de doce de leite|legenda_v2:ok|promovido:2026-09-22;teste R$81,12/9876imp/7c/CPA11,59=0,94x_media_VDia(12,37);linha_2x=24,74;destino_Dia_por_variedade(Equipe_Pellegrini=86%_da_verba_7d)",
+   "flags": "gemini_aprovou:sim|tema:Pastel de doce de leite|legenda_v2:ok|promovido:2026-09-22;teste R$81,12/9876imp/7c/CPA11,59=0,94x_media_VDia(12,37);linha_2x=24,74;destino_Dia_por_variedade(Equipe_Pellegrini=86%_da_verba_7d)|cortado_regua_A:2026-10-06;14d_exatos;R$54,71/5923imp/2c;CPA27,36=2,63x_media_VDia(10,41);linha_2x=20,82;decisao_Antonio_30-09_item4",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-09-10",
    "data_entrada_teste": "2026-09-14",
