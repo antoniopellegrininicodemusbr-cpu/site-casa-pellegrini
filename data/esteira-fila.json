@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-10-06",
- "total": 347,
+ "atualizado_em": "2026-10-07",
+ "total": 348,
  "registros": [
+  {
+   "media_id": "18104915276566024",
+   "data_post": "2026-10-07",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DeMr9UDv49c/",
+   "caption": "Amém 🕺✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "O vídeo faz referência explícita ao Brasileirão, que é um evento esportivo datado e sazonal.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_specifica|tema:Meme Brasileirão",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-10-07",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18000475281008531",
    "data_post": "2026-10-04",
