@@ -23,12 +23,22 @@
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src https://fonts.gstatic.com;
   img-src 'self' data:;
+  manifest-src 'self';
   frame-src https://challenges.cloudflare.com;
   form-action 'none';
   base-uri 'none';
   frame-ancestors 'none';">
 
 <link rel="icon" href="/favicon.ico">
+
+<!-- Atalho na tela do celular ("adicionar à tela inicial"). Manifest PRÓPRIO do
+     Clube — o site.webmanifest é do site. SEM service worker de propósito: um
+     SW mal posicionado sequestraria o site inteiro; o atalho não precisa dele. -->
+<link rel="manifest" href="/clube.webmanifest">
+<meta name="theme-color" content="#0C1120">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Clube Pellegrini">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -101,6 +111,19 @@
          margin:26px 0 12px;display:flex;align-items:center;gap:8px}
   h2.sec .qtd{font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#20180A;
               background:var(--dourado);border-radius:20px;padding:2px 9px}
+
+  /* ---------- atalho na tela do celular ---------- */
+  .atalho{background:var(--navy1);border:1px dashed var(--borda);border-radius:14px;
+          padding:16px;margin-bottom:18px;display:none}
+  .atalho .tit{font-size:15.5px;font-weight:600;margin-bottom:6px;line-height:1.35}
+  .atalho .txt{font-size:13.5px;color:#C9D0E0;line-height:1.55;margin-bottom:14px}
+  .atalho .txt b{color:var(--creme)}
+  .atalho button{padding:13px;font-size:15px}
+  .atalho button.fantasma{margin-top:8px;padding:10px;font-size:13px;border:none}
+  .atalho .como{display:none;background:var(--navy2);border-radius:10px;padding:13px 14px;
+                margin-top:12px;font-size:13.5px;line-height:1.6;color:var(--creme)}
+  .atalho .como ol{margin:0 0 0 18px}
+  .atalho .como .obs{color:var(--muted);font-size:12.5px;margin-top:8px}
 
   /* ---------- prêmio ---------- */
   .premio{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;
@@ -237,6 +260,20 @@
       <div class="num" id="pontos">0</div>
       <div class="un" id="unidade">pontos</div>
       <div class="regra" id="regra">A cada R$ 25 em consumo, 1 ponto.</div>
+    </div>
+
+    <!-- Atalho na tela do celular. O texto TEM que dizer que não ocupa memória
+         (pedido do Antonio). Some sozinho quando a página já foi aberta pelo
+         atalho, ou por 30 dias se a pessoa tocar em "Agora não". -->
+    <div class="atalho" id="atalho">
+      <div class="tit">📲 Coloque o Clube na tela do seu celular</div>
+      <div class="txt">
+        Vira um ícone igual a um app e abre direto no seu saldo.
+        <b>Não ocupa memória nenhuma no celular</b> — é só um atalho.
+      </div>
+      <button onclick="instalarAtalho()">Adicionar à tela inicial</button>
+      <div class="como" id="atalhoComo"></div>
+      <button class="fantasma" onclick="dispensarAtalho()">Agora não</button>
     </div>
 
     <h2 class="sec">Meus prêmios <span class="qtd" id="qtdPremios" style="display:none">0</span></h2>
@@ -454,6 +491,7 @@ function desenhar(){
   desenharCatalogo(j.catalogo || [], j.pontos || 0);
   desenharVelhos(premios.filter(p => !vale(p)));
   desenharDados(j.dados || {}, j.nome || '', j.visitas || 0);
+  prepararAtalho();
 }
 
 async function salvarNome(){
@@ -514,7 +552,7 @@ function desenharPremios(lista){
 
   alvo.innerHTML = lista.map((p, i) => {
     const pz = prazo(p.validadeTs);
-    const origem = p.origem === 'roleta' ? '🎡 Ganho na roleta' : '⭐ Trocado por pontos';
+    const origem = rotuloOrigem(p.origem);
 
     // já tem código vivo? mostra direto — não faz o cliente clicar de novo
     const codigoVivo = p.codigo && p.codigoExpiraTs && p.codigoExpiraTs > Date.now();
@@ -540,6 +578,18 @@ function desenharPremios(lista){
             'Clique só quando estiver na Casa — o código vale por 24 horas.</div>') +
     '</div>';
   }).join('');
+}
+
+// De onde veio o prêmio. Antes era só "roleta" ou "pontos" — brinde de
+// aniversário, de inatividade e os importados do programa antigo apareciam
+// todos como "Trocado por pontos".
+function rotuloOrigem(o){
+  o = String(o || '');
+  if(o === 'roleta') return '🎡 Ganho na roleta';
+  if(o === 'pontos') return '⭐ Trocado por pontos';
+  if(o === 'aniversario') return '🎂 Presente de aniversário';
+  if(o === 'fidelizi') return '🎁 Prêmio que você já tinha no Clube';
+  return '🎁 Presente da casa';
 }
 
 function blocoCodigo(codigo, expiraTs){
@@ -660,6 +710,51 @@ function desenharVelhos(lista){
     '</div>';
   }).join('');
 }
+
+/* ---------------- atalho na tela do celular ---------------- */
+// Android/Chrome avisa quando dá pra instalar com um toque; a gente guarda o
+// aviso e só dispara no clique do botão. iPhone não tem isso: lá o botão
+// mostra o passo a passo.
+let promptInstalar = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; });
+window.addEventListener('appinstalled', () => { lembrarAtalho('ok'); $('atalho').style.display = 'none'; });
+
+function lembrarAtalho(v){ try{ localStorage.setItem('cp_atalho', v + '|' + Date.now()); }catch(e){} }
+function abertoPeloAtalho(){
+  return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ||
+         navigator.standalone === true;
+}
+function prepararAtalho(){
+  let v = ''; try{ v = localStorage.getItem('cp_atalho') || ''; }catch(e){}
+  const [estado, quando] = v.split('|');
+  const recente = (Date.now() - (parseInt(quando, 10) || 0)) < 30 * DIA;
+  const esconder = abertoPeloAtalho() || estado === 'ok' || (estado === 'depois' && recente);
+  $('atalho').style.display = esconder ? 'none' : 'block';
+}
+async function instalarAtalho(){
+  if(promptInstalar){
+    const p = promptInstalar; promptInstalar = null;
+    p.prompt();
+    try{
+      const r = await p.userChoice;
+      if(r && r.outcome === 'accepted'){ lembrarAtalho('ok'); $('atalho').style.display = 'none'; }
+    }catch(e){}
+    return;
+  }
+  const ua = navigator.userAgent || '';
+  const ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  $('atalhoComo').innerHTML = ios
+    ? '<ol><li>Toque em <b>Compartilhar</b> (o quadrado com a seta).</li>' +
+      '<li>Role e toque em <b>Adicionar à Tela de Início</b>.</li>' +
+      '<li>Toque em <b>Adicionar</b>.</li></ol>' +
+      '<div class="obs">Não apareceu? Abra esta página no Safari.</div>'
+    : '<ol><li>Toque nos <b>três pontinhos</b> (⋮) do navegador.</li>' +
+      '<li>Toque em <b>Adicionar à tela inicial</b> (ou <b>Instalar app</b>).</li>' +
+      '<li>Confirme em <b>Adicionar</b>.</li></ol>' +
+      '<div class="obs">Não apareceu? Abra esta página no Chrome.</div>';
+  $('atalhoComo').style.display = 'block';
+}
+function dispensarAtalho(){ lembrarAtalho('depois'); $('atalho').style.display = 'none'; }
 
 /* ---------------- início ---------------- */
 (function(){

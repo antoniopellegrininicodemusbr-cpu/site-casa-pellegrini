@@ -1,0 +1,24 @@
+{
+  "id": "/minha-conta",
+  "name": "Clube Pellegrini",
+  "short_name": "Clube Pellegrini",
+  "description": "Seus pontos e prêmios do Clube Pellegrini.",
+  "start_url": "/minha-conta",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "pt-BR",
+  "theme_color": "#0C1120",
+  "background_color": "#0C1120",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

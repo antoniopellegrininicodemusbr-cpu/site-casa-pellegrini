@@ -1,0 +1,4 @@
+
+# cópias de segurança locais — nunca publicar
+*.bak-*
+*.local-antigo-*
