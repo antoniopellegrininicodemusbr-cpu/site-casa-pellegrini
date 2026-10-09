@@ -235,9 +235,9 @@
   <form id="pRecuperar" style="display:none" onsubmit="pedirCodigo(event)">
     <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
       Criar ou recuperar senha</h2>
-    <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
-      Já é do Clube mas ainda não tem senha? É por aqui também. Vamos confirmar
-      que é você pelo WhatsApp do seu cadastro — leva um toque.</p>
+    <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px" id="txtRec">
+      Já é do Clube mas ainda não tem senha? É por aqui também. Vamos mandar um
+      código pro WhatsApp do seu cadastro.</p>
 
     <div class="campo">
       <label for="rcpf">Seu CPF ou celular</label>
@@ -287,7 +287,9 @@
     <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px" id="txtEnviado">
       Confirmado ✅ Agora é só escolher sua senha.</p>
 
-    <!-- o código já veio da confirmação pelo WhatsApp: fica escondido -->
+    <!-- 09/10/2026: no modo padrão o código CHEGA no WhatsApp do cadastro
+         (template "Copiar código") e o cliente cola aqui. Na confirmação
+         invertida (plano B) o código já veio e o campo fica escondido. -->
     <div class="campo" id="campoCodigo" style="display:none">
       <label for="codigo">Código de 6 dígitos</label>
       <input type="text" id="codigo" inputmode="numeric" autocomplete="one-time-code"
@@ -303,8 +305,14 @@
     </div>
 
     <button type="submit" id="btnDef">Salvar senha e entrar</button>
+    <div id="naoChegou" style="display:none;text-align:center;margin-top:16px;font-size:13px;line-height:1.7;color:var(--muted)">
+      Não chegou em 1 minuto?<br>
+      <a href="#" onclick="recomecar('template');return false" style="color:var(--dourado)">Mandar outro código</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="recomecar('confirmacao');return false" style="color:var(--dourado)">Confirmar de outro jeito</a>
+    </div>
     <div style="text-align:center;margin-top:14px">
-      <a href="#" onclick="verPainel('recuperar');return false" style="color:var(--muted);font-size:13px">← Recomeçar</a>
+      <a href="#" onclick="recomecar('template');return false" style="color:var(--muted);font-size:13px">← Recomeçar</a>
     </div>
   </form>
 
@@ -446,7 +454,31 @@ function tokenTurnstile(){
   return el ? el.value : '';
 }
 
-/* ---------- pedir código ---------- */
+/* ---------- pedir código ----------
+   09/10/2026: padrão = código chega no WhatsApp do cadastro (template de
+   autenticação da Meta, botão "Copiar código"). "Confirmar de outro jeito"
+   volta pra confirmação invertida (o cliente manda a mensagem pra casa). */
+let viaRec = 'template';
+function recomecar(via){
+  viaRec = via === 'confirmacao' ? 'confirmacao' : 'template';
+  try{ ['cp_modo','cp_cod_rec','cp_cod_ts'].forEach(k=>sessionStorage.removeItem(k)); }catch(e){}
+  pararConfirmacao();
+  document.getElementById('txtRec').textContent = viaRec === 'confirmacao'
+    ? 'Sem problema: toque em Continuar e confirme pelo WhatsApp — você manda uma mensagem pronta pra gente, do celular do seu cadastro.'
+    : 'Já é do Clube mas ainda não tem senha? É por aqui também. Vamos mandar um código pro WhatsApp do seu cadastro.';
+  verPainel('recuperar');
+}
+function mostrarDefinir(modoTemplate){
+  document.getElementById('campoCodigo').style.display = modoTemplate ? 'block' : 'none';
+  document.getElementById('naoChegou').style.display = modoTemplate ? 'block' : 'none';
+  document.getElementById('txtEnviado').innerHTML = modoTemplate
+    ? 'Mandamos um <strong>código de 6 dígitos</strong> no WhatsApp do seu cadastro 📲<br>' +
+      'Toque em <strong>Copiar código</strong> na mensagem e cole aqui. Ele vale por 10 minutos.'
+    : 'Confirmado ✅ Agora é só escolher sua senha.';
+  verPainel('definir');
+  document.getElementById(modoTemplate ? 'codigo' : 'nsenha').focus();
+}
+
 async function pedirCodigo(e){
   e.preventDefault();
   const btn=document.getElementById('btnRec');
@@ -457,10 +489,18 @@ async function pedirCodigo(e){
   try{
     const r=await fetch(API+'/recuperar',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ident:c,turnstile:tokenTurnstile()})});
+      body:JSON.stringify(Object.assign({ident:c,turnstile:tokenTurnstile()},
+        viaRec==='confirmacao' ? {via:'confirmacao'} : {}))});
     const j=await r.json();
     btn.disabled=false; btn.textContent='Continuar';
     if(j.ok===false && j.erro) return aviso(j.erro);
+    if(j.modo==='template'){
+      sessionStorage.setItem('cp_cpf_rec', c);
+      sessionStorage.setItem('cp_modo', 'template');
+      sessionStorage.setItem('cp_cod_ts', String(Date.now()));
+      document.getElementById('codigo').value = '';
+      return mostrarDefinir(true);
+    }
     if(!j.codigo) return aviso('Não consegui gerar a confirmação. Tenta de novo?');
     sessionStorage.setItem('cp_cpf_rec', c);
     sessionStorage.setItem('cp_cod_rec', j.codigo);
@@ -511,8 +551,7 @@ function abrirConfirmacao(codigo, numero, mensagem){
       if (j.confirmado){
         pararConfirmacao();
         document.getElementById('codigo').value = codigo;
-        verPainel('definir');
-        document.getElementById('nsenha').focus();
+        mostrarDefinir(false);
       }
     }catch(e){ /* rede oscilou: tenta no próximo ciclo */ }
   }, 3000);
@@ -520,6 +559,9 @@ function abrirConfirmacao(codigo, numero, mensagem){
 
 /* Quem volta do WhatsApp às vezes recarrega a aba — retoma de onde parou. */
 (function(){
+  const tsT = +(sessionStorage.getItem('cp_cod_ts')||0);
+  if (sessionStorage.getItem('cp_modo')==='template' && sessionStorage.getItem('cp_cpf_rec')
+      && Date.now()-tsT < 10*60000) { mostrarDefinir(true); return; }
   const cod = sessionStorage.getItem('cp_cod_rec');
   const ts = +(sessionStorage.getItem('cp_cod_ts')||0);
   if (cod && sessionStorage.getItem('cp_cpf_rec') && Date.now()-ts < 15*60000)
@@ -547,6 +589,7 @@ async function definirSenha(e){
     if(j.token) localStorage.setItem('cp_sessao', j.token);
     sessionStorage.removeItem('cp_cpf_rec');
     sessionStorage.removeItem('cp_cod_rec');
+    sessionStorage.removeItem('cp_modo');
     document.getElementById('pDefinir').style.display='none';
     document.getElementById('oNome').textContent=(j.nome||'').split(' ')[0]||'tudo certo';
     document.getElementById('sucesso').style.display='block';
