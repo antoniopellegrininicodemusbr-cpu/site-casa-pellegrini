@@ -1,0 +1,63 @@
+name: iFood Financeiro → Sheets
+
+# Le as APIs financeiras do iFood (somente leitura) e grava no Google Sheets.
+# Por enquanto so roda manualmente; o agendamento diario entra depois da homologacao.
+on:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'demo = dados fictícios embutidos | teste = loja de teste do iFood | producao = loja real'
+        type: choice
+        default: demo
+        options: [demo, teste, producao]
+      dias:
+        description: 'Dias para trás a reprocessar'
+        default: '45'
+      data_inicio:
+        description: 'Opcional: AAAA-MM-DD (substitui "dias")'
+        default: ''
+      data_fim:
+        description: 'Opcional: AAAA-MM-DD'
+        default: ''
+      competencias:
+        description: 'Opcional: meses do arquivo de conciliação, ex. 2026-09,2026-10'
+        default: ''
+
+concurrency:
+  group: ifood-financeiro
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-auth google-api-python-client
+      - name: Run
+        env:
+          MODO: ${{ inputs.modo }}
+          IFOOD_TEST_CLIENT_ID:     ${{ secrets.IFOOD_TEST_CLIENT_ID }}
+          IFOOD_TEST_CLIENT_SECRET: ${{ secrets.IFOOD_TEST_CLIENT_SECRET }}
+          IFOOD_PROD_CLIENT_ID:     ${{ secrets.IFOOD_CLIENT_ID }}
+          IFOOD_PROD_CLIENT_SECRET: ${{ secrets.IFOOD_CLIENT_SECRET }}
+          GOOGLE_SHEETS_CREDS:      ${{ secrets.GOOGLE_SHEETS_CREDS }}
+          SPREADSHEETS: '{"2026":"1DDnwIYYXhca1dXp_mfwHLaibxWHiwG1cdWcAuUsatM4","2027":"1UZA-9BXGSxTmtg08x0i6G9_Uyq9lWV3lwBepR8EOV4Y"}'
+          SPREADSHEET_TEST: '1yBuMGtcKRmD36cYqo-AYVhyCUAbjFQJYZNvMayGi6lE'
+          DAYS_BACK:   ${{ inputs.dias }}
+          DATE_FROM:   ${{ inputs.data_inicio }}
+          DATE_TO:     ${{ inputs.data_fim }}
+          COMPETENCES: ${{ inputs.competencias }}
+        run: |
+          case "$MODO" in
+            demo)     export IFOOD_DEMO=true ;;
+            teste)    export IFOOD_HOMOLOGATION=true IFOOD_CLIENT_ID="$IFOOD_TEST_CLIENT_ID" IFOOD_CLIENT_SECRET="$IFOOD_TEST_CLIENT_SECRET" ;;
+            producao) export IFOOD_CLIENT_ID="$IFOOD_PROD_CLIENT_ID" IFOOD_CLIENT_SECRET="$IFOOD_PROD_CLIENT_SECRET" ;;
+          esac
+          python scripts/ifood_financeiro.py
