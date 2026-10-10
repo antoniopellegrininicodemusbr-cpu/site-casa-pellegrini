@@ -252,7 +252,12 @@ def fetch_reconciliation(cli, mid, competence, max_wait=420):
         rid = m.group(0)
     delay, waited = 3.0, 0.0
     while True:
-        st, j = cli.get(path + "/" + rid)
+        try:
+            st, j = cli.get(path + "/" + rid)
+        except IfoodError as e:
+            if e.status != 404:
+                raise
+            j = {"status": "aguardando registro do pedido"}   # logo apos o POST o id ainda pode nao existir
         status = str((j or {}).get("status", "")).lower()
         url = find_url(j)
         if url:
@@ -574,21 +579,21 @@ def by_year(rows, idxs):
     return out
 
 
-def write_book(sh, label, ambiente, now, d0, d1, v_rows, e_rows, r_rows, a_rows, recon, errors):
+def write_book(sh, label, ambiente, now, d0, d1, v_rows, e_rows, r_rows, a_rows, recon, errors, reset=False):
     for i, t in enumerate(TABS):
         sh.ensure(t, i)
     sh.drop_default()
 
     # Vendas (chave = ID do pedido)
     kid = VENDAS_HDR.index("ID do pedido")
-    old = fix_text_cols(sh.read("Vendas")[1:], [2])
+    old = [] if reset else fix_text_cols(sh.read("Vendas")[1:], [2])
     rows = merge_by_key(old, v_rows, kid, len(VENDAS_HDR))
     rows.sort(key=lambda r: (str(r[0]), str(r[1])), reverse=True)
     sh.write("Vendas", VENDAS_HDR, rows, money_cols=range(10, 22))
     n_vendas = len(rows)
 
     # Lancamentos (substitui os dias reprocessados)
-    old = fix_text_cols(sh.read("Lançamentos")[1:], [12])
+    old = [] if reset else fix_text_cols(sh.read("Lançamentos")[1:], [12])
     rows = merge_by_window(old, e_rows, 0, d0, d1, len(EVENTOS_HDR))
     rows.sort(key=lambda r: (str(r[0]), str(r[14])), reverse=True)
     sh.write("Lançamentos", EVENTOS_HDR, rows, money_cols=[5, 7])
@@ -597,14 +602,14 @@ def write_book(sh, label, ambiente, now, d0, d1, v_rows, e_rows, r_rows, a_rows,
     # Repasses e Antecipacoes (chave = ID do titulo)
     n_tit = {}
     for tab, data in (("Repasses", r_rows), ("Antecipações", a_rows)):
-        old = fix_text_cols(sh.read(tab)[1:], [8, 10])
+        old = [] if reset else fix_text_cols(sh.read(tab)[1:], [8, 10])
         rows = merge_by_key(old, data, 10, len(TITULOS_HDR))
         rows.sort(key=lambda r: str(r[2]), reverse=True)
         sh.write(tab, TITULOS_HDR, rows, money_cols=[5])
         n_tit[tab] = len(rows)
 
     # Conciliacao (substitui as competencias baixadas; preserva as demais)
-    old = sh.read("Conciliação")
+    old = [] if reset else sh.read("Conciliação")
     old_hdr, old_rows = (old[0], old[1:]) if old else ([], [])
     new_hdr = next((r[2] for r in recon.values() if r[2]), old_hdr if "competencia" in old_hdr else [])
     got = {comp for (_, comp), r in recon.items() if r[0] == "pronto"}
@@ -687,7 +692,7 @@ def main():
         # ambiente de teste: tudo numa planilha separada, para nao misturar dado ficticio com o real
         amb = "DEMONSTRAÇÃO (dados fictícios embutidos)" if demo else "TESTE (dados fictícios do iFood — x-request-homologation)"
         sh = Sheet(creds, env["SPREADSHEET_TEST"].strip())
-        write_book(sh, "TESTE", amb, now, d0, d1, v, e, r, a, recon, errors)
+        write_book(sh, "TESTE", amb, now, d0, d1, v, e, r, a, recon, errors, reset=True)
     else:
         # producao: uma planilha por ano
         books = json.loads(env.get("SPREADSHEETS") or "{}")
