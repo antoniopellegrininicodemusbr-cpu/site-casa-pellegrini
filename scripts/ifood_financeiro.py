@@ -296,9 +296,16 @@ def parse_recon_csv(text):
                     c = round(float(c.replace(",", ".")), 4)
                 except ValueError:
                     pass
-            line.append(c)
+            line.append(keep_text(c))
         out.append(line)
     return header, out
+
+
+def keep_text(c):
+    """Codigos so de digitos com zero a esquerda ou longos (pedido curto, CNPJ) ficam como texto."""
+    if isinstance(c, str) and c.isdigit() and (c.startswith("0") or len(c) > 11):
+        return "'" + c
+    return c
 
 
 # ----------------------------------------------------------------------------
@@ -407,7 +414,7 @@ def title_row(pair, now):
             (it.get("paymentDate") or "")[:10], TIPO_PT.get(it.get("type"), it.get("type", "")),
             it.get("product", ""), num(it.get("amount")),
             STATUS_TIT.get(it.get("status"), it.get("status", "")),
-            acc.get("bankName", ""), acc.get("branchCode", ""), conta,
+            acc.get("bankName", ""), ("'" + str(acc["branchCode"])) if acc.get("branchCode") else "", conta,
             "'" + str(it.get("id", "")), it.get("transactionId", ""), now]
 
 
@@ -590,7 +597,7 @@ def write_book(sh, label, ambiente, now, d0, d1, v_rows, e_rows, r_rows, a_rows,
     # Repasses e Antecipacoes (chave = ID do titulo)
     n_tit = {}
     for tab, data in (("Repasses", r_rows), ("Antecipações", a_rows)):
-        old = fix_text_cols(sh.read(tab)[1:], [10])
+        old = fix_text_cols(sh.read(tab)[1:], [8, 10])
         rows = merge_by_key(old, data, 10, len(TITULOS_HDR))
         rows.sort(key=lambda r: str(r[2]), reverse=True)
         sh.write(tab, TITULOS_HDR, rows, money_cols=[5])
@@ -603,7 +610,8 @@ def write_book(sh, label, ambiente, now, d0, d1, v_rows, e_rows, r_rows, a_rows,
     got = {comp for (_, comp), r in recon.items() if r[0] == "pronto"}
     if new_hdr:
         ci = new_hdr.index("competencia") if "competencia" in new_hdr else 0
-        keep = [r for r in old_rows if old_hdr == new_hdr and str(r[ci] if ci < len(r) else "")[:7] not in got]
+        keep = [[keep_text(c) for c in r] for r in old_rows
+                if old_hdr == new_hdr and str(r[ci] if ci < len(r) else "")[:7] not in got]
         fresh = [row for r in recon.values() if r[0] == "pronto" for row in r[3]]
         money = [i for i, h in enumerate(new_hdr) if h in NUMERIC_RECON]
         sh.write("Conciliação", new_hdr, keep + fresh, money_cols=money)
