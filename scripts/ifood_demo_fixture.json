@@ -1,0 +1,33 @@
+{
+ "_nota": "Dados FICTICIOS, no formato do ambiente de teste do iFood (x-request-homologation). Usados so no modo DEMO para validar a planilha.",
+ "sales": [
+  {"id":"f892eb0b-1475-413e-82d1-e35289921544","shortId":"0686","createdAt":"2025-08-01T15:23:33.832Z","type":"ORDER","category":"FOOD","salesChannel":"IFOOD","currentStatus":"CONCLUDED",
+   "merchant":{"id":"f07d23bd-74fc-47fa-9abf-2889e8127c00","name":"ABC","type":"RESTAURANT","timezone":"Etc/GMT+3"},
+   "saleGrossValue":{"bag":59.8,"deliveryFee":0,"serviceFee":-0.99},
+   "benefits":{"benefits":[{"target":"CART","value":10,"sponsorships":[{"name":"IFOOD","value":10},{"name":"MERCHANT","value":0},{"name":"EXTERNAL","value":0},{"name":"CHAIN","value":0}]}],"totalValue":10},
+   "delivery":{"type":"DELIVERY","deliveryParameters":{"logisticProvider":"MERCHANT","deliveryProduct":"SELF_DELIVERY_PARTIAL_AREA"},"prices":{"grossValue":0,"discount":0,"netValue":0}},
+   "payments":{"methods":[{"method":"PIX","currency":"BRL","type":"ONLINE","value":50.79,"liability":"IFOOD"}]},
+   "billingSummary":{"saleBalance":50.71,"billingEntries":[{"name":"PAYMENT_TRANSACTION_FEE","value":-1.91},{"name":"ORDER_PAYMENT","value":50.79},{"name":"SERVICE_FEE","value":-0.99},{"name":"ORDER_COMMISSION","value":-7.18},{"name":"IFOOD_SUBSIDY","value":10}]},
+   "orderEvents":[{"id":"e1","fullCode":"CONCLUDED","code":"CON","createdAt":"2025-08-01T16:06:48.091Z"},
+     {"id":"e2","fullCode":"FINANCIAL_BILLED_ORDER_ENTRY","code":"FBOE","createdAt":"2025-08-20T02:28:10.999Z","metadata":{"entries":[
+       {"amount":-1.91,"financialEntryName":"PAYMENT_TRANSACTION_FEE","expectedPaymentDate":"2025-08-27"},
+       {"amount":50.79,"financialEntryName":"ORDER_PAYMENT","expectedPaymentDate":"2025-08-27"}]}}]},
+  {"id":"0a1b2c3d-0000-4000-8000-000000000002","shortId":"1420","createdAt":"2025-08-02T01:10:00.000Z","type":"ORDER","category":"FOOD","salesChannel":"IFOOD","currentStatus":"CANCELLED",
+   "merchant":{"id":"f07d23bd-74fc-47fa-9abf-2889e8127c00","name":"ABC"},
+   "saleGrossValue":{"bag":80.0,"deliveryFee":7.99,"serviceFee":0},
+   "benefits":{"benefits":[],"totalValue":0},
+   "delivery":{"type":"DELIVERY","deliveryParameters":{"logisticProvider":"IFOOD_LOGISTICS"}},
+   "payments":{"methods":[{"method":"CREDIT","type":"ONLINE","value":87.99,"card":{"brand":"VISA"},"liability":"IFOOD"}]},
+   "billingSummary":{"saleBalance":0,"billingEntries":[]},
+   "orderEvents":[{"id":"e3","fullCode":"CANCELLED","code":"CAN","createdAt":"2025-08-02T01:20:00.000Z","metadata":"texto"}]}
+ ],
+ "events": [
+  {"name":"Cobrança Pacote Anúncios","description":"ocorrência de débito para contratação do pacote de anúncios por parte do parceiro.","product":"IFOOD","trigger":"SINGLE_OCCURRENCE","competence":"2025-08","period":{"beginDate":"2025-08-01","endDate":"2025-08-03","idSaldo":"190190415"},"reference":{},"hasTransferImpact":true,"amount":{"value":-9.66},"settlement":{"expectedDate":"2025-08-27"},"payment":{"liability":"IFOOD"}},
+  {"name":"ORDER_PAYMENT","description":"IN_APP_PAYMENT_CREDIT","product":"IFOOD","trigger":"ORDER_CONCLUDED","competence":"2025-08","period":{"beginDate":"2025-08-01","endDate":"2025-08-03","idSaldo":"190190415"},"reference":{"type":"ORDER","id":"f892eb0b-1475-413e-82d1-e35289921544","date":"2025-08-01T15:23:33.832970Z"},"hasTransferImpact":true,"amount":{"value":50.79},"billing":{"baseValue":"50.79"},"settlement":{"expectedDate":"2025-08-27"},"payment":{"method":"PIX","liability":"MERCHANT"}},
+  {"name":"ORDER_COMMISSION","description":"PARTIAL_AREA_MARKETPLACE_COMMISSION","product":"IFOOD","trigger":"ORDER_CONCLUDED","competence":"2025-08","period":{"beginDate":"2025-08-01","endDate":"2025-08-03","idSaldo":"190190415"},"reference":{"type":"ORDER","id":"f892eb0b-1475-413e-82d1-e35289921544","date":"2025-08-01T15:23:33.832970Z"},"hasTransferImpact":true,"amount":{"value":-7.18},"billing":{"baseValue":"59.8","feePercentage":"12"},"settlement":{"expectedDate":"2025-08-27"},"payment":{"method":"PIX","liability":"MERCHANT"}},
+  {"name":"STORE_SUBSIDY","description":"BENEFIT_PARTNER","product":"IFOOD","trigger":"ORDER_CONCLUDED","competence":"2025-08","period":{"beginDate":"2025-08-01","endDate":"2025-08-03"},"reference":{"type":"ORDER","id":"0a1b2c3d-0000-4000-8000-000000000002"},"hasTransferImpact":false,"amount":{"value":-5},"payment":{"method":"MEAL_VOUCHER","liability":"MERCHANT"}}
+ ],
+ "settlements": {"settlements":[{"startDateCalculation":"2025-08-01","endDateCalculation":"2025-08-03","closingItems":[
+   {"id":"110825088","type":"REPASSE","product":"IFOOD","amount":33.95,"status":"SUCCEED","transactionId":"7d05deb7-b12a-4226-b4d6-cd3b0b682ca8","accountDetails":{"bankName":"BANCO XPTO S.A.","bankNumber":"022","branchCode":"0001","accountNumber":"44416444","accountDigit":"4"},"paymentDate":"2025-08-27"}]}]},
+ "recon_csv": "competencia;fato_gerador;tipo_lancamento;descricao_lancamento;valor;base_calculo;percentual_taxa;pedido_associado_ifood;pedido_associado_ifood_curto;data_repasse_esperada;valor_transacao;impacto_no_repasse;id_saldo;metodo_pagamento\n2025-08;Venda;Entrada Financeira;Entrada financeira;50.79;50.79;;f892eb0b-1475-413e-82d1-e35289921544;0686;2025-08-27;33.95;SIM;190190415;PIX\n2025-08;Venda;Cobrança;Comissão do iFood;-7.18;59.8;12;f892eb0b-1475-413e-82d1-e35289921544;0686;2025-08-27;33.95;SIM;190190415;PIX\n2025-08;Venda;Subsídio;Promoção custeada pela loja;-5;;;0a1b2c3d-0000-4000-8000-000000000002;1420;;;NAO;;MEAL_VOUCHER\n"
+}
