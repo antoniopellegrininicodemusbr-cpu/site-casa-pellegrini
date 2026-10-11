@@ -1,13 +1,11 @@
 {
- "pausados_por_clima": [
-  "120255084584690460"
- ],
- "ultimo_veredito": "CALOR",
- "ultima_execucao": "38028244625",
+ "pausados_por_clima": [],
+ "ultimo_veredito": "FRIO",
+ "ultima_execucao": "38115233450",
  "ultimo_clima": {
-  "data": "2026-10-10",
-  "tmax": 28.4,
-  "chuva_mm": 2.2,
+  "data": "2026-10-11",
+  "tmax": 25.8,
+  "chuva_mm": 10.7,
   "chuva_prob": null,
   "fonte": "met.no"
  },
@@ -177,6 +175,20 @@
    ],
    "executado_em": "2026-10-10 02:39",
    "run_id": "38028244625"
+  },
+  {
+   "data": "2026-10-11",
+   "veredito": "FRIO",
+   "tmax": 25.8,
+   "chuva_mm": 10.7,
+   "chuva_prob": null,
+   "fonte": "met.no",
+   "acoes": [
+    "reativou 120255084584690460"
+   ],
+   "pausados_apos": [],
+   "executado_em": "2026-10-11 02:34",
+   "run_id": "38115233450"
   }
  ]
 }
