@@ -592,7 +592,7 @@ function desenharPremios(lista){
       '<div class="nome">' + esc(p.premio) + '</div>' +
       '<div class="prazo ' + pz.classe + '">🕒 ' + pz.txt + '</div>' +
       (preso
-        ? '<button disabled>🔒 Liberado em ' + fmtData(p.liberadoTs) + ', às 10:30</button>' +
+        ? '<button disabled>🔒 Será liberado em ' + fmtData(p.liberadoTs) + ', às 10:30</button>' +
           '<div class="vazio" style="font-size:12px;padding:10px 0 0">' +
           'Seu prêmio fica guardado esperando sua próxima visita.</div>'
         : codigoVivo
