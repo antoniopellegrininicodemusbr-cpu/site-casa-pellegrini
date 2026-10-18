@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-10-17",
- "total": 349,
+ "atualizado_em": "2026-10-18",
+ "total": 350,
  "registros": [
+  {
+   "media_id": "17896692930416605",
+   "data_post": "2026-10-17",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DemZDTzvd6n/",
+   "caption": "Fenômeno do atendimento 🏆✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "Meme de internet que nao apresenta os produtos nem o ambiente do restaurante.",
+   "flags": "gemini_aprovou:nao|tema:meme de atendimento",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-10-18",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "17880198609652145",
    "data_post": "2026-10-12",
