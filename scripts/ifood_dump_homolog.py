@@ -130,7 +130,8 @@ for t in ("RAW_homolog",):
     if t in sh.tabs:
         sh.api.batchUpdate(spreadsheetId=sh.id, body={"requests": [{"deleteSheet": {"sheetId": sh.tabs[t]["sheetId"]}}]}).execute()
         sh._load()
-sh.ensure("H_resumo")
+sh.ensure("H_resumo", index=0)
+sh.api.batchUpdate(spreadsheetId=sh.id, body={"requests": [{"updateSheetProperties": {"properties": {"sheetId": sh.tabs["H_resumo"]["sheetId"], "index": 0}, "fields": "index"}}]}).execute()
 sh.api.values().clear(spreadsheetId=sh.id, range="'H_resumo'").execute()
 sh.api.values().update(spreadsheetId=sh.id, range="'H_resumo'!A1", valueInputOption="RAW", body={"values": out}).execute()
 print("ok", len(out))
