@@ -3,6 +3,8 @@ Allow: /
 
 # Painel interno (Painel de Performance) — sem indexação, sem auditoria de crawlers
 Disallow: /painel.html
+# Cotação de fornecedores (interno)
+Disallow: /cotacao
 Disallow: /data/
 
 Sitemap: https://casapellegrini.com.br/sitemap.xml
