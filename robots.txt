@@ -5,6 +5,7 @@ Allow: /
 Disallow: /painel.html
 # Cotação de fornecedores (interno)
 Disallow: /cotacao
+Disallow: /fornecedor
 Disallow: /data/
 
 Sitemap: https://casapellegrini.com.br/sitemap.xml
