@@ -1,7 +1,26 @@
 {
  "atualizado_em": "2026-10-20",
- "total": 350,
+ "total": 351,
  "registros": [
+  {
+   "media_id": "18337701709260106",
+   "data_post": "2026-10-20",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DeuArStPlJn/",
+   "caption": "Almoço no centro histórico, a partir de R$ 33,90. ✅  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "3",
+   "motivo_reprova": "Contém preço específico de promoção no áudio que pode mudar.",
+   "flags": "gemini_aprovou:nao|datado:promocao_com_prazo|tema:almoço e happy hour",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-10-20",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "17896692930416605",
    "data_post": "2026-10-17",
