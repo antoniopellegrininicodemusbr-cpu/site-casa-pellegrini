@@ -8,8 +8,8 @@ on:
       modo:
         description: 'demo = dados fictícios embutidos | teste = loja de teste do iFood | producao = loja real'
         type: choice
-        default: demo
-        options: [demo, teste, producao]
+        default: teste
+        options: [teste, demo, producao]
       dias:
         description: 'Dias para trás a reprocessar'
         default: '45'
