@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-10-22",
- "total": 351,
+ "atualizado_em": "2026-10-23",
+ "total": 352,
  "registros": [
+  {
+   "media_id": "18134946553679750",
+   "data_post": "2026-10-22",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DezUxl9PXpr/",
+   "caption": "Convite feito, cheguem cedo!  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "3",
+   "motivo_reprova": "Menciona 'hoje tem jogo do Flamengo' e preço específico de chopp no áudio/vídeo.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_especifica|tema:Transmissão de jogo do Flamengo",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-10-23",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18337701709260106",
    "data_post": "2026-10-20",
