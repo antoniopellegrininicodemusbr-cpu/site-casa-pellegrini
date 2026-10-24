@@ -466,6 +466,16 @@ class Sheet:
         self.ensure(title)
         self.api.values().clear(spreadsheetId=self.id, range="'%s'" % title).execute()
         values = [header] + rows
+        # garante grade grande o bastante (aba nova nasce com 1000 linhas; o update nao expande sozinho)
+        grid = self.tabs[title].get("gridProperties", {})
+        need_r, need_c = len(values) + 10, max(len(header), 1)
+        if grid.get("rowCount", 0) < need_r or grid.get("columnCount", 0) < need_c:
+            self.api.batchUpdate(spreadsheetId=self.id, body={"requests": [{"updateSheetProperties": {
+                "properties": {"sheetId": self.tabs[title]["sheetId"], "gridProperties": {
+                    "rowCount": max(grid.get("rowCount", 0), need_r),
+                    "columnCount": max(grid.get("columnCount", 0), need_c)}},
+                "fields": "gridProperties.rowCount,gridProperties.columnCount"}}]}).execute()
+            self._load()
         for i in range(0, len(values), 5000):
             self.api.values().update(
                 spreadsheetId=self.id, range="'%s'!A%d" % (title, i + 1),
