@@ -52,6 +52,8 @@ jobs:
           IFOOD_PROD_CLIENT_SECRET: ${{ secrets.IFOOD_CLIENT_SECRET }}
           GOOGLE_SHEETS_CREDS:      ${{ secrets.GOOGLE_SHEETS_CREDS }}
           SPREADSHEETS: '{"2026":"1DDnwIYYXhca1dXp_mfwHLaibxWHiwG1cdWcAuUsatM4","2027":"1UZA-9BXGSxTmtg08x0i6G9_Uyq9lWV3lwBepR8EOV4Y"}'
+          # loja real (Casa Pellegrini): o app so tem o modulo Financial, entao a listagem de lojas vem vazia
+          IFOOD_MERCHANT_ID: ${{ (inputs.modo || 'producao') == 'producao' && '953fe926-cd9d-4ee5-af17-dff66951839f' || '' }}
           SPREADSHEET_TEST: '1yBuMGtcKRmD36cYqo-AYVhyCUAbjFQJYZNvMayGi6lE'
           DAYS_BACK:   ${{ inputs.dias || '45' }}
           DATE_FROM:   ${{ inputs.data_inicio }}
