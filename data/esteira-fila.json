@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-10-25",
- "total": 353,
+ "atualizado_em": "2026-10-26",
+ "total": 354,
  "registros": [
+  {
+   "media_id": "17923645515222694",
+   "data_post": "2026-10-26",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/De9m4MLPyOT/",
+   "caption": "Resultado do segundo turno ✅  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "Video parodia uma eleicao com anuncio de resultado de segundo turno.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_especifica|tema:Parodia de resultado de eleicao",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-10-26",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18082159058341892",
    "data_post": "2026-10-25",
@@ -6069,7 +6088,7 @@
    "media_type": "CAROUSEL_ALBUM",
    "permalink": "https://www.instagram.com/p/DBjTvHEOzdE/",
    "caption": "Que nós temos a cerveja mais gelada da cidade você já sabe! Mas você já conhece nossos petiscos, porções, sanduiches e hambúrgueres artesanais\n\nVenha experimentar! \n\n📍Rua Treze de",
-   "status": "REPESCAGEM",
+   "status": "EXPIRADO",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "formato:carrossel;triagem:26/08 sessão|legenda_v2:ok|entrada:resgate_prazo;vence_2anos:2026-10-25|veredito:repescagem_0compras_R$36.06;vence_2anos:2026-10-25(nao_reentra_apos)",
