@@ -619,7 +619,8 @@
   "18061261066681334",
   "18048619613317602",
   "18076140967608193",
-  "18082937872558676"
+  "18082937872558676",
+  "17921981928451842"
  ],
  "failed": {
   "18159851395114721": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The request metadata specifies an invalid video description.\",\n    \"errors\": [\n      {\n        \"message\": \"The req",
