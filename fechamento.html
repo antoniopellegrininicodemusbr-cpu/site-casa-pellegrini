@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:">
+<title>Fechamento ao vivo · Casa Pellegrini</title>
+<!-- ============================================================
+     FECHAMENTO AO VIVO (29/10/2026) — vendas das maquininhas que
+     passaram pelo app do Clube, em segundos. Mesmo layout do
+     relatório "Vendas" do portal da Stone (pra planilha do Augusto).
+     Senha própria (RELATORIO_KEY no .env das functions) — NÃO é a
+     chave-mestra do Clube.
+     ============================================================ -->
+<style>
+:root{--bg:#0C1120;--card:#141B2E;--linha:#243049;--txt:#E8ECF4;--sub:#93A0B8;--ouro:#D9B45A;--ok:#4CC38A;--ruim:#E5656B;--alerta:#E8A33D}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px;color:var(--ouro)} .sub{color:var(--sub);font-size:13px}
+.card{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:14px;margin:12px 0}
+input,select,button{font:inherit;color:var(--txt);background:#0F1526;border:1px solid var(--linha);border-radius:8px;padding:8px 10px}
+button{cursor:pointer} button.pri{background:var(--ouro);color:#1a1405;border-color:var(--ouro);font-weight:600}
+button:disabled{opacity:.5;cursor:default}
+.linha{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.presets button.on{border-color:var(--ouro);color:var(--ouro)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.kpi{background:#0F1526;border:1px solid var(--linha);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font-size:22px;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--linha);text-align:left;white-space:nowrap}
+th{color:var(--sub);font-weight:500;font-size:12px;text-transform:uppercase}
+td.n,th.n{text-align:right}
+.rolar{overflow-x:auto}
+.cancel td{color:var(--ruim);text-decoration:line-through}
+.tag{font-size:12px;padding:2px 7px;border-radius:99px;border:1px solid var(--linha)}
+.tag.ok{color:var(--ok);border-color:var(--ok)} .tag.alerta{color:var(--alerta);border-color:var(--alerta)} .tag.ruim{color:var(--ruim);border-color:var(--ruim)}
+.aviso{color:var(--sub);font-size:12.5px;margin-top:8px}
+.erro{color:var(--ruim)} .esc{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>Fechamento ao vivo</h1>
+  <div class="sub">Vendas das maquininhas pelo app do Clube Pellegrini · atualiza sozinho a cada minuto</div>
+
+  <section class="card" id="login">
+    <div class="linha">
+      <input id="senha" type="password" placeholder="Senha do relatório" autocomplete="current-password" style="flex:1;min-width:200px">
+      <button class="pri" id="entrar">Entrar</button>
+    </div>
+    <div class="aviso erro" id="loginErro"></div>
+  </section>
+
+  <div id="app" class="esc">
+    <section class="card">
+      <div class="linha presets" id="presets">
+        <button data-p="turno">Turno de hoje</button>
+        <button data-p="3h">Últimas 3h</button>
+        <button data-p="ontem">Turno de ontem</button>
+        <button data-p="livre">Escolher período</button>
+      </div>
+      <div class="linha esc" id="livre" style="margin-top:10px">
+        <label>De <input type="datetime-local" id="de"></label>
+        <label>Até <input type="datetime-local" id="ate"></label>
+        <button id="aplicar">Aplicar</button>
+      </div>
+      <div class="linha" style="margin-top:10px;justify-content:space-between">
+        <div class="sub" id="periodo"></div>
+        <div class="linha">
+          <button class="pri" id="xlsx">Baixar .xlsx (layout Stone)</button>
+          <button id="csv">.csv</button>
+          <button id="sair" title="Esquecer a senha neste computador">Sair</button>
+        </div>
+      </div>
+      <div class="aviso erro" id="erro"></div>
+    </section>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="card">
+      <strong>Por forma de pagamento</strong>
+      <div class="rolar"><table id="formas"></table></div>
+    </section>
+
+    <section class="card">
+      <strong>Por maquininha</strong>
+      <div class="rolar"><table id="maqs"></table></div>
+      <div class="aviso">⚠️ Só entra aqui venda passada pelo <b>app do Clube</b>. Se alguém usar a função de pagamento nativa da Stone (ou o PED+), essa venda só aparece no relatório da Stone. "Último contato" velho numa maquininha ligada = ela está sem internet (as vendas chegam quando voltar).</div>
+    </section>
+
+    <section class="card">
+      <strong>Vendas</strong> <span class="sub" id="qtd"></span>
+      <div class="rolar"><table id="vendas"></table></div>
+      <div class="aviso">Valor líquido e MDR são <b>estimativas</b> pela taxa de cada bandeira — o valor oficial é o do relatório da Stone (D+1). "Pré-pago" a maquininha não informa: sai como Débito/Crédito.</div>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script>
+(() => {
+  const API = '/api/clube/relatorio/vendas';
+  const $ = (id) => document.getElementById(id);
+  const H = 3600000, VIRADA = 6; // o "dia" do restaurante vira às 6h (venda de 00:30 é do turno de ontem)
+  let chave = ''; try { chave = localStorage.getItem('relKey') || ''; } catch (e) {}
+  let preset = 'turno', periodo = null, dados = null, timer = null;
+
+  const brl = (c) => (c / 100).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+  const pad = (n) => String(n).padStart(2, '0');
+  // horário de Brasília (UTC-3, sem horário de verão), independente do fuso do computador
+  const br = (ts) => { const d = new Date(ts - 3 * H); return {a: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes()}; };
+  const fmt = (ts) => { const x = br(ts); return `${pad(x.d)}/${pad(x.m)}/${x.a} ${pad(x.h)}:${pad(x.mi)}`; };
+  const hora = (ts) => { const x = br(ts); return `${pad(x.h)}:${pad(x.mi)}`; };
+  const deBR = (a, m, d, h) => Date.UTC(a, m - 1, d, h + 3);
+  const inicioTurno = (ts) => { const x = br(ts); let t = deBR(x.a, x.m, x.d, VIRADA); if (x.h < VIRADA) t -= 24 * H; return t; };
+  const paraInput = (ts) => { const x = br(ts); return `${x.a}-${pad(x.m)}-${pad(x.d)}T${pad(x.h)}:${pad(x.mi)}`; };
+  const deInput = (s) => { const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s || ''); return m ? Date.UTC(+m[1], m[2] - 1, +m[3], +m[4] + 3, +m[5]) : 0; };
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+  function calcularPeriodo() {
+    const agora = Date.now();
+    if (preset === 'turno') return {de: inicioTurno(agora), ate: agora, vivo: true};
+    if (preset === '3h') return {de: agora - 3 * H, ate: agora, vivo: true};
+    if (preset === 'ontem') { const t = inicioTurno(agora); return {de: t - 24 * H, ate: t - 1, vivo: false}; }
+    const de = deInput($('de').value), ate = deInput($('ate').value) || agora;
+    return {de, ate, vivo: !$('ate').value};
+  }
+
+  async function carregar() {
+    periodo = calcularPeriodo();
+    if (!periodo.de) { $('erro').textContent = 'Escolha a data inicial.'; return; }
+    $('erro').textContent = '';
+    try {
+      const r = await fetch(`${API}?de=${periodo.de}&ate=${periodo.ate}`, {headers: {'X-Relatorio-Key': chave}, cache: 'no-store'});
+      if (r.status === 401) { sair('Senha incorreta.'); return; }
+      const j = await r.json();
+      if (!j.ok) { $('erro').textContent = j.erro || 'Erro ao carregar.'; return; }
+      dados = j; desenhar();
+    } catch (e) { $('erro').textContent = 'Sem conexão — tentando de novo em 1 min.'; }
+  }
+
+  function taxa(v) { const t = (dados.taxas || {})[v.produto] || {}; return t[v.bandeira] != null ? t[v.bandeira] : (t._ || 0); }
+
+  function desenhar() {
+    const vs = dados.vendas, apr = vs.filter((v) => v.status !== 'CANCELLED'), can = vs.filter((v) => v.status === 'CANCELLED');
+    const soma = (l) => l.reduce((s, v) => s + v.valorCent, 0);
+    const liq = apr.reduce((s, v) => s + v.valorCent * (1 - taxa(v) / 100), 0);
+    $('periodo').textContent = `${fmt(periodo.de)} → ${periodo.vivo ? 'agora (' + hora(dados.agora) + ')' : fmt(periodo.ate)}`;
+    $('kpis').innerHTML = [
+      ['Bruto aprovado', brl(soma(apr))], ['Vendas', apr.length], ['Líquido (estimado)', brl(Math.round(liq))],
+      ['Ticket médio', apr.length ? brl(Math.round(soma(apr) / apr.length)) : '—'], ['Cancelado', `${brl(soma(can))} (${can.length})`],
+    ].map(([a, b]) => `<div class="kpi"><span>${a}</span><b>${b}</b></div>`).join('');
+
+    const formas = {}; apr.forEach((v) => { const k = v.produto; (formas[k] = formas[k] || {n: 0, c: 0}); formas[k].n++; formas[k].c += v.valorCent; });
+    $('formas').innerHTML = '<tr><th>Forma</th><th class="n">Vendas</th><th class="n">Bruto</th></tr>' +
+      ['Credito', 'Debito', 'Voucher', 'Pix QRcode'].concat(Object.keys(formas).filter((k) => !['Credito', 'Debito', 'Voucher', 'Pix QRcode'].includes(k)))
+        .map((k) => `<tr><td>${esc({Credito: 'Crédito', Debito: 'Débito', 'Pix QRcode': 'Pix'}[k] || k)}</td><td class="n">${(formas[k] || {}).n || 0}</td><td class="n">${brl((formas[k] || {}).c || 0)}</td></tr>`).join('');
+
+    const porMaq = {}; apr.forEach((v) => { (porMaq[v.serial] = porMaq[v.serial] || {n: 0, c: 0}); porMaq[v.serial].n++; porMaq[v.serial].c += v.valorCent; });
+    const maqs = (dados.maquininhas || []).slice().sort((a, b) => ((porMaq[b.serial] || {}).c || 0) - ((porMaq[a.serial] || {}).c || 0));
+    $('maqs').innerHTML = '<tr><th>Maquininha</th><th>CNPJ</th><th class="n">Vendas</th><th class="n">Bruto</th><th>Último contato</th><th>Versão</th></tr>' +
+      maqs.map((m) => {
+        const min = Math.round((dados.agora - (m.ultimoEnvioTs || 0)) / 60000);
+        const cls = min <= 10 ? 'ok' : min <= 60 ? 'alerta' : 'ruim';
+        const txt = min < 1 ? 'agora' : min < 60 ? `há ${min} min` : min < 1440 ? `há ${Math.round(min / 60)} h` : fmt(m.ultimoEnvioTs);
+        return `<tr><td>${esc(m.apelido ? m.apelido + ' · ' : '')}${esc(m.serial)}</td><td>${esc(m.documento)}</td><td class="n">${(porMaq[m.serial] || {}).n || 0}</td><td class="n">${brl((porMaq[m.serial] || {}).c || 0)}</td><td><span class="tag ${cls}">${txt}</span></td><td>${esc(m.versao)}</td></tr>`;
+      }).join('');
+
+    $('qtd').textContent = `· ${vs.length} registro(s)`;
+    $('vendas').innerHTML = '<tr><th>Hora</th><th>Maquininha</th><th>Forma</th><th>Bandeira</th><th class="n">Valor</th><th>Cartão</th><th>Status</th></tr>' +
+      vs.map((v) => `<tr class="${v.status === 'CANCELLED' ? 'cancel' : ''}"><td>${fmt(v.ts)}</td><td>${esc(v.serial)}</td><td>${esc({Credito: 'Crédito', Debito: 'Débito', 'Pix QRcode': 'Pix'}[v.produto] || v.produto)}${v.parcelas > 1 ? ' ' + v.parcelas + 'x' : ''}</td><td>${esc(v.bandeira)}</td><td class="n">${brl(v.valorCent)}</td><td>${esc(v.cartao)}</td><td>${esc(v.statusStone)}</td></tr>`).join('');
+  }
+
+  // ---------- exportação no layout do relatório "Vendas" da Stone ----------
+  const COLS = ['DOCUMENTO', 'STONECODE', 'DATA DA VENDA', 'BANDEIRA', 'PRODUTO', 'STONE ID', 'N DE PARCELAS', 'VALOR BRUTO', 'VALOR LIQUIDO', 'DESCONTO DE MDR', 'DESCONTO DE ANTECIPACAO', 'DESCONTO UNIFICADO', 'N DO CARTAO', 'MEIO DE CAPTURA', 'N DE SERIE', 'ULTIMO STATUS', 'DATA DO ULTIMO STATUS', 'CÓDIGO DE AUTORIZAÇÃO'];
+  const num6 = (x) => { const neg = x < 0; const [i, d] = Math.abs(x).toFixed(6).split('.'); return (neg ? '-' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + d; };
+  function linhasStone() {
+    return dados.vendas.slice().sort((a, b) => b.ts - a.ts).map((v) => {
+      const bruto = v.valorCent / 100, mdr = Math.round(bruto * taxa(v) / 100 * 1e6) / 1e6, pix = v.tipo === 'PIX';
+      return [v.documento, pix ? '' : v.stonecode, fmt(v.ts), pix ? '' : v.bandeira, v.produto, pix ? v.endToEnd : v.atk, v.parcelas,
+        num6(bruto), num6(bruto - mdr), num6(-mdr), num6(0), num6(0), v.cartao, 'POS', v.serial, v.statusStone,
+        fmt(v.status === 'CANCELLED' && v.canceladoTs ? v.canceladoTs : v.ts), v.autorizacao];
+    });
+  }
+  function nomeArq(ext) { const a = br(periodo.de), b = br(periodo.ate); return `vendas-ao-vivo_${a.a}-${pad(a.m)}-${pad(a.d)}_${pad(a.h)}${pad(a.mi)}-a-${pad(b.d)}-${pad(b.m)}_${pad(b.h)}${pad(b.mi)}.${ext}`; }
+  function baixar(blob, nome) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+  $('xlsx').onclick = () => {
+    if (!dados) return;
+    if (!window.XLSX) { $('erro').textContent = 'A biblioteca do Excel não carregou — use o .csv.'; return; }
+    const ws = XLSX.utils.aoa_to_sheet([COLS].concat(linhasStone()));   // tudo como texto, igual à Stone
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report');
+    XLSX.writeFile(wb, nomeArq('xlsx'));
+  };
+  $('csv').onclick = () => {
+    if (!dados) return;
+    const q = (s) => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+    const txt = [COLS].concat(linhasStone()).map((l) => l.map(q).join(';')).join('\r\n');
+    baixar(new Blob(['﻿' + txt], {type: 'text/csv;charset=utf-8'}), nomeArq('csv'));
+  };
+
+  // ---------- telas ----------
+  function marcar() { [...$('presets').children].forEach((b) => b.classList.toggle('on', b.dataset.p === preset)); $('livre').classList.toggle('esc', preset !== 'livre'); }
+  $('presets').onclick = (e) => {
+    const p = e.target.dataset && e.target.dataset.p; if (!p) return;
+    preset = p; marcar();
+    if (p === 'livre') { if (!$('de').value) { $('de').value = paraInput(inicioTurno(Date.now())); } return; }
+    carregar();
+  };
+  $('aplicar').onclick = carregar;
+  function entrar() {
+    $('login').classList.add('esc'); $('app').classList.remove('esc'); marcar(); carregar();
+    clearInterval(timer); timer = setInterval(() => { if (periodo && periodo.vivo && !document.hidden) carregar(); }, 60000);
+  }
+  function sair(msg) {
+    chave = ''; try { localStorage.removeItem('relKey'); } catch (e) {}
+    clearInterval(timer); $('app').classList.add('esc'); $('login').classList.remove('esc'); $('loginErro').textContent = msg || '';
+  }
+  $('sair').onclick = () => sair('');
+  $('entrar').onclick = () => { chave = $('senha').value.trim(); if (!chave) return; try { localStorage.setItem('relKey', chave); } catch (e) {} $('senha').value = ''; entrar(); };
+  $('senha').onkeydown = (e) => { if (e.key === 'Enter') $('entrar').click(); };
+  if (chave) entrar();
+})();
+</script>
+</body>
+</html>
