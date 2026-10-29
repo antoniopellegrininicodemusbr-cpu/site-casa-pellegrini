@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-10-28",
- "total": 354,
+ "atualizado_em": "2026-10-29",
+ "total": 355,
  "registros": [
+  {
+   "media_id": "17921981928451842",
+   "data_post": "2026-10-28",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DfC4pf-vkec/",
+   "caption": "Almirante Sobrinho na voz. Bora tomar uma?  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9",
+   "motivo_reprova": "",
+   "flags": "gemini_aprovou:sim|tema:historia do happy hour e chopp|legenda_v2:ok",
+   "conjunto_sugerido": "noite",
+   "data_triagem": "2026-10-29",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "17923645515222694",
    "data_post": "2026-10-26",
