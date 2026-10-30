@@ -3,11 +3,11 @@
   "120256602742480460"
  ],
  "ultimo_veredito": "FRIO",
- "ultima_execucao": "40824185025",
+ "ultima_execucao": "41009124595",
  "ultimo_clima": {
-  "data": "2026-10-29",
-  "tmax": 22.7,
-  "chuva_mm": 22.1,
+  "data": "2026-10-30",
+  "tmax": 23.1,
+  "chuva_mm": 36.8,
   "chuva_prob": null,
   "fonte": "met.no"
  },
@@ -445,6 +445,20 @@
    ],
    "executado_em": "2026-10-29 02:34",
    "run_id": "40824185025"
+  },
+  {
+   "data": "2026-10-30",
+   "veredito": "FRIO",
+   "tmax": 23.1,
+   "chuva_mm": 36.8,
+   "chuva_prob": null,
+   "fonte": "met.no",
+   "acoes": [],
+   "pausados_apos": [
+    "120256602742480460"
+   ],
+   "executado_em": "2026-10-30 02:33",
+   "run_id": "41009124595"
   }
  ]
 }
