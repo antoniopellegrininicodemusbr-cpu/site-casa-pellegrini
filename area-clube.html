@@ -241,7 +241,7 @@
           <label for="senha">Senha</label>
           <input type="password" id="senha" name="password" autocomplete="current-password"
                  placeholder="Sua senha" required>
-          <button type="button" class="btSenha" onclick="irRecuperar()">Não tenho ou esqueci a senha</button>
+          <button type="button" class="btSenha" onclick="irRecuperar()">Primeiro acesso ou esqueci a senha</button>
           <div class="dicaSenha">Já era do Clube antes? Seus pontos estão aqui — é só criar sua senha.</div>
         </div>
 
@@ -249,6 +249,19 @@
 
         <button type="submit" id="btEntrar">Entrar</button>
       </form>
+
+      <!-- 29/10/2026 (Antonio): a entrada tem só 2 portas — "Entrar" e "Me cadastrar".
+           Quem vem do Fidelizi tenta entrar sem ter senha e erra; aí este aviso
+           aparece em destaque. Aparece em QUALQUER erro de login (não diz se o
+           CPF existe nem se tem senha — sem oráculo de quem é cliente). -->
+      <div id="semSenhaBox" style="display:none;margin-top:14px;padding:14px;border-radius:12px;
+           border:1.5px solid var(--dourado);background:rgba(242,183,5,.08);text-align:center">
+        <div style="font-weight:600;font-size:15px;margin-bottom:4px">Ainda não criou sua senha?</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:10px">
+          Se você já era do Clube, seus pontos e prêmios estão guardados.
+          Crie sua senha agora — o código chega no seu WhatsApp.</div>
+        <button type="button" onclick="irRecuperar()">Criar minha senha</button>
+      </div>
 
     </div>
 
@@ -446,6 +459,7 @@ async function entrar(ev){
     const j = await r.json();
     if(!j.ok){
       aviso(j.erro || 'Não consegui entrar.');
+      if(r.status !== 429){ const b=$('semSenhaBox'); if(b){ b.style.display='block'; b.scrollIntoView({behavior:'smooth',block:'center'}); } }
       if(window.turnstile) window.turnstile.reset();
       return;
     }
