@@ -149,17 +149,16 @@
   <div id="pInicio">
     <h2>Como você quer continuar?</h2>
     <button type="button" onclick="location.href='/minha-conta'">
-      Já sou do Clube — entrar
-      <span class="sub" style="color:#5a4508">Ver pontos e resgatar prêmios</span>
+      Entrar
+      <span class="sub" style="color:#5a4508">Já sou do Clube · ver pontos e resgatar prêmios</span>
     </button>
     <button type="button" class="btSec" onclick="verPainel('form')">
-      Quero me cadastrar
-      <span class="sub">Leva menos de 1 minuto</span>
+      Me cadastrar
+      <span class="sub">Ainda não sou do Clube · leva menos de 1 minuto</span>
     </button>
-    <div style="margin-top:18px">
-      <a href="#" class="link" onclick="verPainel('recuperar');return false">
-        Sou do Clube mas não tenho senha (ou esqueci)</a>
-    </div>
+    <!-- 29/10/2026 (Antonio): só 2 portas. Quem não tem senha clica em "Entrar"
+         e acha lá o "Primeiro acesso ou esqueci a senha" (e o aviso em destaque
+         se errar). O painel de criar senha continua em /cadastro#recuperar. -->
   </div>
 
   <form id="form" onsubmit="enviar(event)" autocomplete="on" style="display:none">
