@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-10-29",
+ "atualizado_em": "2026-10-30",
  "total": 355,
  "registros": [
   {
@@ -5100,10 +5100,10 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DGGRmJBusBZ/",
    "caption": "Por isso não vou na quitanda...  #RestaurantePetropolis #BarPetropolis #CentroHistoricoPetropolis #AlmocoExecutivo #hamburgueria",
-   "status": "PROMOVIDO",
+   "status": "CORTADO_RESULTADO",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:chopp e humor",
+   "flags": "gemini_aprovou:sim|tema:chopp e humor|zumbi_45d:2026-10-29;saida:46d_R$21,01_2619imp_1643reach_0compras_7d_R$3,57;fechou_regua_A(CPA_infinito>=2x)_e_regua_B(ratio_0x);PAUSADO_2026-10-30_10h00_BRT;delete_do_zumbi_PENDENTE:bloqueado_pelo_classificador_do_auto_mode_em_30/10",
    "conjunto_sugerido": "noite",
    "data_triagem": "2026-08-21",
    "data_entrada_teste": "2026-08-25",
