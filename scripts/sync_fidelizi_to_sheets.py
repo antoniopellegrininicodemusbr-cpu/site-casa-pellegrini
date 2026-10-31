@@ -266,6 +266,21 @@ def build_purchase_events(novos, compras_novas, now):
     return events
 
 
+def pixel_pelo_clube():
+    """Chave de virada (30/10/2026): depois da virada pro Clube Pellegrini,
+    quem manda as compras pra Meta/TikTok e o proprio Clube, na hora da venda.
+    O espelho lanca as vendas do Clube no Fidelizi - se este robo continuasse
+    mandando, a compra ia DUAS vezes. Se nao conseguir consultar, segue como
+    antes (manda pelo Fidelizi)."""
+    url = "https://casapellegrini.com.br/api/clube/publico/pixel-status"
+    try:
+        r = requests.get(url, timeout=15)
+        return bool(r.json().get("clube"))
+    except Exception as e:
+        print(f"[pixel] nao consegui consultar a chave ({e}) - sigo mandando pelo Fidelizi")
+        return False
+
+
 def send_to_meta_capi(events):
     token = os.environ.get("META_CAPI_TOKEN", "").strip()
     dataset_id = os.environ.get("META_DATASET_ID", "").strip()
@@ -799,8 +814,11 @@ def main():
     print(f"[events] {len(purchase_events)} eventos Purchase pra Meta CAPI + TikTok Events")
     for ev in purchase_events[:10]:
         print(f"  [ev] {ev['event_id']} {ev['tipo']} R$ {ev['value']:.2f}")
-    send_to_meta_capi(purchase_events)
-    send_to_tiktok_events(purchase_events)
+    if pixel_pelo_clube():
+        print("[pixel] chave virada: as compras vao pelo Clube, na hora - robo NAO manda Purchase (so publicos + Sheets)")
+    else:
+        send_to_meta_capi(purchase_events)
+        send_to_tiktok_events(purchase_events)
 
     # Fase 2A: Meta Custom Audience + Lookalikes
     sync_meta_audiences(clients)
