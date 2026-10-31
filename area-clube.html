@@ -136,7 +136,7 @@
   .prazo.perto{color:var(--dourado);font-weight:500}
   .prazo.urgente{color:#FF8A8A;font-weight:600}
 
-  /* ---------- brinde com 2 opções: escolher antes de gerar o código ---------- */
+  /* ---------- brinde com 2 ou 3 opções: escolher antes de gerar o código ---------- */
   .opcoes{margin:0 0 12px}
   .opcoes .tit{font-size:13.5px;color:var(--dourado);font-weight:600;margin-bottom:9px}
   button.opcao{display:flex;align-items:center;gap:11px;text-align:left;background:var(--navy2);
@@ -599,7 +599,7 @@ function desenharPremios(lista){
 
     // Brinde com 2 opções (ex.: chopp OU refrigerante): a pessoa escolhe uma
     // ANTES de o código existir — é o que faz a comanda sair certa no balcão.
-    const duplo = Array.isArray(p.opcoes) && p.opcoes.length === 2;
+    const duplo = Array.isArray(p.opcoes) && p.opcoes.length >= 2;
 
     return '<div class="premio">' +
       '<div class="origem">' + origem + '</div>' +
@@ -619,7 +619,7 @@ function desenharPremios(lista){
           : (duplo ? blocoOpcoes(p, i) : '') + botaoUsar(p, i, 'Usar agora') +
             '<div class="vazio" style="font-size:12px;padding:10px 0 0">' +
             (duplo && escolhaNaTela[p.id] === undefined
-              ? 'Este prêmio tem duas opções — escolha uma para continuar.'
+              ? 'Este prêmio tem opções — escolha uma para continuar.'
               : 'Clique só quando estiver na Casa — o código vale por 24 horas.') + '</div>') +
     '</div>';
   }).join('');
@@ -639,7 +639,7 @@ function rotuloOrigem(o){
 
 function blocoOpcoes(p, i){
   const marcada = escolhaNaTela[p.id];
-  return '<div class="opcoes"><div class="tit">Escolha uma das duas opções:</div>' +
+  return '<div class="opcoes"><div class="tit">Escolha uma das ' + (p.opcoes.length === 3 ? 'três' : 'duas') + ' opções:</div>' +
     p.opcoes.map((nome, k) =>
       '<button type="button" class="opcao' + (marcada === k ? ' sel' : '') + '" ' +
       'onclick="marcarOpcao(' + i + ',' + k + ')"><span class="bola"></span>' +
@@ -650,16 +650,16 @@ function blocoOpcoes(p, i){
 // Brinde duplo sem opção marcada = botão apagado. A trava de verdade é no
 // servidor (ele não gera código sem a escolha); aqui é só pra ficar claro.
 function botaoUsar(p, i, texto){
-  const duplo = Array.isArray(p.opcoes) && p.opcoes.length === 2;
+  const duplo = Array.isArray(p.opcoes) && p.opcoes.length >= 2;
   const falta = duplo && escolhaNaTela[p.id] === undefined;
   return '<button onclick="usar(' + i + ', this)"' + (falta ? ' disabled' : '') + '>' + texto + '</button>';
 }
 
+// 2 ou 3 opções (30/10/2026): um botão "Prefiro" pra cada opção não escolhida
 function botaoTrocar(p, i){
-  const outra = p.opcoes.find(n => n !== p.escolha);
-  if(!outra) return '';
-  return '<button type="button" class="trocar" onclick="trocarOpcao(' + i + ', this)">' +
-    'Prefiro: ' + esc(outra) + '</button>';
+  return p.opcoes.map((nome, k) => nome === p.escolha ? '' :
+    '<button type="button" class="trocar" onclick="trocarOpcao(' + i + ',' + k + ', this)">' +
+    'Prefiro: ' + esc(nome) + '</button>').join('');
 }
 
 function marcarOpcao(indice, k){
@@ -673,12 +673,10 @@ function marcarOpcao(indice, k){
 
 // Mudou de ideia com o código já na tela: o código continua o MESMO, só a
 // opção muda (enquanto o garçom não validar).
-async function trocarOpcao(indice, botao){
+async function trocarOpcao(indice, k, botao){
   if(trabalhando) return;
   const p = premiosNaTela[indice];
-  if(!p || !Array.isArray(p.opcoes)) return;
-  const k = p.opcoes.findIndex(n => n !== p.escolha);
-  if(k < 0) return;
+  if(!p || !Array.isArray(p.opcoes) || !p.opcoes[k] || p.opcoes[k] === p.escolha) return;
   trabalhando = true;
   botao.disabled = true;
   aviso('');
@@ -710,10 +708,10 @@ async function usar(indice, botao){
   const p = premiosNaTela[indice];
   if(!p) return;
 
-  const duplo = Array.isArray(p.opcoes) && p.opcoes.length === 2;
+  const duplo = Array.isArray(p.opcoes) && p.opcoes.length >= 2;
   const marcada = escolhaNaTela[p.id];
   if(duplo && marcada === undefined){
-    aviso('Este prêmio tem duas opções — escolha uma antes de gerar o código.');
+    aviso('Este prêmio tem opções — escolha uma antes de gerar o código.');
     return;
   }
   const rotulo = botao.textContent;
@@ -732,7 +730,7 @@ async function usar(indice, botao){
     if(!j.ok && j.precisaEscolher && Array.isArray(j.opcoes)){
       p.opcoes = j.opcoes;
       delete escolhaNaTela[p.id];
-      aviso('Este prêmio tem duas opções — escolha uma para gerar o código.');
+      aviso('Este prêmio tem opções — escolha uma para gerar o código.');
       desenharPremios(premiosNaTela);
       return;
     }
