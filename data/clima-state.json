@@ -1,13 +1,11 @@
 {
- "pausados_por_clima": [
-  "120256602742480460"
- ],
- "ultimo_veredito": "FRIO",
- "ultima_execucao": "41009124595",
+ "pausados_por_clima": [],
+ "ultimo_veredito": "AMENO",
+ "ultima_execucao": "41172300917",
  "ultimo_clima": {
-  "data": "2026-10-30",
-  "tmax": 23.1,
-  "chuva_mm": 36.8,
+  "data": "2026-10-31",
+  "tmax": 22.1,
+  "chuva_mm": 1.4,
   "chuva_prob": null,
   "fonte": "met.no"
  },
@@ -459,6 +457,20 @@
    ],
    "executado_em": "2026-10-30 02:33",
    "run_id": "41009124595"
+  },
+  {
+   "data": "2026-10-31",
+   "veredito": "AMENO",
+   "tmax": 22.1,
+   "chuva_mm": 1.4,
+   "chuva_prob": null,
+   "fonte": "met.no",
+   "acoes": [
+    "reativou 120256602742480460"
+   ],
+   "pausados_apos": [],
+   "executado_em": "2026-10-31 02:22",
+   "run_id": "41172300917"
   }
  ]
 }
