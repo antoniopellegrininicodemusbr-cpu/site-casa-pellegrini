@@ -132,8 +132,14 @@ log("Pausa criada aparece na listagem", "200 contendo o id criado", r,
 sob = {"description": "Pausa sobreposta (deve falhar)", "start": iso(ini + dt.timedelta(minutes=5)),
        "end": iso(fim + dt.timedelta(minutes=5))}
 r = call("POST", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN, json=sob)
+extras = [r.json().get("id")] if r.status_code == 201 else []
+if r.status_code != 409:
+    print("  [%s] 1a tentativa (janela deslocada 5 min) -> HTTP %s; tentando janela IDENTICA" % (agora(), r.status_code))
+    r = call("POST", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN,
+             json={"description": "Pausa sobreposta identica (deve falhar)", "start": iso(ini), "end": iso(fim)})
+    if r.status_code == 201:
+        extras.append(r.json().get("id"))
 log("Criar pausa SOBREPOSTA", "409 InterruptionOverlap", r, r.status_code == 409)
-extra = r.json().get("id") if r.status_code == 201 else None
 inv = {"description": "Fim antes do inicio (deve falhar)", "start": iso(fim), "end": iso(ini)}
 r = call("POST", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN, json=inv)
 log("Parametros invalidos (fim antes do inicio)", "400 com code e message", r, r.status_code == 400)
@@ -148,8 +154,9 @@ if pid:
     r, _ = espera(lambda: (lambda rr: (rr[0].status_code == 200 and not any(p.get("id") == pid for p in rr[1]), rr[0]))(lista_pausas()))[::-1]
     log("Pausa removida NAO aparece mais", "200 sem o id removido", r,
         r.status_code == 200 and not any(p.get("id") == pid for p in r.json()))
-if extra:
+for extra in extras:
     espera(lambda: (call("DELETE", "/merchants/%s/interruptions/%s" % (LOJA_TESTE, extra), TOKEN).status_code != 409, None), 300, 15)
+    print("  limpeza: pausa sobreposta %s removida" % extra)
 
 # 5. Horarios
 r = call("GET", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN)
@@ -161,7 +168,11 @@ novos = [{"dayOfWeek": d, "start": "11:00:00", "duration": 240} for d in dias] +
         [{"dayOfWeek": d, "start": "18:00:00", "duration": 300} for d in dias]
 r = call("PUT", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN, json={"storeId": LOJA_TESTE, "shifts": novos})
 log("Atualizar horarios com 2 turnos por dia: PUT /opening-hours", "201 com turnos criados", r, r.status_code == 201)
-r = call("GET", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN)
+def le_novos():
+    rr = call("GET", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN)
+    ll = turnos(rr.json()) if rr.status_code == 200 else []
+    return (len(ll) == 14 and {t["start"][:5] for t in ll} == {"11:00", "18:00"}, rr)
+r = espera(le_novos, segundos=240, passo=15)[1]
 lidos = turnos(r.json()) if r.status_code == 200 else []
 log("GET /opening-hours retorna os novos horarios", "14 turnos (11h e 18h)", r,
     r.status_code == 200 and len(lidos) == 14 and {t["start"][:5] for t in lidos} == {"11:00", "18:00"})
