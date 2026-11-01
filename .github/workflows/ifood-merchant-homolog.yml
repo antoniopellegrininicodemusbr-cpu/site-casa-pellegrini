@@ -1,0 +1,17 @@
+name: iFood - homologacao Merchant (LOJA DE TESTE)
+on:
+  workflow_dispatch:
+jobs:
+  homolog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install requests
+      - name: Checklist Merchant na loja de teste
+        env:
+          IFOOD_CLIENT_ID:     ${{ secrets.IFOOD_TEST_CLIENT_ID }}
+          IFOOD_CLIENT_SECRET: ${{ secrets.IFOOD_TEST_CLIENT_SECRET }}
+        run: python scripts/ifood_merchant_homolog.py
