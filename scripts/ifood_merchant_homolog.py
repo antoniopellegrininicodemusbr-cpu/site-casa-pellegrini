@@ -42,6 +42,38 @@ def call(method, path, token=None, **kw):
         return r
     return r
 
+def lista_pausas():
+    r = call("GET", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN)
+    return r, (r.json() if r.status_code == 200 else [])
+
+def espera(cond, segundos=180, passo=10):
+    """O iFood leva alguns instantes pra refletir pausas novas/removidas: tenta de novo."""
+    fim = time.time() + segundos
+    while True:
+        out = cond()
+        if out[0] or time.time() >= fim:
+            return out
+        time.sleep(passo)
+
+def turnos(j):
+    """GET /opening-hours pode vir como objeto {shifts:[...]} ou lista de blocos."""
+    if isinstance(j, dict):
+        return j.get("shifts", [])
+    out = []
+    for b in j or []:
+        out += b.get("shifts", []) if isinstance(b, dict) and "shifts" in b else ([b] if isinstance(b, dict) else [])
+    return out
+
+def limpa_pausas_de_teste():
+    _, ps = lista_pausas()
+    for p in ps:
+        if "homologacao" in (p.get("description") or "").lower() or "deve falhar" in (p.get("description") or "").lower():
+            for _ in range(18):
+                d = call("DELETE", "/merchants/%s/interruptions/%s" % (LOJA_TESTE, p["id"]), TOKEN)
+                if d.status_code != 409: break
+                time.sleep(10)
+            print("  limpeza: pausa antiga de teste %s -> HTTP %s" % (p["id"], d.status_code))
+
 print("=" * 78)
 print("HOMOLOGACAO MODULO MERCHANT - Casa Pellegrini")
 print("Execucao: %s (horario de Brasilia)" % agora())
@@ -54,6 +86,7 @@ r = S.post(AUTH, data={"grantType": "client_credentials", "clientId": CID, "clie
 r.raise_for_status()
 TOKEN = r.json()["accessToken"]
 print("\n[%s] token obtido (expira em %ss)" % (agora(), r.json().get("expiresIn")))
+limpa_pausas_de_teste()
 r = call("GET", "/merchants"); log("Autenticacao: requisicao SEM token", "401", r, r.status_code == 401)
 r = call("GET", "/merchants", token="token-invalido-123"); log("Autenticacao: token INVALIDO", "401", r, r.status_code == 401)
 
@@ -86,38 +119,41 @@ log("Status por operacao: GET /status/DELIVERY", "200", r, r.status_code == 200)
 # 4. Pausas
 r = call("GET", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN)
 log("Listar pausas: GET /interruptions", "200 com array", r, r.status_code == 200 and isinstance(r.json(), list))
-ini = dt.datetime.now(dt.timezone.utc).replace(microsecond=0) + dt.timedelta(minutes=10)
+ini = dt.datetime.now(dt.timezone.utc).replace(microsecond=0) + dt.timedelta(seconds=30)
 fim = ini + dt.timedelta(minutes=30)
 iso = lambda d: d.strftime("%Y-%m-%dT%H:%M:%SZ")
 corpo = {"description": "Teste de homologacao Casa Pellegrini", "start": iso(ini), "end": iso(fim)}
 r = call("POST", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN, json=corpo)
 pid = r.json().get("id") if r.status_code == 201 else None
 log("Criar pausa: POST /interruptions", "201 com id, start, end", r, r.status_code == 201 and bool(pid))
-r = call("GET", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN)
+r, _ = espera(lambda: (lambda rr: (rr[0].status_code == 200 and any(p.get("id") == pid for p in rr[1]), rr[0]))(lista_pausas()))[::-1]
 log("Pausa criada aparece na listagem", "200 contendo o id criado", r,
     r.status_code == 200 and any(p.get("id") == pid for p in r.json()))
 sob = {"description": "Pausa sobreposta (deve falhar)", "start": iso(ini + dt.timedelta(minutes=5)),
        "end": iso(fim + dt.timedelta(minutes=5))}
 r = call("POST", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN, json=sob)
 log("Criar pausa SOBREPOSTA", "409 InterruptionOverlap", r, r.status_code == 409)
-if r.status_code == 201:  # limpa se a API aceitou
-    call("DELETE", "/merchants/%s/interruptions/%s" % (LOJA_TESTE, r.json().get("id")), TOKEN)
+extra = r.json().get("id") if r.status_code == 201 else None
 inv = {"description": "Fim antes do inicio (deve falhar)", "start": iso(fim), "end": iso(ini)}
 r = call("POST", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN, json=inv)
 log("Parametros invalidos (fim antes do inicio)", "400 com code e message", r, r.status_code == 400)
 if pid:
-    r = call("DELETE", "/merchants/%s/interruptions/%s" % (LOJA_TESTE, pid), TOKEN)
+    def tenta_apagar():
+        d = call("DELETE", "/merchants/%s/interruptions/%s" % (LOJA_TESTE, pid), TOKEN)
+        if d.status_code == 409:
+            print("  [%s] DELETE -> 409 %s (aguardando o iFood liberar a remocao)" % (agora(), d.text[:120]))
+        return (d.status_code != 409, d)
+    r = espera(tenta_apagar, segundos=300, passo=15)[1]
     log("Remover pausa: DELETE /interruptions/{id}", "204 sem conteudo", r, r.status_code == 204)
-    r = call("GET", "/merchants/%s/interruptions" % LOJA_TESTE, TOKEN)
+    r, _ = espera(lambda: (lambda rr: (rr[0].status_code == 200 and not any(p.get("id") == pid for p in rr[1]), rr[0]))(lista_pausas()))[::-1]
     log("Pausa removida NAO aparece mais", "200 sem o id removido", r,
         r.status_code == 200 and not any(p.get("id") == pid for p in r.json()))
+if extra:
+    espera(lambda: (call("DELETE", "/merchants/%s/interruptions/%s" % (LOJA_TESTE, extra), TOKEN).status_code != 409, None), 300, 15)
 
 # 5. Horarios
 r = call("GET", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN)
-orig = []
-if r.status_code == 200:
-    for bloco in r.json():
-        orig += bloco.get("shifts", [])
+orig = turnos(r.json()) if r.status_code == 200 else []
 log("Consultar horarios: GET /opening-hours", "200 com turnos (dayOfWeek, start, duration)", r,
     r.status_code == 200 and all({"dayOfWeek", "start", "duration"} <= set(t) for t in orig))
 dias = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
@@ -126,7 +162,7 @@ novos = [{"dayOfWeek": d, "start": "11:00:00", "duration": 240} for d in dias] +
 r = call("PUT", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN, json={"storeId": LOJA_TESTE, "shifts": novos})
 log("Atualizar horarios com 2 turnos por dia: PUT /opening-hours", "201 com turnos criados", r, r.status_code == 201)
 r = call("GET", "/merchants/%s/opening-hours" % LOJA_TESTE, TOKEN)
-lidos = [t for b in (r.json() if r.status_code == 200 else []) for t in b.get("shifts", [])]
+lidos = turnos(r.json()) if r.status_code == 200 else []
 log("GET /opening-hours retorna os novos horarios", "14 turnos (11h e 18h)", r,
     r.status_code == 200 and len(lidos) == 14 and {t["start"][:5] for t in lidos} == {"11:00", "18:00"})
 sobre = [{"dayOfWeek": "MONDAY", "start": "11:00:00", "duration": 240},
