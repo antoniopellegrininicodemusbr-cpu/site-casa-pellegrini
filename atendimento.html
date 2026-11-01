@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Atendimento — Casa Pellegrini</title>
@@ -68,6 +69,7 @@
   #resposta textarea{flex:1;background:var(--card2);border:1px solid var(--linha);border-radius:10px;color:var(--txt);padding:10px;font-size:14px;resize:none;height:60px}
   #resposta button{background:var(--ouro);color:#14100c;border:none;border-radius:10px;padding:0 22px;font-weight:700;font-size:14px;cursor:pointer}
   #resposta button:disabled{opacity:.5;cursor:default}
+  #resposta #btn-foto{background:var(--card2);color:var(--txt);border:1px solid var(--linha);padding:0 14px;font-size:20px;font-weight:400}
   #vazio{flex:1;display:flex;align-items:center;justify-content:center;color:var(--txt2);font-size:14px}
   /* ===== login ===== */
   #login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:10}
@@ -102,27 +104,27 @@
 </head>
 <body>
 <div id="login">
-  <div class="lang-toggle"><button data-lang="pt">PT</button><button data-lang="en">EN</button></div>
+  <div class="lang-toggle"><button data-lang="pt" class="ativo">PT</button><button data-lang="en">EN</button></div>
   <h1 style="color:var(--ouro)" data-i18n="login_titulo">🍻 Atendimento Casa Pellegrini</h1>
   <input id="chave" type="password" data-i18n-ph="login_chave" placeholder="Chave de acesso" autocomplete="off">
   <div class="erro" id="login-erro"></div>
   <button id="btn-entrar" onclick="entrar()" data-i18n="login_entrar">Entrar</button>
 
   <div id="login-ou" data-i18n="login_ou">ou</div>
-  <button id="btn-fb-login" onclick="loginFacebook()" data-i18n-title="fb_title" title="Conectar a Pagina do Facebook e o Instagram">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+  <button id="btn-fb-login" onclick="loginFacebook()" data-i18n-title="fb_title" title="Conectar a Página do Facebook e o Instagram">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"></path></svg>
     <span data-i18n="fb_botao">Continuar com o Facebook</span>
   </button>
-  <div id="login-dica" data-i18n-html="login_dica">Administradores: use este botao para conectar a Pagina do Facebook e a conta do Instagram ao atendimento.<br><span style="opacity:.7">App reviewers: use this Facebook login button to connect the Page and the Instagram account.</span></div>
+  <div id="login-dica" data-i18n-html="login_dica">Administradores: use este botão para conectar a Página do Facebook e a conta do Instagram ao atendimento.<br><span style="opacity:.7">App reviewers: use this Facebook login button to connect the Page and the Instagram account.</span></div>
 </div>
 
 <header>
   <h1 data-i18n="hdr_titulo">🍻 Atendimento</h1>
-  <span class="status-conexao" id="conexao">carregando…</span>
-  <div class="lang-toggle" style="margin-left:12px"><button data-lang="pt">PT</button><button data-lang="en">EN</button></div>
+  <span class="status-conexao" id="conexao"></span>
+  <div class="lang-toggle" style="margin-left:12px"><button data-lang="pt" class="ativo">PT</button><button data-lang="en">EN</button></div>
   <button id="btn-som" onclick="alternarSom()" data-i18n-title="som_title" title="Ligar/desligar alerta sonoro" style="margin-left:12px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🔔 Som</button>
-  <button id="btn-bot" onclick="abrirConfigBot()" data-i18n-title="bot_title" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">🤖 Bot</button>
-  <button id="btn-conectar" onclick="conectarMeta()" data-i18n-title="conectar_title" title="Conectar a Página do Facebook e o Instagram ao atendimento" style="margin-left:8px;background:#1877f2;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer" data-i18n="conectar">🔗 Conectar</button>
+  <button id="btn-bot" onclick="abrirConfigBot()" data-i18n-title="bot_title" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer" title="Escolher em quais canais o bot responde sozinho">🤖 Bot: whatsapp, facebook, instagram</button>
+  <button id="btn-conectar" onclick="conectarMeta()" data-i18n-title="conectar_title" title="Conectar a Página do Facebook e o Instagram ao atendimento" style="margin-left:8px;background:var(--card2);color:var(--txt);border:1px solid var(--linha);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer" data-i18n="conectar">🔗 Conectar</button>
 </header>
 <div id="modal-bot" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:22px;width:320px">
@@ -143,7 +145,7 @@
       <button data-f="todas" class="ativo"><span data-i18n="f_todas">Todas</span></button>
       <button data-f="precisa_humano"><span data-i18n="f_precisa_humano">🙋 Precisa humano</span> <span class="fbadge" id="fb-precisa_humano"></span></button>
       <button data-f="aguardando_confirmacao"><span data-i18n="f_aguardando_confirmacao">🟣 Reservas</span> <span class="fbadge" id="fb-aguardando_confirmacao"></span></button>
-      <button data-f="respondida" data-i18n-title="f_respondida_title"><span data-i18n="f_respondida">🟢 Resolvidas</span></button>
+      <button data-f="respondida" data-i18n-title="f_respondida_title" title="Já respondidas — pelo bot ou por um atendente"><span data-i18n="f_respondida">🟢 Resolvidas</span></button>
       <button data-f="fechada"><span data-i18n="f_fechada">Fechadas</span></button>
     </div>
     <div id="conversas"></div>
@@ -157,16 +159,20 @@
       </div>
       <span id="chat-modo" class="modo-badge" style="display:none"></span>
       <div class="acoes">
-        <button id="btn-devolver" onclick="devolverBot()" style="display:none" data-i18n="devolver" data-i18n-title="devolver_title">🤖 Devolver ao bot</button>
-        <button id="btn-pro-humano" onclick="mudarStatus('precisa_humano')" data-i18n="pro_humano" data-i18n-title="pro_humano_title" style="border-color:#e8933a">🙋 Pro humano</button>
-        <button id="btn-lida" onclick="mudarStatus('respondida')" data-i18n="lida" data-i18n-title="lida_title">✓ Lida</button>
-        <button id="btn-fechar" onclick="mudarStatus('fechada')" data-i18n="fechar" data-i18n-title="fechar_title">Fechar</button>
+        <button id="btn-devolver" onclick="devolverBot()" style="display:none" data-i18n="devolver" data-i18n-title="devolver_title" title="O bot volta a responder esta conversa">🤖 Devolver ao bot</button>
+        <button id="btn-pro-humano" onclick="mudarStatus('precisa_humano')" data-i18n="pro_humano" data-i18n-title="pro_humano_title" style="border-color:#e8933a" title="Manda pra fila Precisa humano e tira do bot">🙋 Pro humano</button>
+        <button id="btn-lida" onclick="mudarStatus('respondida')" data-i18n="lida" data-i18n-title="lida_title" title="Marcar como lida/respondida">✓ Lida</button>
+        <button id="btn-fechar" onclick="mudarStatus('fechada')" data-i18n="fechar" data-i18n-title="fechar_title" title="Encerrar a conversa">Fechar</button>
       </div>
     </div>
     <div id="mensagens"><div id="vazio" data-i18n="selecione">Selecione uma conversa</div></div>
     <div id="resposta">
       <textarea id="texto" data-i18n-ph="texto_ph" placeholder="Escreva a resposta… (Enter envia, Shift+Enter quebra linha)"></textarea>
-      <button id="enviar" onclick="responder()" data-i18n="enviar" data-i18n-title="enviar_title">Enviar</button>
+      <input type="file" id="arquivo-foto" accept="image/*" style="display:none"
+             onchange="enviarFoto(this.files &amp;&amp; this.files[0])">
+      <button id="btn-foto" onclick="document.getElementById('arquivo-foto').click()"
+              data-i18n-title="foto_title" title="Enviar uma foto ao cliente">📷</button>
+      <button id="enviar" onclick="responder()" data-i18n="enviar" data-i18n-title="enviar_title" title="Enviar a resposta ao cliente">Enviar</button>
     </div>
   </div>
 </main>
@@ -211,6 +217,8 @@ const TXT = {
     texto_ph:"Escreva a resposta… (Enter envia, Shift+Enter quebra linha)",
     enviar:"Enviar", enviar_title:"Enviar a resposta ao cliente",
     envio_falhou:"Envio falhou: ", agora:"agora", midia:"mídia",
+    foto_title:"Enviar uma foto ao cliente", foto_so_imagem:"Só dá pra enviar imagem (JPG, PNG).",
+    foto_falhou:"Não consegui preparar a foto: ", foto_enviando:"Enviando foto…",
     rot_bot:"🤖 bot", rot_atendente:"👤 atendente (painel)", rot_pagina:"📱 Página (Business Suite / ManyChat)",
     audio:"🎤 áudio", sem_transcricao:"(sem transcrição)", baixar:"abrir arquivo",
     indisponivel:"conteúdo indisponível", abrir_link:"abrir link", arquivo:"arquivo",
@@ -248,6 +256,8 @@ const TXT = {
     texto_ph:"Type your reply… (Enter sends, Shift+Enter adds a new line)",
     enviar:"Send", enviar_title:"Send this reply to the customer",
     envio_falhou:"Sending failed: ", agora:"now", midia:"media",
+    foto_title:"Send a photo to the customer", foto_so_imagem:"Images only (JPG, PNG).",
+    foto_falhou:"Could not prepare the photo: ", foto_enviando:"Sending photo…",
     rot_bot:"🤖 bot", rot_atendente:"👤 human agent (inbox)", rot_pagina:"📱 Page (Business Suite / ManyChat)",
     audio:"🎤 voice message", sem_transcricao:"(no transcript)", baixar:"open file",
     indisponivel:"content unavailable", abrir_link:"open link", arquivo:"file",
@@ -345,8 +355,9 @@ const reservaParada = (c) => c.modo === "reserva" &&
   minutosDesde(c.ultimaEm) > MIN_RESERVA_PARADA;
 // Fila única de "tem gente esperando um humano": inclui reserva pronta
 // (aguardando confirmação) e reserva parada no meio.
-const precisaHumano = (c) => c.status === "precisa_humano" ||
-  c.status === "aguardando_confirmacao" || reservaParada(c);
+const precisaHumano = (c) => c.status !== "fechada" &&
+  (c.status === "precisa_humano" ||
+   c.status === "aguardando_confirmacao" || reservaParada(c));
 
 // ===== ALERTA SONORO =====
 // Só toca/conta o que realmente precisa de um atendente (nunca o que o bot
@@ -572,6 +583,75 @@ async function responder(){
   } finally { $("enviar").disabled = false; }
 }
 
+// ===== ENVIAR FOTO =====
+// Pro celular da casa: o input type=file abre camera ou galeria direto.
+// A foto e REDUZIDA no proprio navegador antes de subir — foto de celular tem
+// 4-8 MB e nao passaria no limite do servidor; reduzida fica em ~300 KB.
+const FOTO_LADO_MAX = 1600;
+const FOTO_QUALIDADE = 0.8;
+
+function lerArquivo(file){
+  return new Promise((ok, erro) => {
+    const fr = new FileReader();
+    fr.onload = () => ok(fr.result);
+    fr.onerror = () => erro(new Error("leitura falhou"));
+    fr.readAsDataURL(file);
+  });
+}
+
+async function reduzirFoto(file){
+  const dataUrl = await lerArquivo(file);
+  const img = await new Promise((ok, erro) => {
+    const i = new Image();
+    i.onload = () => ok(i);
+    i.onerror = () => erro(new Error("imagem invalida"));
+    i.src = dataUrl;
+  });
+  const maior = Math.max(img.width, img.height) || 1;
+  const fator = maior > FOTO_LADO_MAX ? FOTO_LADO_MAX / maior : 1;
+  const l = Math.max(1, Math.round(img.width * fator));
+  const a = Math.max(1, Math.round(img.height * fator));
+  const cv = document.createElement("canvas");
+  cv.width = l; cv.height = a;
+  cv.getContext("2d").drawImage(img, 0, 0, l, a);
+  const jpeg = cv.toDataURL("image/jpeg", FOTO_QUALIDADE);
+  return jpeg.slice(jpeg.indexOf(",") + 1);
+}
+
+async function enviarFoto(file){
+  if (!file) return;
+  if (!convSel){ $("arquivo-foto").value = ""; return; }
+  if (!/^image\//.test(file.type || "")){
+    alert(T("foto_so_imagem")); $("arquivo-foto").value = ""; return;
+  }
+  const btn = $("btn-foto");
+  const antes = btn.textContent;
+  btn.disabled = true; $("enviar").disabled = true; btn.textContent = "\u23F3";
+  try{
+    let base64;
+    try{ base64 = await reduzirFoto(file); }
+    catch(e){ alert(T("foto_falhou") + String((e && e.message) || e)); return; }
+    // A legenda e o que estiver escrito na caixa de resposta.
+    const cap = $("texto").value.trim();
+    const r = await fetch(API + "/enviar-midia", {method:"POST",
+      headers: headers({"Content-Type":"application/json"}),
+      body: JSON.stringify({conv: convSel, arquivo: base64, mime: "image/jpeg",
+        nomeArquivo: "foto.jpg", legenda: cap})});
+    if (!r.ok){
+      const j = await r.json().catch(() => ({}));
+      alert(T("envio_falhou") + JSON.stringify(j.detalhe || j.erro || r.status));
+      return;
+    }
+    $("texto").value = "";
+    await carregarMensagens(); await carregarConversas();
+    legenda("enviado");
+  } finally {
+    btn.disabled = false; btn.textContent = antes;
+    $("enviar").disabled = false;
+    $("arquivo-foto").value = "";
+  }
+}
+
 async function mudarStatus(status){
   if (!convSel) return;
   await fetch(API + "/status", {method:"POST", headers: headers({"Content-Type":"application/json"}), body: JSON.stringify({conv: convSel, status})});
@@ -712,5 +792,6 @@ if (CHAVE){
   });
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
