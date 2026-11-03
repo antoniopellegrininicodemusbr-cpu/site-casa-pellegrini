@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Painel do Clube · Casa Pellegrini</title>
+<link rel="icon" href="/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#0C1120; --bg1:#141B2E; --bg2:#1C263F;
+    --red:#C8102E; --red2:#A6192E; --red3:#8F0B1F;
+    --gold:#F2B705; --cream:#F7F1E8; --text:#EAE6DF; --muted:#9AA3B5;
+    --wa:#25D366; --stone:#12B76A; --ok:#1f5132; --okbg:#11301f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--text);line-height:1.5;
+    background:radial-gradient(120% 80% at 50% 0%, #1c263f 0%, #141B2E 45%, #0C1120 100%) fixed;min-height:100vh}
+  h1,h2,h3,.serif{font-family:'Playfair Display',Georgia,serif}
+  header{background:rgba(12,17,32,.85);backdrop-filter:blur(8px);border-bottom:1px solid rgba(242,183,5,.18);
+    padding:12px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:10}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .mark{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--red),var(--red3));
+    display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;color:var(--gold);font-size:20px;border:1px solid rgba(242,183,5,.4)}
+  .brand b{font-family:'Playfair Display',serif;font-weight:800;letter-spacing:1px;font-size:17px;color:var(--cream)}
+  .brand small{display:block;font-size:9px;letter-spacing:3px;color:var(--gold);font-weight:600}
+  nav{display:flex;gap:6px;flex-wrap:wrap}
+  nav button{background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.12);
+    padding:8px 13px;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:600}
+  nav button.active{background:var(--red);color:#fff;border-color:var(--red)}
+  main{max-width:980px;margin:22px auto;padding:0 14px 70px}
+  .tab{display:none}
+  .tab.active{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+  .ctx{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
+
+  .phone{background:#05080f;border-radius:40px;padding:12px;border:1px solid #2a3550;box-shadow:0 20px 50px rgba(0,0,0,.55),inset 0 0 0 2px #11192c}
+  .phone .notch{width:120px;height:20px;background:#05080f;border-radius:0 0 16px 16px;margin:0 auto 6px;position:relative;top:-12px}
+
+  .stscreen{background:#fff;border-radius:16px;overflow:hidden;color:#1c2b2b;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+  .sthead{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid #eee;font-weight:700;font-size:13px;letter-spacing:1.5px;justify-content:center;position:relative}
+  .sthead .bk{position:absolute;left:14px;color:#0a8a5f;font-size:18px}
+  .stbody{padding:16px}
+  .stvalor{display:flex;flex-direction:column;border-bottom:1px solid #eee;padding-bottom:14px;margin-bottom:14px}
+  .stvalor .stlbl{font-size:12px;color:#999}
+  .stval{font-size:30px;color:#1c2b2b;font-weight:600;text-align:right}
+  .stkeys{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .stkey{border:1px solid #e6e6e6;border-radius:50%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:21px;color:#1c2b2b;cursor:pointer;font-weight:500;background:#fff}
+  .stkey:active{background:#eef6f2}
+  .stkey.go{background:#0a8a5f;color:#fff;border-color:#0a8a5f;font-size:24px}
+  .stvalor2{font-size:13px;color:#777;border-bottom:1px solid #eee;padding-bottom:12px;margin-bottom:12px}
+  .stvalor2 b{display:block;font-size:24px;color:#1c2b2b;font-weight:600}
+  .stopt{width:100%;text-align:left;background:#f3f6f5;border:1px solid #e6e6e6;border-radius:11px;padding:16px;margin-bottom:10px;font-size:16px;color:#1c2b2b;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit}
+  .stopt:active{background:#e8efec}
+  .stopt span{color:#0a8a5f;font-size:18px}
+  .stpaghdr{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:12px;margin-bottom:14px}
+  .stpaghdr b{font-size:22px;color:#1c2b2b;font-weight:600}
+  .stpaghdr .stlbl{font-size:12px;color:#999}
+  .sttag{background:#0a3d2e;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:16px}
+  .stnfc{text-align:center;color:#1c2b2b;padding:6px 4px 4px}
+  .stnfc .ic{font-size:40px}
+  .stnfc p{font-size:15px;margin-top:6px;color:#444}
+  .stdemo{margin-top:14px;background:#fff7e6;border:1px dashed #e0a800;border-radius:10px;padding:12px}
+  .stdemo p{font-size:11.5px;color:#7a5c00;margin-bottom:8px;line-height:1.4}
+  .stdemo input{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1c2b2b;font-size:17px;text-align:center;letter-spacing:3px}
+  .stdemo button{width:100%;margin-top:10px;background:#0a8a5f;color:#fff;border:none;padding:13px;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer}
+
+  .card{background:linear-gradient(180deg,rgba(28,38,63,.55),rgba(20,27,46,.55));border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .card h2{font-size:18px;color:var(--cream);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .card .sub{color:var(--muted);font-size:12.5px;margin-bottom:10px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--gold);margin:12px 0 4px;letter-spacing:.3px}
+  input,select,textarea{width:100%;padding:11px;border:1px solid rgba(255,255,255,.14);border-radius:9px;font-size:15px;
+    background:rgba(0,0,0,.25);color:var(--text);font-family:inherit}
+  textarea{min-height:70px;resize:vertical;line-height:1.45}
+  input::placeholder,textarea::placeholder{color:#5d6678}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:120px}
+  button.btn{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;border:none;padding:13px 18px;
+    border-radius:11px;font-size:15px;font-weight:800;cursor:pointer;width:100%;margin-top:16px;letter-spacing:.3px}
+  button.btn:active{transform:scale(.99)}
+  button.btn.sec{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14)}
+  button.btn.gold{background:linear-gradient(135deg,var(--gold),#d99a00);color:#2b1d00}
+  button.btn.wa{background:linear-gradient(135deg,#25D366,#1da851);color:#04210f}
+  .muted{color:var(--muted);font-size:13px}
+  .link{color:var(--gold);cursor:pointer;text-decoration:underline}
+  .feedback{border-radius:11px;padding:14px;margin-top:14px;display:none;white-space:pre-wrap;font-size:14px;border:1px solid}
+  .feedback.show{display:block;animation:fade .25s}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.08)}
+  th{color:var(--gold);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+
+  .wheelBox{position:relative;width:280px;height:280px;margin:8px auto}
+  .coin{position:absolute;top:-32px;animation:coinfall linear forwards}
+  .listItem{display:flex;justify-content:space-between;align-items:center;padding:11px;border:1px solid rgba(255,255,255,.1);
+    border-radius:11px;margin-bottom:8px;background:rgba(0,0,0,.18);gap:8px}
+  .tag{font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-weight:700}
+  .smallnote{font-size:11px;color:var(--muted);margin-top:6px}
+  .danger{background:transparent;color:#ff7a85;border:1px solid #ff7a85}
+  .niveis{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:4px}
+  .nvchip{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;border:1px solid}
+  .segrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .segbox{flex:1;min-width:90px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px;text-align:center}
+  .segbox .n{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--gold)}
+  .segbox .l{font-size:11px;color:var(--muted)}
+  .switch{position:relative;display:inline-block;width:56px;height:30px;flex:0 0 auto}
+  .switch input{display:none}
+  .slider{position:absolute;inset:0;background:#5a3a3f;border-radius:30px;transition:.2s;cursor:pointer}
+  .slider:before{content:"";position:absolute;height:22px;width:22px;left:4px;top:4px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked+.slider{background:#2e7d32}
+  .switch input:checked+.slider:before{transform:translateX(26px)}
+  .autobox{border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px;margin-bottom:10px;background:rgba(0,0,0,.15)}
+  .autobox .t{font-weight:700;color:var(--cream);font-size:13px;margin-bottom:6px}
+  html{background:#0C1120}
+  .tela{max-width:420px;margin:48px auto;padding:0 16px}
+  .tela .card{padding:24px}
+  .tela h1{font-size:24px;color:var(--cream);margin-bottom:4px}
+  .ts{margin-top:14px;min-height:65px}
+  .erro{color:#ff9ba3;font-size:13.5px;margin-top:12px;min-height:18px;white-space:pre-line}
+  .okmsg{color:#7fe39a}
+  .passo2{display:none}
+  .usuario{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .usuario button{background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.12);padding:7px 11px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600}
+  .usuario button.conv{background:var(--gold);color:#2b1d00;border-color:var(--gold)}
+  #salvoInfo{font-size:12px;color:var(--muted);text-align:right;min-height:16px;margin-bottom:6px}
+  .modal{position:fixed;inset:0;background:rgba(5,8,15,.78);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:30px 14px}
+  .modal.show{display:flex}
+  .modalbox{background:var(--bg1);border:1px solid rgba(242,183,5,.25);border-radius:16px;padding:20px;max-width:520px;width:100%}
+  .modalbox h2{color:var(--cream);font-size:20px}
+  .modalbox h3{color:var(--gold);font-size:14px;margin:18px 0 6px;font-family:inherit;letter-spacing:.3px}
+  .listItem small{display:block;color:var(--muted);font-size:11.5px}
+  .listItem button{width:auto;margin:0;padding:7px 11px;font-size:12px}
+  .linkbox{word-break:break-all;font-size:12px;background:rgba(0,0,0,.3);border:1px dashed var(--gold);border-radius:9px;padding:10px;margin-top:8px}
+  a.btn{display:block;text-align:center;text-decoration:none;background:linear-gradient(135deg,#25D366,#1da851);color:#04210f;padding:13px 18px;border-radius:11px;font-weight:800;margin-top:12px}
+  .busca{margin-bottom:6px}
+  @media (max-width:560px){ header{padding:10px 12px} nav button{padding:8px 10px;font-size:13px} .card{padding:14px} }
+</style>
+</head>
+<body>
+<!-- ============ ENTRAR ============ -->
+<div id="telaEntrar" class="tela" style="display:none">
+  <div class="card">
+    <div class="brand" style="margin-bottom:14px"><div class="mark">P</div><div><b>CASA PELLEGRINI</b><small>PAINEL DO CLUBE</small></div></div>
+    <div id="lgPasso1">
+      <h1>Entrar</h1>
+      <p class="sub">Acesso só para a gestão. Cada pessoa tem o próprio usuário.</p>
+      <label>Celular (WhatsApp)</label>
+      <input id="lgTel" inputmode="tel" autocomplete="username" placeholder="(24) 99999-9999">
+      <label>Senha</label>
+      <input id="lgSenha" type="password" autocomplete="current-password" placeholder="sua senha">
+      <div class="ts" id="tsLogin"></div>
+      <button class="btn" id="lgBtn" onclick="entrar()">Entrar</button>
+    </div>
+    <div id="lgPasso2" class="passo2">
+      <h1>Código</h1>
+      <p class="sub" id="lgCodInfo"></p>
+      <label>Código de 6 dígitos</label>
+      <input id="lgCodigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+      <button class="btn" id="lgBtn2" onclick="confirmarCodigo()">Confirmar</button>
+      <button class="btn sec" onclick="voltarLogin()">Voltar</button>
+    </div>
+    <div class="erro" id="entrarMsg"></div>
+  </div>
+  <p class="smallnote" style="text-align:center">Não tem acesso? Peça um convite para quem já usa o painel.</p>
+</div>
+
+<!-- ============ CONVITE ============ -->
+<div id="telaConvite" class="tela" style="display:none">
+  <div class="card">
+    <div class="brand" style="margin-bottom:14px"><div class="mark">P</div><div><b>CASA PELLEGRINI</b><small>PAINEL DO CLUBE</small></div></div>
+    <h1>Convite</h1>
+    <p class="sub" id="cvOla">Conferindo o convite…</p>
+    <div id="cvPasso1" class="passo2">
+      <p class="sub">Primeiro, vamos confirmar que o celular é seu: mandamos um código no WhatsApp <b id="cvTelMask"></b>.</p>
+      <div class="ts" id="tsConvite"></div>
+      <button class="btn" id="cvBtn1" onclick="pedirCodigoConvite()">Receber código no WhatsApp</button>
+    </div>
+    <div id="cvPasso2" class="passo2">
+      <label>Código de 6 dígitos (chegou no WhatsApp)</label>
+      <input id="cvCodigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+      <label>Crie sua senha (mínimo 10 caracteres)</label>
+      <input id="cvSenha" type="password" autocomplete="new-password">
+      <label>Repita a senha</label>
+      <input id="cvSenha2" type="password" autocomplete="new-password">
+      <button class="btn" id="cvBtn2" onclick="criarAcesso()">Criar meu acesso</button>
+      <p class="smallnote">Toda vez que entrar, além da senha, vai chegar um código no seu WhatsApp.</p>
+    </div>
+    <div class="erro" id="cvMsg"></div>
+  </div>
+</div>
+
+<!-- ============ PAINEL ============ -->
+<div id="app" style="display:none">
+<header>
+  <div class="brand">
+    <div class="mark">P</div>
+    <div><b>CASA PELLEGRINI</b><small>CLUBE · PAINEL</small></div>
+  </div>
+  <nav>
+    <button data-tab="admin" class="active">⚙️ Admin</button>
+    <button data-tab="crm">📣 CRM</button>
+    <button data-tab="saude">📈 Saúde do Clube</button>
+  </nav>
+  <div class="usuario"><span id="quem"></span><button class="conv" onclick="abrirAcessos()">👥 Convidar</button><button onclick="sair()">Sair</button></div>
+</header>
+<main>
+  <div id="salvoInfo"></div>
+
+  <!-- ===================== ADMIN ===================== -->
+  <section class="tab active" id="admin">
+    <p class="ctx">Configuração do programa — tudo que muda aqui vale na hora para o site e as maquininhas.</p>
+    <div class="card" style="border-color:rgba(242,183,5,.35)">
+      <h2>⚡ Status do app nas maquininhas</h2>
+      <p class="sub">Liga/desliga o Clube em TODAS as maquininhas de uma vez. Desligado, a Stone funciona normal e o app NÃO assume a tela após o pagamento.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px">
+        <span id="appStatusLabel" style="font-weight:700;font-size:13px"></span>
+        <label class="switch"><input type="checkbox" id="appToggle" onchange="toggleApp(this.checked)"><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🎡 Roletas por nível</h2>
+      <p class="sub">Cada nível tem a própria roleta. A maquininha abre conforme o valor da compra — quanto mais gasta, melhor o nível.</p>
+      <div class="niveis" id="niveisChips"></div>
+      <label>Editar nível</label>
+      <div class="row">
+        <div style="flex:3"><select id="adminNivelSel" onchange="adminNivelIdx=+this.value;renderAdmin()"></select></div>
+        <div style="flex:0"><input type="color" id="adminNivelCor" style="height:44px;width:54px;padding:2px" onchange="db.niveis[adminNivelIdx].cor=this.value;salvar();renderAdmin()"></div>
+      </div>
+      <div id="adminRoleta" style="margin-top:10px"></div>
+      <p class="smallnote">Soma das probabilidades deste nível: <b id="somaProb">0</b>% (toda fatia é um prêmio — nunca "perde").</p>
+      <button class="btn sec" onclick="addRoletaPremio()">+ Adicionar prêmio neste nível</button>
+      <label style="margin-top:14px">A cada quantos R$ sobe de nível</label>
+      <input type="number" id="cfgPasso" onchange="db.config.passoNivel=+this.value||50;salvar();renderAdmin()">
+    </div>
+    <div class="card">
+      <h2>🎁 Catálogo de resgate (por pontos)</h2>
+      <div class="row" style="font-size:11px;opacity:.75"><div style="flex:2">Prêmio</div><div style="flex:1">Pontos</div><div style="flex:0;width:44px"></div></div>
+      <div id="adminCatalogo"></div>
+      <button class="btn sec" onclick="addCatalogoPremio()">+ Adicionar prêmio de resgate</button>
+    </div>
+    <div class="card">
+      <h2>⚙️ Configuração</h2>
+      <div class="row">
+        <div><label>R$ por 1 ponto</label><input type="number" id="cfgReais"></div>
+        <div><label>Validade do prêmio (dias)</label><input type="number" id="cfgValidade"></div>
+      </div>
+      <button class="btn" onclick="salvarConfig()">Salvar configuração</button>
+    </div>
+    <div class="card">
+      <h2>🖨️ Brindes: impressora e opções</h2>
+      <p class="sub">Em qual impressora cada brinde sai quando o garçom valida o código. Brinde que <b>não estiver nesta lista</b> sai na <b>cozinha</b>. Brinde com 2 ou 3 opções: o cliente escolhe (ex.: chopp ou refrigerante).</p>
+      <datalist id="nomesBrindes"></datalist>
+      <div id="adminBrindes"></div>
+      <button class="btn sec" onclick="addBrinde()">+ Adicionar brinde</button>
+      <button class="btn" onclick="salvarBrindes()">Salvar brindes</button>
+    </div>
+    <div class="card">
+      <h2>🛟 Espelho de segurança no Fidelizi</h2>
+      <p class="sub">Reserva pra emergência: com o espelho <b>ligado</b>, cada pontuação feita no Clube é repetida no Fidelizi (em até 5 minutos).</p>
+      <div class="feedback" id="espelhoStatus" style="display:block;white-space:pre-line">Toque em "Ver situação".</div>
+      <button class="btn sec" onclick="espelhoVer()">Ver situação</button>
+      <button class="btn" id="espelhoBtn" onclick="espelhoTrocar()" style="display:none">Ligar espelho</button>
+    </div>
+    <div class="card">
+      <h2>🎂 Brindes automáticos</h2>
+      <p class="sub">Saem sozinhos todo dia às 11h30: o brinde entra na Minha Conta do cliente e ele recebe o aviso no WhatsApp. <b>Aniversário</b>: no dia, 1x por ano. <b>Inatividade</b>: quando o cliente completa os dias sem vir.</p>
+      <div id="adminAuto"></div>
+      <button class="btn" onclick="salvarAuto()">Salvar brindes automáticos</button>
+    </div>
+  </section>
+
+  <!-- ===================== CRM ===================== -->
+  <section class="tab" id="crm">
+    <p class="ctx">CRM — quem é a base do Clube e como ela está.</p>
+    <div class="card">
+      <h2>📊 Segmentos da base</h2>
+      <div class="segrid" id="crmSegmentos"></div>
+    </div>
+    <div class="card">
+      <h2>👥 Clientes &amp; pontos</h2>
+      <input class="busca" id="crmBusca" placeholder="Buscar por nome ou celular" oninput="renderClientes()">
+      <div class="row" style="align-items:center">
+        <div><select id="crmOrdem" onchange="renderClientes()">
+          <option value="pontos">Mais pontos</option><option value="gasto">Mais gasto</option>
+          <option value="visitas">Mais visitas</option><option value="recente">Visita mais recente</option><option value="sumido">Há mais tempo sem vir</option>
+        </select></div>
+      </div>
+      <div id="crmClientes"></div>
+    </div>
+  </section>
+
+  <!-- ===================== SAÚDE DO CLUBE ===================== -->
+  <section class="tab" id="saude">
+    <p class="ctx">Saúde do Clube — os números que dizem se o programa está funcionando.</p>
+    <div class="card">
+      <h2>📈 Indicadores principais</h2>
+      <div class="segrid" id="saudeKpis"></div>
+    </div>
+    <div class="card">
+      <h2>💰 Quanto vale um cliente (LTV) e quanto pagar por um (Ads)</h2>
+      <p class="sub">O teto do que vale pagar por um cliente novo (CAC) sai do valor que ele gera ao longo do tempo (LTV).</p>
+      <div class="segrid" id="saudeLtv"></div>
+      <label style="margin-top:12px">Margem de contribuição (%) — quanto sobra de cada R$ vendido depois do custo do produto</label>
+      <input type="number" id="cfgMargem" min="1" max="100" onchange="db.config.margemPct=Math.max(1,Math.min(100,+this.value||65));salvar();renderSaude()">
+      <p class="smallnote">Regra usada: CAC máximo saudável = 1/3 do LTV (proporção LTV:CAC de 3:1).</p>
+    </div>
+    <div class="card">
+      <h2>🔁 Funil de recompra</h2>
+      <p class="sub">Quantos clientes voltaram pra 2ª, 3ª compra… e a conversão entre cada etapa.</p>
+      <div id="saudeFunil"></div>
+    </div>
+    <div class="card">
+      <h2>🩺 Leitura rápida</h2>
+      <div id="saudeDiag"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<!-- ============ ACESSOS / CONVIDAR ============ -->
+<div class="modal" id="modalAcessos" onclick="if(event.target===this)fecharAcessos()">
+  <div class="modalbox">
+    <h2>👥 Acessos ao painel</h2>
+    <p class="sub">Só entra quem recebe convite. O convite vale 72h, uma vez só, e só funciona no celular informado (chega um código no WhatsApp dele).</p>
+    <label>Nome</label>
+    <input id="cvNome" placeholder="Ex.: João">
+    <label>Celular (WhatsApp) com DDD</label>
+    <input id="cvTel" inputmode="tel" placeholder="(24) 99999-9999">
+    <button class="btn" id="cvGerar" onclick="convidar()">Gerar convite</button>
+    <div class="erro" id="acMsg"></div>
+    <div id="cvResultado"></div>
+    <h3>Quem tem acesso</h3>
+    <div id="listaUsuarios"><p class="muted">Carregando…</p></div>
+    <h3>Convites pendentes</h3>
+    <div id="listaConvites"></div>
+    <button class="btn sec" onclick="fecharAcessos()">Fechar</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* PAINEL DO CLUBE (site) — 03/11/2026
+   Sem chave-mestra aqui: cada pessoa entra com o próprio usuário (convite →
+   código no WhatsApp → senha). Login = senha + código no WhatsApp.
+   Nada de cliente fica guardado no navegador (só o token da sessão). */
+if (window.top !== window.self) { document.documentElement.innerHTML = ''; throw new Error('frame'); }
+const API = '/api/clube';
+const SITEKEY = '0x4AAAAAAEPBoYU8aqp1g3M9';
+const KS = 'painel_clube_sessao';
+const $ = (id) => document.getElementById(id);
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+const escAttr = esc;
+function brl(v){ v=+v||0; return 'R$ '+(v%1===0? v.toLocaleString('pt-BR') : v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})); }
+function fmtTel(t){ t=String(t||''); return t.length===11?'('+t.slice(0,2)+') '+t.slice(2,7)+'-'+t.slice(7):t; }
+function fmtDataHora(ts){ return ts? new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'; }
+
+/* ---------------- sessão ---------------- */
+let SESSAO = null;
+try { SESSAO = localStorage.getItem(KS); } catch (e) {}
+function guardarSessao(t){ SESSAO=t||null; try{ t?localStorage.setItem(KS,t):localStorage.removeItem(KS); }catch(e){} }
+async function chamar(rota, dados){
+  const h={'Content-Type':'application/json'}; if(SESSAO) h['X-Painel-Sessao']=SESSAO;
+  let r;
+  try { r=await fetch(API+rota,{method:dados?'POST':'GET',headers:h,body:dados?JSON.stringify(dados):undefined,cache:'no-store'}); }
+  catch(e){ return {ok:false,erro:'Sem conexão. Confira a internet e tente de novo.'}; }
+  const j=await r.json().catch(()=>({ok:false,erro:'Resposta inválida do servidor ('+r.status+').'}));
+  if(r.status===401 && SESSAO){ guardarSessao(null); db=vazio(); carregado=false; mostrar('entrar'); msg('entrarMsg', j.erro||'Sessão expirada. Entre de novo.'); }
+  return j;
+}
+function mostrar(t){ $('telaEntrar').style.display=t==='entrar'?'block':'none'; $('telaConvite').style.display=t==='convite'?'block':'none'; $('app').style.display=t==='app'?'block':'none'; if(t!=='app') fecharAcessos(); }
+function msg(id,t,ok){ const e=$(id); e.textContent=t||''; e.classList.toggle('okmsg',!!ok); }
+function ocupado(id,on,txt){ const b=$(id); if(!b) return; if(on){ b.dataset.t=b.textContent; b.textContent=txt||'Aguarde…'; b.disabled=true; } else { if(b.dataset.t) b.textContent=b.dataset.t; b.disabled=false; } }
+
+/* ---------------- Turnstile ---------------- */
+const TS={};
+window.tsPronto=function(){ ['login','convite'].forEach(k=>{ const el=$(k==='login'?'tsLogin':'tsConvite'); if(el && TS[k]===undefined) TS[k]=turnstile.render(el,{sitekey:SITEKEY,theme:'dark'}); }); };
+function tsResp(k){ try{ return (window.turnstile&&TS[k]!==undefined)? turnstile.getResponse(TS[k])||'' : ''; }catch(e){ return ''; } }
+function tsReset(k){ try{ if(window.turnstile&&TS[k]!==undefined) turnstile.reset(TS[k]); }catch(e){} }
+
+/* ---------------- login (senha + código no WhatsApp) ---------------- */
+let desafio=null;
+async function entrar(){
+  msg('entrarMsg','');
+  const telefone=$('lgTel').value, senha=$('lgSenha').value;
+  if(!telefone||!senha) return msg('entrarMsg','Preencha celular e senha.');
+  ocupado('lgBtn',true,'Conferindo…');
+  const r=await chamar('/painel/login',{telefone,senha,turnstile:tsResp('login')});
+  ocupado('lgBtn',false); tsReset('login');
+  if(!r.ok) return msg('entrarMsg',r.erro);
+  desafio=r.desafio; $('lgSenha').value='';
+  $('lgCodInfo').textContent='Mandamos um código de 6 dígitos no WhatsApp '+r.telefone+'. Ele vale '+r.validadeMin+' minutos.';
+  $('lgPasso1').style.display='none'; $('lgPasso2').style.display='block'; $('lgCodigo').value=''; $('lgCodigo').focus();
+}
+async function confirmarCodigo(){
+  msg('entrarMsg','');
+  const codigo=$('lgCodigo').value.replace(/\D/g,'');
+  if(codigo.length!==6) return msg('entrarMsg','O código tem 6 dígitos.');
+  ocupado('lgBtn2',true,'Conferindo…');
+  const r=await chamar('/painel/login/codigo',{desafio,codigo});
+  ocupado('lgBtn2',false);
+  if(!r.ok){ if(r.recomecar) voltarLogin(); return msg('entrarMsg',r.erro); }
+  guardarSessao(r.sessao); desafio=null; voltarLogin(); iniciarApp(r.nome);
+}
+function voltarLogin(){ $('lgPasso1').style.display='block'; $('lgPasso2').style.display='none'; }
+async function sair(){ await chamar('/painel/sair',{}); guardarSessao(null); db=vazio(); carregado=false; mostrar('entrar'); msg('entrarMsg','Você saiu.',true); }
+
+/* ---------------- convite ---------------- */
+let CONVITE=null;
+async function abrirConvite(){
+  mostrar('convite');
+  const r=await chamar('/painel/convite/ver',{token:CONVITE});
+  if(!r.ok){ $('cvOla').textContent=''; return msg('cvMsg',r.erro); }
+  $('cvOla').textContent='Olá, '+r.nome+'! Você foi convidado(a) para o painel do Clube Pellegrini.';
+  $('cvTelMask').textContent=r.telefone;
+  $('cvPasso1').style.display='block';
+}
+async function pedirCodigoConvite(){
+  msg('cvMsg','');
+  ocupado('cvBtn1',true,'Enviando…');
+  const r=await chamar('/painel/convite/codigo',{token:CONVITE,turnstile:tsResp('convite')});
+  ocupado('cvBtn1',false); tsReset('convite');
+  if(!r.ok) return msg('cvMsg',r.erro);
+  $('cvBtn1').textContent='Mandar outro código';
+  $('cvPasso2').style.display='block';
+  msg('cvMsg','Código enviado para '+r.telefone+'. Vale '+r.validadeMin+' minutos.',true);
+  $('cvCodigo').focus();
+}
+async function criarAcesso(){
+  msg('cvMsg','');
+  const codigo=$('cvCodigo').value.replace(/\D/g,''), senha=$('cvSenha').value;
+  if(codigo.length!==6) return msg('cvMsg','O código tem 6 dígitos.');
+  if(senha.length<10) return msg('cvMsg','A senha precisa ter pelo menos 10 caracteres.');
+  if(senha!==$('cvSenha2').value) return msg('cvMsg','As duas senhas não estão iguais.');
+  ocupado('cvBtn2',true,'Criando…');
+  const r=await chamar('/painel/convite/aceitar',{token:CONVITE,codigo,senha});
+  ocupado('cvBtn2',false);
+  if(!r.ok) return msg('cvMsg',r.erro);
+  CONVITE=null; $('cvSenha').value=''; $('cvSenha2').value='';
+  guardarSessao(r.sessao); iniciarApp(r.nome);
+}
+
+/* ---------------- acessos (convidar / remover) ---------------- */
+function abrirAcessos(){ $('modalAcessos').classList.add('show'); msg('acMsg',''); $('cvResultado').innerHTML=''; carregarAcessos(); }
+function fecharAcessos(){ const m=$('modalAcessos'); if(m) m.classList.remove('show'); }
+let ACESSOS={usuarios:[],convites:[]};
+async function carregarAcessos(){
+  const r=await chamar('/painel/usuarios');
+  if(!r.ok){ $('listaUsuarios').innerHTML='<p class="muted">'+esc(r.erro)+'</p>'; return; }
+  ACESSOS=r;
+  $('listaUsuarios').innerHTML=r.usuarios.map((u,i)=>`<div class="listItem"><div><b>${esc(u.nome)}</b>${u.eu?' <span class="tag">você</span>':''}<small>${esc(fmtTel(u.telefone))} · último acesso ${esc(fmtDataHora(u.ultimoLoginTs))}${u.convidadoPor?' · convidado por '+esc(u.convidadoPor):''}</small></div>${u.eu?'':`<button class="btn danger" onclick="removerAcesso(${i})">Remover</button>`}</div>`).join('')||'<p class="muted">Ninguém ainda.</p>';
+  $('listaConvites').innerHTML=r.convites.map((c,i)=>`<div class="listItem"><div><b>${esc(c.nome)}</b><small>${esc(c.telefone)} · vence ${esc(fmtDataHora(c.expiraTs))} · por ${esc(c.criadoPor)}</small></div><button class="btn sec" onclick="cancelarConvite(${i})">Cancelar</button></div>`).join('')||'<p class="muted">Nenhum.</p>';
+}
+async function convidar(){
+  msg('acMsg',''); $('cvResultado').innerHTML='';
+  const nome=$('cvNome').value.trim(), telefone=$('cvTel').value;
+  if(!nome) return msg('acMsg','Informe o nome.');
+  ocupado('cvGerar',true,'Gerando…');
+  const r=await chamar('/painel/convidar',{nome,telefone});
+  ocupado('cvGerar',false);
+  if(!r.ok) return msg('acMsg',r.erro);
+  const texto='Oi, '+r.nome+'! Te convidei para o painel do Clube Pellegrini. Abra o link, peça o código no WhatsApp e crie sua senha (o convite vale 72h e só funciona neste número):\n'+r.link;
+  const wa='https://wa.me/55'+r.telefone+'?text='+encodeURIComponent(texto);
+  $('cvResultado').innerHTML=`<p class="sub" style="margin-top:12px">✅ Convite criado para <b>${esc(r.nome)}</b> (${esc(fmtTel(r.telefone))}). Mande o link para ele:</p>
+    <div class="linkbox" id="cvLink">${esc(r.link)}</div>
+    <a class="btn" href="${esc(wa)}" target="_blank" rel="noopener noreferrer">📲 Enviar pelo WhatsApp</a>
+    <button class="btn sec" onclick="copiarLink()">📋 Copiar link</button>`;
+  $('cvNome').value=''; $('cvTel').value='';
+  carregarAcessos();
+}
+function copiarLink(){ const t=$('cvLink').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>msg('acMsg','Link copiado.',true),()=>msg('acMsg','Não consegui copiar — selecione o link e copie.')); }
+async function removerAcesso(i){ const u=ACESSOS.usuarios[i]; if(!u||!confirm('Remover o acesso de '+u.nome+'? Ele sai do painel na hora.')) return; const r=await chamar('/painel/remover',{telefone:u.telefone}); if(!r.ok) return msg('acMsg',r.erro); carregarAcessos(); }
+async function cancelarConvite(i){ const c=ACESSOS.convites[i]; if(!c||!confirm('Cancelar o convite de '+c.nome+'? O link para de funcionar.')) return; const r=await chamar('/painel/convite/cancelar',{id:c.id}); if(!r.ok) return msg('acMsg',r.erro); carregarAcessos(); }
+
+/* ---------------- dados do Clube (só em memória) ---------------- */
+function vazio(){ return {config:{},niveis:[],catalogo:[],contas:{},resgates:[]}; }
+let db=vazio(), carregado=false, abaAtual='admin';
+async function iniciarApp(nome){
+  mostrar('app'); $('quem').textContent='👤 '+(nome||'');
+  await carregar();
+}
+async function carregar(){
+  if(_cfgTimer) return; // tem alteração esperando pra salvar — não sobrescreve
+  if(!carregado) setSalvo('⏳ Carregando dados do Clube…');
+  const e=await chamar('/estado');
+  if(!e.ok){ setSalvo('❌ '+(e.erro||'Não consegui carregar.')); return; }
+  db.config=e.config||{}; db.niveis=e.niveis||[]; db.catalogo=e.catalogo||[];
+  db.contas=e.contas||{}; db.resgates=e.resgates||[];
+  if(!carregado) setSalvo('');
+  carregado=true;
+  renderAba();
+}
+function setSalvo(t){ $('salvoInfo').textContent=t||''; }
+let _cfgTimer=null;
+function salvar(){ if(!carregado) return; clearTimeout(_cfgTimer); setSalvo('⏳ Salvando…'); _cfgTimer=setTimeout(enviarConfig,1200); }
+async function enviarConfig(){
+  clearTimeout(_cfgTimer); _cfgTimer=null;
+  if(!carregado){ alert('Os dados ainda não carregaram — NÃO salvei. Recarregue a página.'); return {ok:false}; }
+  const r=await chamar('/config',{config:db.config,niveis:db.niveis,catalogo:db.catalogo});
+  setSalvo(r.ok?'✅ Salvo às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'❌ Não salvou: '+(r.erro||'erro'));
+  if(!r.ok) alert('❌ Não salvou: '+(r.erro||'sem conexão')+'\n\nRecarregue a página e tente de novo.');
+  return r;
+}
+function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='saude') renderSaude(); }
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); $(b.dataset.tab).classList.add('active');
+  abaAtual=b.dataset.tab; renderAba(); carregar();
+});
+
+/* ============ ADMIN ============ */
+const CURTO_MAX=14;
+const corOk=(c)=>/^#[0-9a-f]{6}$/i.test(c||'')?c:'#888888';
+function toggleApp(on){ db.config.appAtivo=on; atualizarStatusApp(); salvar(); }
+function atualizarStatusApp(){
+  const on=db.config.appAtivo!==false;
+  $('appToggle').checked=on;
+  const l=$('appStatusLabel'); l.textContent= on?'🟢 Clube ATIVO — assume a tela após o pagamento':'⚪ Clube PAUSADO — só a Stone, sem assumir a tela'; l.style.color= on?'#7fe39a':'var(--muted)';
+}
+let adminNivelIdx=0;
+function renderAdmin(){
+  atualizarStatusApp();
+  if(db.niveis.length){
+    if(adminNivelIdx>=db.niveis.length) adminNivelIdx=0;
+    const passo=db.config.passoNivel||50;
+    $('niveisChips').innerHTML=db.niveis.map((nv,i)=>`<span class="nvchip" style="color:${corOk(nv.cor)};border-color:${corOk(nv.cor)}">${esc(nv.emoji||'')} ${esc(nv.nome)} · R$${i*passo}+</span>`).join('');
+    const sel=$('adminNivelSel');
+    sel.innerHTML=db.niveis.map((nv,i)=>`<option value="${i}">${esc(nv.emoji||'')} ${esc(nv.nome)} (R$${i*passo}+)</option>`).join('');
+    sel.value=adminNivelIdx;
+    const lvl=db.niveis[adminNivelIdx];
+    $('adminNivelCor').value=corOk(lvl.cor);
+    $('adminRoleta').innerHTML=`
+      <div class="row" style="margin-bottom:2px;font-size:11px;opacity:.75">
+        <div style="flex:2">Prêmio (como o cliente recebe)</div><div style="flex:1.2">Nome na roleta (até ${CURTO_MAX})</div><div style="flex:1">Chance %</div><div style="flex:0;width:46px"></div><div style="flex:0;width:44px"></div>
+      </div>`+(lvl.premios||[]).map((p,i)=>`
+      <div class="row" style="align-items:end;margin-bottom:6px">
+        <div style="flex:2"><input value="${escAttr(p.nome)}" onchange="db.niveis[adminNivelIdx].premios[${i}].nome=this.value;salvar()"></div>
+        <div style="flex:1.2"><input value="${escAttr(p.curto||'')}" maxlength="${CURTO_MAX}" placeholder="${escAttr(String(p.nome||'').slice(0,CURTO_MAX))}" onchange="db.niveis[adminNivelIdx].premios[${i}].curto=this.value.trim().slice(0,CURTO_MAX);salvar()"></div>
+        <div style="flex:1"><input type="number" value="${+p.prob||0}" onchange="db.niveis[adminNivelIdx].premios[${i}].prob=+this.value;salvar();renderAdmin()"></div>
+        <div style="flex:0"><input type="color" value="${corOk(p.cor)}" style="width:46px;padding:2px;height:42px" onchange="db.niveis[adminNivelIdx].premios[${i}].cor=this.value;salvar()"></div>
+        <div style="flex:0"><button class="btn sec" style="margin:0;padding:10px 12px;width:auto" onclick="if(confirm('Tirar este prêmio da roleta?')){db.niveis[adminNivelIdx].premios.splice(${i},1);salvar();renderAdmin()}">✕</button></div>
+      </div>`).join('');
+    $('somaProb').textContent=(lvl.premios||[]).reduce((s,x)=>s+(+x.prob||0),0);
+    $('cfgPasso').value=passo;
+  }
+  $('adminCatalogo').innerHTML=db.catalogo.map((p,i)=>`
+    <div class="row" style="align-items:end;margin-bottom:6px">
+      <div style="flex:2"><input value="${escAttr(p.nome)}" onchange="db.catalogo[${i}].nome=this.value;salvar()"></div>
+      <div style="flex:1"><input type="number" value="${+p.custo||0}" onchange="db.catalogo[${i}].custo=+this.value;salvar()"></div>
+      <div style="flex:0"><button class="btn sec" style="margin:0;padding:10px 12px;width:auto" onclick="if(confirm('Tirar este prêmio do catálogo?')){db.catalogo.splice(${i},1);salvar();renderAdmin()}">✕</button></div>
+    </div>`).join('');
+  $('cfgReais').value=db.config.reaisPorPonto;
+  $('cfgValidade').value=db.config.validadeDias;
+  renderAuto(); renderBrindes();
+}
+function addRoletaPremio(){ const n=db.niveis[adminNivelIdx]; if(!n) return; n.premios=n.premios||[]; n.premios.push({nome:'Novo prêmio',prob:0,cor:n.cor}); salvar(); renderAdmin(); }
+function addCatalogoPremio(){ db.catalogo.push({nome:'Novo prêmio',custo:10}); salvar(); renderAdmin(); }
+async function salvarConfig(){
+  db.config.reaisPorPonto=+$('cfgReais').value||25; db.config.validadeDias=+$('cfgValidade').value||30;
+  const r=await enviarConfig(); if(r.ok) alert('✅ Configuração salva.');
+}
+/* ---- brindes: impressora + 2/3 opções ---- */
+const DESTINOS={cozinha:'🍳 Cozinha',copa:'🥤 Copa',drinks:'🍹 Drinks'};
+let brindesEdit=null;
+function chaveBrinde(s){ return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim(); }
+function selDestino(v,on){ return '<select onchange="'+on+'">'+Object.keys(DESTINOS).map(k=>'<option value="'+k+'"'+(k===(v||'cozinha')?' selected':'')+'>'+DESTINOS[k]+'</option>').join('')+'</select>'; }
+function renderBrindes(){
+  const el=$('adminBrindes');
+  if(!brindesEdit) brindesEdit=JSON.parse(JSON.stringify((db.config&&db.config.brindes)||[]));
+  const nomes=new Set();
+  (db.catalogo||[]).forEach(p=>nomes.add(p.nome));
+  (db.niveis||[]).forEach(n=>(n.premios||[]).forEach(p=>nomes.add(p.nome)));
+  const a=autoCfg(); Object.keys(a).forEach(k=>nomes.add(a[k].premio));
+  (db.resgates||[]).forEach(r=>{ if(r.status!=='usado') nomes.add(r.premio); });
+  $('nomesBrindes').innerHTML=[...nomes].filter(Boolean).sort().map(n=>'<option value="'+escAttr(n)+'">').join('');
+  el.innerHTML=brindesEdit.length?brindesEdit.map((b,i)=>{ const duplo=Array.isArray(b.opcoes); const nOp=duplo?b.opcoes.length:1; return `
+    <div class="autobox">
+      <div class="row" style="align-items:end">
+        <div style="flex:3"><label>Nome do brinde (igual ao do prêmio)</label><input list="nomesBrindes" value="${escAttr(b.nome)}" onchange="brindesEdit[${i}].nome=this.value"></div>
+        <div style="flex:0"><button class="btn sec" style="margin:0;padding:10px 12px;width:auto" onclick="brindesEdit.splice(${i},1);renderBrindes()">✕</button></div>
+      </div>
+      <div class="row" style="align-items:end">
+        <div><label>Tipo</label><select onchange="tipoBrinde(${i},this.value)"><option value="1"${duplo?'':' selected'}>Brinde simples</option><option value="2"${nOp===2?' selected':''}>2 opções (cliente escolhe)</option><option value="3"${nOp===3?' selected':''}>3 opções (cliente escolhe)</option></select></div>
+        ${duplo?'':'<div><label>Imprime na</label>'+selDestino(b.destino,'brindesEdit['+i+'].destino=this.value')+'</div>'}
+      </div>
+      ${duplo?b.opcoes.map((_,j)=>`<div class="row" style="align-items:end">
+        <div style="flex:2"><label>Opção ${j+1}</label><input value="${escAttr(b.opcoes[j].nome)}" placeholder="${j?'Ex.: Refrigerante lata':'Ex.: Chopp Pilsen 300ml'}" onchange="brindesEdit[${i}].opcoes[${j}].nome=this.value"></div>
+        <div style="flex:1"><label>Imprime na</label>${selDestino(b.opcoes[j].destino,'brindesEdit['+i+'].opcoes['+j+'].destino=this.value')}</div>
+      </div>`).join(''):''}
+    </div>`; }).join(''):'<p class="muted">Nenhum brinde configurado — todos saem na cozinha e nenhum tem opções.</p>';
+}
+function tipoBrinde(i,v){
+  const b=brindesEdit[i];
+  if(v==='2'||v==='3'){ const n=Number(v), o=Array.isArray(b.opcoes)?b.opcoes.slice(0,n):[]; while(o.length<n) o.push({nome:'',destino:b.destino||'cozinha'}); b.opcoes=o; }
+  else delete b.opcoes;
+  renderBrindes();
+}
+function addBrinde(){ if(!brindesEdit) brindesEdit=[]; brindesEdit.push({nome:'',destino:'cozinha'}); renderBrindes(); }
+async function salvarBrindes(){
+  const vistos={}; const lista=[];
+  for(const b of (brindesEdit||[])){
+    const nome=String(b.nome||'').trim();
+    if(!nome) return alert('Tem um brinde sem nome. Preencha ou apague (✕).');
+    const k=chaveBrinde(nome);
+    if(vistos[k]) return alert('O brinde "'+nome+'" está repetido na lista.');
+    vistos[k]=1;
+    const item={nome,destino:b.destino||'cozinha'};
+    if(Array.isArray(b.opcoes)){
+      const o=b.opcoes.map(x=>({nome:String(x.nome||'').trim(),destino:x.destino||'cozinha'}));
+      if(o.some(x=>!x.nome)) return alert('O brinde "'+nome+'" é de '+o.length+' opções: preencha todas.');
+      if(new Set(o.map(x=>chaveBrinde(x.nome))).size!==o.length) return alert('Tem opções repetidas em "'+nome+'".');
+      item.opcoes=o;
+    }
+    lista.push(item);
+  }
+  db.config.brindes=lista;
+  const r=await enviarConfig(); if(!r.ok) return;
+  brindesEdit=null; renderBrindes();
+  alert('✅ Brindes salvos. Já vale pro site (Minha Conta) e pra maquininha.');
+}
+/* ---- espelho Fidelizi ---- */
+let espelhoInfo=null;
+function espelhoMostrar(r){
+  const el=$('espelhoStatus'), bt=$('espelhoBtn');
+  if(!r||!r.ok){ el.textContent='❌ '+((r&&r.erro)||'sem conexão com o servidor do Clube'); if(!espelhoInfo) bt.style.display='none'; return; }
+  espelhoInfo=r;
+  const f=r.fila||{}; const falta=(r.falta||[]);
+  const nomes={FIDELIZI_SENHA_ATENDENTE:'a senha do atendente "Integração Clube"',FIDELIZI_APP_TOKEN:'o App Token',FIDELIZI_ACCESS_TOKEN:'o Access Token'};
+  el.textContent=(r.ligado?'🟢 LIGADO — as pontuações estão sendo repetidas no Fidelizi.':'⚪ DESLIGADO — nada é enviado ao Fidelizi.')
+    +(falta.length?'\n⚠️ Ainda falta configurar no servidor: '+falta.map(x=>nomes[x]||x).join(', ')+'.':'')
+    +'\nFila: '+(f.pendente||0)+' esperando · '+(f.manual||0)+' estorno(s) pra acertar à mão · '+(f.incerto||0)+' pra conferir · '+(f.erro||0)+' com erro · '+(f.sem_celular||0)+' sem celular';
+  bt.style.display='block'; bt.textContent=r.ligado?'Desligar espelho':'Ligar espelho'; bt.className=r.ligado?'btn danger':'btn';
+}
+async function espelhoVer(){ $('espelhoStatus').textContent='⏳ Consultando…'; espelhoMostrar(await chamar('/admin/espelho')); }
+async function espelhoTrocar(){
+  if(!espelhoInfo) return espelhoVer();
+  const ligar=!espelhoInfo.ligado;
+  if(ligar && !confirm('Ligar o espelho no Fidelizi?\n\nDaqui pra frente cada pontuação do Clube é repetida no Fidelizi.')) return;
+  if(!ligar && !confirm('Desligar o espelho? As pontuações param de ir pro Fidelizi.')) return;
+  espelhoMostrar(await chamar('/admin/espelho',{ligado:ligar}));
+}
+/* ---- brindes automáticos ---- */
+const AUTO_PADRAO={
+  aniversario:{ativo:true,validadeDias:7,premio:'Combo Meia Batata + Meia Frango c/ Parmesan Garlic'},
+  inativo30:{ativo:true,dias:30,validadeDias:20,premio:'Meia Porção de Batata c/ Cheddar'},
+  inativo60:{ativo:true,dias:60,validadeDias:20,premio:'1 Hambúrguer Artesanal'},
+  inativo90:{ativo:true,dias:90,validadeDias:20,premio:'Almoço Frango à Parmegiana c/ Fritas'}
+};
+const AUTO_ROTULO={aniversario:'🎂 Aniversário',inativo30:'📅 Sumiu — 1ª faixa',inativo60:'🍔 Sumiu — 2ª faixa',inativo90:'🍽️ Sumiu — 3ª faixa'};
+function autoCfg(){ const a=(db.config&&db.config.automaticos)||{}; const o={}; for(const k in AUTO_PADRAO) o[k]=Object.assign({},AUTO_PADRAO[k],a[k]||{}); return o; }
+function renderAuto(){
+  const a=autoCfg();
+  $('adminAuto').innerHTML=Object.keys(AUTO_PADRAO).map(k=>{ const r=a[k]; return `
+    <div class="autobox" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <b>${AUTO_ROTULO[k]}</b>
+        <label class="switch"><input type="checkbox" id="auto_${k}_ativo" ${r.ativo?'checked':''}><span class="slider"></span></label>
+      </div>
+      <label>Brinde</label><input id="auto_${k}_premio" value="${escAttr(r.premio)}">
+      <div class="row">
+        ${k==='aniversario'?'':`<div><label>Dias sem vir</label><input type="number" id="auto_${k}_dias" value="${+r.dias||0}"></div>`}
+        <div><label>Validade do brinde (dias)</label><input type="number" id="auto_${k}_val" value="${+r.validadeDias||0}"></div>
+      </div>
+    </div>`; }).join('');
+}
+async function salvarAuto(){
+  const o={};
+  for(const k in AUTO_PADRAO){
+    const r={ativo:$('auto_'+k+'_ativo').checked, premio:$('auto_'+k+'_premio').value.trim(),
+      validadeDias:+$('auto_'+k+'_val').value||AUTO_PADRAO[k].validadeDias};
+    if(k!=='aniversario') r.dias=+$('auto_'+k+'_dias').value||AUTO_PADRAO[k].dias;
+    if(r.ativo && !r.premio) return alert('Preencha o brinde de '+AUTO_ROTULO[k]+' (ou desligue essa regra).');
+    o[k]=r;
+  }
+  const d=['inativo30','inativo60','inativo90'].map(k=>o[k].dias);
+  if(!(d[0]<d[1]&&d[1]<d[2])) return alert('As faixas de inatividade precisam ser crescentes (ex.: 30, 60, 90).');
+  db.config.automaticos=o;
+  const r=await enviarConfig(); if(r.ok) alert('✅ Brindes automáticos salvos.');
+}
+
+/* ============ CRM ============ */
+function diasInativo(c){ return c.ultimaVisitaTs? Math.floor((Date.now()-c.ultimaVisitaTs)/86400000):999; }
+function segmentos(){ const s={total:0,ativos:0,i3060:0,i6090:0,i90:0}; Object.values(db.contas).forEach(c=>{ s.total++; const d=diasInativo(c); if(d<=30)s.ativos++; else if(d<=60)s.i3060++; else if(d<=90)s.i6090++; else s.i90++; }); return s; }
+function renderCRM(){
+  const s=segmentos();
+  $('crmSegmentos').innerHTML=`
+    <div class="segbox"><div class="n">${s.total}</div><div class="l">Total</div></div>
+    <div class="segbox"><div class="n" style="color:#7fe39a">${s.ativos}</div><div class="l">Ativos ≤30d</div></div>
+    <div class="segbox"><div class="n">${s.i3060}</div><div class="l">31–60d</div></div>
+    <div class="segbox"><div class="n">${s.i6090}</div><div class="l">61–90d</div></div>
+    <div class="segbox"><div class="n" style="color:#ff7a85">${s.i90}</div><div class="l">+90d</div></div>`;
+  renderClientes();
+}
+const MAX_LINHAS=200;
+function renderClientes(){
+  if(!carregado) return;
+  const q=($('crmBusca').value||'').trim().toLowerCase(), qd=q.replace(/\D/g,'');
+  let cl=Object.values(db.contas);
+  if(q) cl=cl.filter(c=>String(c.nome||'').toLowerCase().includes(q) || (qd.length>=3 && String(c.telefone||c.doc||'').includes(qd)));
+  const o=$('crmOrdem').value;
+  const f={pontos:c=>-(+c.pontos||0),gasto:c=>-(+c.totalGasto||0),visitas:c=>-(+c.visitas||0),recente:c=>-(c.ultimaVisitaTs||0),sumido:c=>(c.ultimaVisitaTs||0)}[o];
+  cl.sort((a,b)=>f(a)-f(b));
+  const tot=cl.length; cl=cl.slice(0,MAX_LINHAS);
+  $('crmClientes').innerHTML=tot?'<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Celular</th><th>Pontos</th><th>Visitas</th><th>Gasto</th><th>Últ. visita</th></tr>'+
+    cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td></tr>`).join('')+'</table></div>'
+    +(tot>MAX_LINHAS?`<p class="smallnote">Mostrando ${MAX_LINHAS} de ${tot}. Use a busca para achar alguém.</p>`:`<p class="smallnote">${tot} cliente(s).</p>`)
+    :'<p class="muted">Ninguém encontrado.</p>';
+}
+
+/* ============ SAÚDE DO CLUBE ============ */
+function renderSaude(){
+  const cs=Object.values(db.contas), n=cs.length;
+  const s=segmentos();
+  const totVisitas=cs.reduce((a,c)=>a+(+c.visitas||0),0);
+  const totGasto=cs.reduce((a,c)=>a+(+c.totalGasto||0),0);
+  const ticket = totVisitas? totGasto/totVisitas : 0;
+  const inativos = s.i3060+s.i6090+s.i90;
+  let somaGap=0, qGap=0;
+  cs.forEach(c=>{ if((c.visitas||0)>=2 && c.primeiraVisitaTs && c.ultimaVisitaTs){ const g=(c.ultimaVisitaTs-c.primeiraVisitaTs)/86400000/(c.visitas-1); if(g>0){somaGap+=g;qGap++;} } });
+  const retornoDias = qGap? Math.round(somaGap/qGap) : 0;
+  const custoPremios = (db.resgates||[]).reduce((a,r)=>a+(+r.custo||0),0);
+  const roi = custoPremios? (totGasto/custoPremios) : 0;
+  $('saudeKpis').innerHTML=`
+    <div class="segbox"><div class="n">${n}</div><div class="l">Clientes cadastrados</div></div>
+    <div class="segbox"><div class="n" style="color:#7fe39a">${s.ativos}</div><div class="l">Ativos ≤30d</div></div>
+    <div class="segbox"><div class="n" style="color:#ff9ba3">${inativos}</div><div class="l">Inativos +30d</div></div>
+    <div class="segbox"><div class="n">${retornoDias}<span style="font-size:13px;color:var(--muted)">d</span></div><div class="l">Tempo médio de retorno</div></div>
+    <div class="segbox"><div class="n">${brl(Math.round(ticket))}</div><div class="l">Ticket médio</div></div>
+    <div class="segbox"><div class="n">${brl(Math.round(totGasto))}</div><div class="l">Faturamento do clube</div></div>
+    <div class="segbox"><div class="n">${roi?roi.toFixed(1):'—'}x</div><div class="l">ROI dos prêmios (R$/R$1)</div></div>`;
+  const margemPct=db.config.margemPct||65, margem=margemPct/100;
+  $('cfgMargem').value=margemPct;
+  const gastoMedioCliente = n? totGasto/n : 0;
+  const ltv = gastoMedioCliente*margem;
+  const cacMax = ltv/3;
+  $('saudeLtv').innerHTML=`
+    <div class="segbox"><div class="n">${brl(Math.round(gastoMedioCliente))}</div><div class="l">Receita média / cliente</div></div>
+    <div class="segbox"><div class="n" style="color:var(--gold)">${brl(Math.round(ltv))}</div><div class="l">LTV (com margem ${margemPct}%)</div></div>
+    <div class="segbox"><div class="n" style="color:#7fe39a">${brl(Math.round(cacMax))}</div><div class="l">CAC máximo p/ Ads</div></div>`;
+  const etapas=['1ª','2ª','3ª','4ª','5ª+'], cont=[0,0,0,0,0];
+  cs.forEach(c=>{ const v=c.visitas||0; for(let i=0;i<5;i++) if(v>=i+1) cont[i]++; });
+  let funil='<table style="width:100%"><tr><th>Etapa</th><th>Clientes</th><th>Conversão da etapa anterior</th></tr>';
+  for(let i=0;i<5;i++){
+    const conv = i===0?'—':(cont[i-1]?Math.round(cont[i]/cont[i-1]*100)+'%':'—');
+    const pct = cont[0]?Math.round(cont[i]/cont[0]*100):0;
+    funil+=`<tr><td>${etapas[i]} compra</td><td><b style="color:var(--gold)">${cont[i]}</b></td><td>
+      <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--gold)"></div></div><span style="min-width:42px;font-size:12px">${conv}</span></div>
+    </td></tr>`;
+  }
+  $('saudeFunil').innerHTML=funil+'</table>';
+  const recompra = cont[0]?Math.round(cont[1]/cont[0]*100):0;
+  const linhas=[];
+  linhas.push(roi>=3?`✅ Cada R$1 em prêmio devolveu <b>R$ ${roi.toFixed(1).replace('.',',')}</b> em consumo — o programa se paga.`:`⚠️ ROI dos prêmios baixo (${roi.toFixed(1)}x) — revisar prêmios/custos.`);
+  linhas.push(recompra>=20?`✅ <b>${recompra}%</b> dos clientes voltaram pra 2ª compra — boa retenção.`:`⚠️ Só <b>${recompra}%</b> voltaram pra 2ª compra — focar em reativação.`);
+  linhas.push(inativos>s.ativos?`⚠️ Mais inativos (${inativos}) que ativos (${s.ativos}) — caprichar nos brindes de inatividade.`:`✅ Base mais ativa (${s.ativos}) que inativa (${inativos}).`);
+  linhas.push(`💡 Pelo LTV, vale pagar até <b>${brl(Math.round(cacMax))}</b> por cliente novo no Meta/TikTok (proporção 3:1).`);
+  $('saudeDiag').innerHTML=linhas.map(t=>`<p style="margin:6px 0;font-size:13.5px">${t}</p>`).join('');
+}
+
+/* ---------------- início ---------------- */
+document.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const id=document.activeElement&&document.activeElement.id;
+  if(id==='lgTel'||id==='lgSenha') entrar(); else if(id==='lgCodigo') confirmarCodigo(); else if(id==='cvSenha2') criarAcesso(); });
+window.addEventListener('beforeunload',e=>{ if(_cfgTimer){ e.preventDefault(); e.returnValue=''; } });
+(async function(){
+  const m=location.hash.match(/convite=([A-Za-z0-9_-]{20,80})/);
+  if(m){ CONVITE=m[1]; history.replaceState(null,'',location.pathname); return abrirConvite(); }
+  if(SESSAO){ const r=await chamar('/painel/eu'); if(r.ok) return iniciarApp(r.nome); }
+  mostrar('entrar');
+})();
+</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=tsPronto" async defer></script>
+</body>
+</html>
