@@ -370,13 +370,13 @@ async function chamar(rota, dados){
   if(r.status===401 && SESSAO){ guardarSessao(null); db=vazio(); carregado=false; mostrar('entrar'); msg('entrarMsg', j.erro||'Sessão expirada. Entre de novo.'); }
   return j;
 }
-function mostrar(t){ $('telaEntrar').style.display=t==='entrar'?'block':'none'; $('telaConvite').style.display=t==='convite'?'block':'none'; $('app').style.display=t==='app'?'block':'none'; if(t!=='app') fecharAcessos(); }
+function mostrar(t){ $('telaEntrar').style.display=t==='entrar'?'block':'none'; $('telaConvite').style.display=t==='convite'?'block':'none'; $('app').style.display=t==='app'?'block':'none'; if(t!=='app') fecharAcessos(); if(window.turnstile&&window.tsPronto) tsPronto(); }
 function msg(id,t,ok){ const e=$(id); e.textContent=t||''; e.classList.toggle('okmsg',!!ok); }
 function ocupado(id,on,txt){ const b=$(id); if(!b) return; if(on){ b.dataset.t=b.textContent; b.textContent=txt||'Aguarde…'; b.disabled=true; } else { if(b.dataset.t) b.textContent=b.dataset.t; b.disabled=false; } }
 
 /* ---------------- Turnstile ---------------- */
 const TS={};
-window.tsPronto=function(){ ['login','convite'].forEach(k=>{ const el=$(k==='login'?'tsLogin':'tsConvite'); if(el && TS[k]===undefined) TS[k]=turnstile.render(el,{sitekey:SITEKEY,theme:'dark'}); }); };
+window.tsPronto=function(){ ['login','convite'].forEach(k=>{ const el=$(k==='login'?'tsLogin':'tsConvite'); if(el && el.offsetParent!==null && TS[k]===undefined) TS[k]=turnstile.render(el,{sitekey:SITEKEY,theme:'dark'}); }); };
 function tsResp(k){ try{ return (window.turnstile&&TS[k]!==undefined)? turnstile.getResponse(TS[k])||'' : ''; }catch(e){ return ''; } }
 function tsReset(k){ try{ if(window.turnstile&&TS[k]!==undefined) turnstile.reset(TS[k]); }catch(e){} }
 
