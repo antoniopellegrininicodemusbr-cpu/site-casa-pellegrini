@@ -331,8 +331,8 @@
 <script>
 /* ============ GATE DE SENHA — REMOVER AO PUBLICAR ============
    Não é segurança real: evita só que alguém caia aqui por acaso nos testes. */
-const SENHA_TESTE = 'pellegrini2026';
-if (sessionStorage.getItem('cp_ok') === '1') document.getElementById('gate').style.display = 'none';
+const SENHA_TESTE = '__virada_' + Math.random();
+document.getElementById('gate').style.display = 'none'; // VIRADA 02/11/2026: gate de teste desligado (senha de teste nao vale mais)
 function destravar(){
   if (document.getElementById('gsenha').value === SENHA_TESTE){
     sessionStorage.setItem('cp_ok','1');
