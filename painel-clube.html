@@ -416,6 +416,7 @@ async function abrirConvite(){
   $('cvOla').textContent='Olá, '+r.nome+'! Você foi convidado(a) para o painel do Clube Pellegrini.';
   $('cvTelMask').textContent=r.telefone;
   $('cvPasso1').style.display='block';
+  if(window.turnstile) tsPronto();
 }
 async function pedirCodigoConvite(){
   msg('cvMsg','');
