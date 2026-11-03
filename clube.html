@@ -62,14 +62,14 @@
         <p class="marca">Clube <span>Pellegrini</span></p>
         <div class="spinner"></div>
         <p class="msg">Estamos te levando pro seu cadastro e brinde de boas-vindas...</p>
-        <a id="continuar" class="btn" href="https://campanhas.fidelizi.com.br/ofertas/b64c0150-2bae-4aff-bccd-094ba428a159" rel="noopener">Continuar agora &rarr;</a>
+        <a id="continuar" class="btn" href="/cadastro" rel="noopener">Continuar agora &rarr;</a>
         <p class="obs">Se a página não abrir sozinha, toque no botão acima.</p>
     </div>
 
     <script>
     (function () {
-        // Destino final: oferta de boas-vindas do Clube (Fidelizi)
-        var OFERTA = "https://campanhas.fidelizi.com.br/ofertas/b64c0150-2bae-4aff-bccd-094ba428a159";
+        // Destino final (VIRADA 02/11/2026): cadastro do Clube proprio (/cadastro → Entrar / Me cadastrar)
+        var OFERTA = "/cadastro";
 
         // 1) Lê os UTMs que chegaram na /clube (ex: vindo do ManyChat)
         var p = new URLSearchParams(window.location.search);
@@ -90,7 +90,7 @@
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: "clube_lead",
-            clube_destino: "fidelizi_oferta_boasvindas",
+            clube_destino: "clube_cadastro",
             utm_source: utm.utm_source,
             utm_medium: utm.utm_medium,
             utm_campaign: utm.utm_campaign,
