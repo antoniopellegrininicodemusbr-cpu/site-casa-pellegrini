@@ -109,8 +109,30 @@
   footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.6}
   .cf{margin-bottom:16px}
 </style>
+<!-- Google Tag Manager (03/11/2026: rastreio do cadastro do Clube) -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PQ9GBFSJ');</script>
+<!-- End Google Tag Manager -->
+<script>
+/* Origem da visita (UTM e ids de clique dos anuncios). Guarda na sessao do
+   navegador assim que a pessoa chega com eles na URL, pra o evento de cadastro
+   (clube_signup) e a conta saberem de onde ela veio. */
+(function(){try{
+  var p=new URLSearchParams(location.search), o={}, tem=false;
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid','ttclid'].forEach(function(k){
+    var v=p.get(k); if(v){o[k]=String(v).slice(0,150); tem=true;} });
+  if(tem) sessionStorage.setItem('cp_origem', JSON.stringify(o));
+}catch(e){}})();
+window.cpOrigem=function(){try{return JSON.parse(sessionStorage.getItem('cp_origem')||'{}')}catch(e){return {}}};
+</script>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9GBFSJ" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
 
 <!-- ===================== GATE DE SENHA (FASE DE TESTE) ===================== -->
 <div id="gate">
@@ -637,6 +659,7 @@ async function enviar(e){
           versao:'2026-08-05',
           aceitoEm:new Date().toISOString(),
           origem:location.pathname,
+          origemVisita:(window.cpOrigem?window.cpOrigem():{}),
           userAgent:navigator.userAgent
         }
       })
@@ -663,6 +686,14 @@ async function enviar(e){
     }
 
     if (j.token) localStorage.setItem('cp_sessao', j.token);
+
+    /* Conversao REAL do Clube (03/11/2026): so dispara quando a conta e criada.
+       No GTM: Lead (Meta), CompleteRegistration (TikTok) e generate_lead (GA4/Google Ads). */
+    try{
+      window.dataLayer=window.dataLayer||[];
+      window.dataLayer.push(Object.assign({event:'clube_signup', veio_do_caixa: !!(j.completouPreConta || (j.premiosGanhos||[]).length || j.pontosDaCompra>0)},
+        (window.cpOrigem?window.cpOrigem():{})));
+    }catch(e){}
 
     document.getElementById('form').style.display='none';
     document.getElementById('benef').style.display='none';
