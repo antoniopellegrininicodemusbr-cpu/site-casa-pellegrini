@@ -249,5 +249,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </nav>
 </div>
+<script>
+/* 03/11/2026: os botoes de cadastro levam adiante a origem de quem chegou
+   (anuncio Meta/TikTok/Google, bio, QR...). Sem origem na URL, fica o padrao site/landing. */
+(function(){try{
+  var p=new URLSearchParams(location.search), q=new URLSearchParams(), tem=false;
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid','ttclid'].forEach(function(k){
+    var v=p.get(k); if(v){q.set(k,v); tem=true;} });
+  if(!tem) return;
+  document.querySelectorAll('a[href^="/cadastro"]').forEach(function(a){ a.setAttribute('href','/cadastro?'+q.toString()); });
+}catch(e){}})();
+</script>
 </body>
 </html>
