@@ -251,8 +251,9 @@ window.cpOrigem=function(){try{return JSON.parse(sessionStorage.getItem('cp_orig
 
   <!-- ============ PEDIR CÓDIGO ============
        Atende dois casos com a MESMA tela: "esqueci a senha" e "nunca tive
-       senha" (todo mundo que veio do Fidelizi). A resposta é sempre igual,
-       exista o CPF ou não. -->
+       senha" (todo mundo que veio do Fidelizi). 05/11/2026: sem resposta cega —
+       se não achar o cadastro a tela diz (e sugere o celular / fazer cadastro);
+       se achar, mostra o final do número pra onde o código foi. -->
   <form id="pRecuperar" style="display:none" onsubmit="pedirCodigo(event)">
     <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
       Criar ou recuperar senha</h2>
@@ -489,11 +490,12 @@ function recomecar(via){
     : 'Já é do Clube mas ainda não tem senha? É por aqui também. Vamos mandar um código pro WhatsApp do seu cadastro.';
   verPainel('recuperar');
 }
-function mostrarDefinir(modoTemplate){
+function mostrarDefinir(modoTemplate, para){
+  const destino = para ? 'no WhatsApp <strong>' + String(para).replace(/[<>&"]/g,'') + '</strong>' : 'no WhatsApp do seu cadastro';
   document.getElementById('campoCodigo').style.display = modoTemplate ? 'block' : 'none';
   document.getElementById('naoChegou').style.display = modoTemplate ? 'block' : 'none';
   document.getElementById('txtEnviado').innerHTML = modoTemplate
-    ? 'Mandamos um <strong>código de 6 dígitos</strong> no WhatsApp do seu cadastro 📲<br>' +
+    ? 'Mandamos um <strong>código de 6 dígitos</strong> ' + destino + ' 📲<br>' +
       'Toque em <strong>Copiar código</strong> na mensagem e cole aqui. Ele vale por 10 minutos.'
     : 'Confirmado ✅ Agora é só escolher sua senha.';
   verPainel('definir');
@@ -520,7 +522,7 @@ async function pedirCodigo(e){
       sessionStorage.setItem('cp_modo', 'template');
       sessionStorage.setItem('cp_cod_ts', String(Date.now()));
       document.getElementById('codigo').value = '';
-      return mostrarDefinir(true);
+      return mostrarDefinir(true, j.para);
     }
     if(!j.codigo) return aviso('Não consegui gerar a confirmação. Tenta de novo?');
     sessionStorage.setItem('cp_cpf_rec', c);
