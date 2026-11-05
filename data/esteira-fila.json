@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-11-04",
- "total": 358,
+ "atualizado_em": "2026-11-05",
+ "total": 359,
  "registros": [
+  {
+   "media_id": "18107667275211091",
+   "data_post": "2026-11-05",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DfXX4nEv5ur/",
+   "caption": "👀  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9.0",
+   "motivo_reprova": "",
+   "flags": "gemini_aprovou:sim|tema:Apresentação bem-humorada do dono|legenda_v2:ok",
+   "conjunto_sugerido": "qualquer",
+   "data_triagem": "2026-11-05",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18184702648439343",
    "data_post": "2026-11-02",
