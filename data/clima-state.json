@@ -3,11 +3,11 @@
   "120255084584690460"
  ],
  "ultimo_veredito": "CALOR",
- "ultima_execucao": "41782829194",
+ "ultima_execucao": "41980630824",
  "ultimo_clima": {
-  "data": "2026-11-04",
-  "tmax": 29.4,
-  "chuva_mm": 1.1,
+  "data": "2026-11-05",
+  "tmax": 30.4,
+  "chuva_mm": 7.0,
   "chuva_prob": null,
   "fonte": "met.no"
  },
@@ -531,6 +531,20 @@
    ],
    "executado_em": "2026-11-04 03:01",
    "run_id": "41782829194"
+  },
+  {
+   "data": "2026-11-05",
+   "veredito": "CALOR",
+   "tmax": 30.4,
+   "chuva_mm": 7.0,
+   "chuva_prob": null,
+   "fonte": "met.no",
+   "acoes": [],
+   "pausados_apos": [
+    "120255084584690460"
+   ],
+   "executado_em": "2026-11-05 03:28",
+   "run_id": "41980630824"
   }
  ]
 }
