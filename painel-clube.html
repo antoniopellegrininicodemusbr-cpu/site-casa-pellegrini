@@ -220,6 +220,28 @@
         <label class="switch"><input type="checkbox" id="appToggle" onchange="toggleApp(this.checked)"><span class="slider"></span></label>
       </div>
     </div>
+    <div class="card" id="cardPresente" style="border-color:rgba(37,211,102,.35)">
+      <h2>🎁 Dar presente</h2>
+      <p class="sub">Quem <b>já é do Clube</b>: o brinde entra na conta na hora, já liberado. Quem <b>ainda não é</b>: vira um convite — a pessoa se cadastra em <b>casapellegrini.com.br/cadastro</b> com <b>esse mesmo celular</b> e o brinde aparece na conta, já liberado.</p>
+      <label>Celular (WhatsApp) com DDD</label>
+      <input id="prTel" inputmode="tel" placeholder="(24) 99999-9999" onchange="presenteChecar()">
+      <div id="prQuem" class="muted" style="margin-top:6px"></div>
+      <div id="prNomeBox"><label>Nome (só pra mensagem)</label><input id="prNome" placeholder="Ex.: Ali"></div>
+      <label>Brinde</label>
+      <input id="prPremio1" list="nomesBrindes" placeholder="Ex.: Combo Meia Pernil + Meia Batata">
+      <label>2º brinde (opcional)</label>
+      <input id="prPremio2" list="nomesBrindes" placeholder="Deixe vazio se for só um">
+      <div class="row">
+        <div><label>Prazo pra resgatar (dias)</label><input type="number" id="prDias" value="60" min="1" max="180"></div>
+        <div><label>Motivo (opcional)</label><input id="prMotivo" placeholder="Ex.: aniversário, cortesia"></div>
+      </div>
+      <p class="smallnote">Brinde que não está na lista de impressoras (abaixo) sai na <b>cozinha</b>. Convite pra quem não é do Clube: o mesmo prazo vale pra se cadastrar.</p>
+      <button class="btn" id="prBtn" onclick="presenteDar()">🎁 Dar presente</button>
+      <div class="erro" id="prMsg"></div>
+      <div id="prResultado"></div>
+      <button class="btn sec" onclick="presentesListar()" style="margin-top:14px">📜 Ver presentes dados</button>
+      <div id="prLista"></div>
+    </div>
     <div class="card">
       <h2>🎡 Roletas por nível</h2>
       <p class="sub">Cada nível tem a própria roleta. A maquininha abre conforme o valor da compra — quanto mais gasta, melhor o nível.</p>
@@ -705,10 +727,76 @@ function renderClientes(){
   const f={pontos:c=>-(+c.pontos||0),gasto:c=>-(+c.totalGasto||0),visitas:c=>-(+c.visitas||0),recente:c=>-(c.ultimaVisitaTs||0),sumido:c=>(c.ultimaVisitaTs||0)}[o];
   cl.sort((a,b)=>f(a)-f(b));
   const tot=cl.length; cl=cl.slice(0,MAX_LINHAS);
-  $('crmClientes').innerHTML=tot?'<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Celular</th><th>Pontos</th><th>Visitas</th><th>Gasto</th><th>Últ. visita</th></tr>'+
-    cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td></tr>`).join('')+'</table></div>'
+  $('crmClientes').innerHTML=tot?'<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Celular</th><th>Pontos</th><th>Visitas</th><th>Gasto</th><th>Últ. visita</th><th></th></tr>'+
+    cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''}</td></tr>`).join('')+'</table></div>'
     +(tot>MAX_LINHAS?`<p class="smallnote">Mostrando ${MAX_LINHAS} de ${tot}. Use a busca para achar alguém.</p>`:`<p class="smallnote">${tot} cliente(s).</p>`)
     :'<p class="muted">Ninguém encontrado.</p>';
+}
+
+/* ============ 🎁 PRESENTES (05/11/2026) ============ */
+let PR_CHECK=null;
+async function presenteChecar(){
+  const t=$('prTel').value; PR_CHECK=null; $('prQuem').textContent='';
+  if(String(t).replace(/\D/g,'').length<10) return;
+  $('prQuem').textContent='Conferindo…';
+  const r=await chamar('/admin/presente/checar',{telefone:t});
+  if(!r.ok){ $('prQuem').textContent='⚠️ '+(r.erro||'erro'); return; }
+  PR_CHECK=r;
+  $('prNomeBox').style.display=r.membro?'none':'block';
+  $('prQuem').innerHTML=r.membro
+    ? '✅ Já é do Clube'+(r.nome?': <b>'+esc(r.nome)+'</b>':'')+' — o brinde entra na conta na hora.'+(r.comCadastro?'':' <br>⚠️ Conta ainda sem senha: mande também o link casapellegrini.com.br/minha-conta pra ele criar a senha e ver o brinde.')
+    : '🆕 Ainda não é do Clube — vai virar um <b>convite com presente</b>.'+(r.convitesPendentes?' <br>⚠️ Já existe '+r.convitesPendentes+' convite de presente esperando cadastro nesse número.':'');
+}
+function presenteFrase(lista){ return lista.length===1?lista[0]:lista.slice(0,-1).join(', ')+' e '+lista[lista.length-1]; }
+async function presenteDar(){
+  msg('prMsg',''); $('prResultado').innerHTML='';
+  const telefone=$('prTel').value;
+  const premios=[$('prPremio1').value,$('prPremio2').value].map(s=>s.trim()).filter(Boolean);
+  if(String(telefone).replace(/\D/g,'').length<10) return msg('prMsg','Informe o celular com DDD.');
+  if(!premios.length) return msg('prMsg','Escolha o brinde.');
+  if(!PR_CHECK || PR_CHECK.telefone!==String(telefone).replace(/\D/g,'').replace(/^55(?=\d{11}$)/,'')) await presenteChecar();
+  if(!PR_CHECK) return;
+  const dias=Math.max(1,Math.min(180,+$('prDias').value||60));
+  const quem=PR_CHECK.membro?(PR_CHECK.nome||'o cliente'):($('prNome').value.trim()||fmtTel(PR_CHECK.telefone));
+  if(!confirm('Dar '+presenteFrase(premios)+' para '+quem+' ('+fmtTel(PR_CHECK.telefone)+'), com '+dias+' dias pra resgatar?')) return;
+  ocupado('prBtn',true,'Dando presente…');
+  const r=await chamar('/admin/presente',{telefone,nome:$('prNome').value,premios,validadeDias:dias,motivo:$('prMotivo').value});
+  ocupado('prBtn',false);
+  if(!r.ok) return msg('prMsg',r.erro||'Não deu certo.');
+  const nome=(r.nome||'').split(' ')[0];
+  const oi=nome?'Oi, '+nome+'! ':'Oi! ';
+  const brinde=presenteFrase(r.premios);
+  const texto= r.tipo==='conta'
+    ? oi+'Deixei um presente pra você na Casa Pellegrini: '+brinde+' 🎁 Já está na sua conta do Clube (casapellegrini.com.br/minha-conta) e vale até '+r.validade+'. Te esperamos!'
+    : oi+'Deixei um presente pra você na Casa Pellegrini: '+brinde+' 🎁 É só entrar no nosso Clube por este link usando este seu número de celular: '+r.link+' — o brinde aparece na hora na sua conta e vale por '+r.dias+' dias. Te esperamos!';
+  const wa='https://wa.me/55'+r.telefone+'?text='+encodeURIComponent(texto);
+  $('prResultado').innerHTML=`<p class="sub" style="margin-top:12px">✅ ${r.tipo==='conta'?'Presente colocado na conta. Vale até <b>'+esc(r.validade)+'</b>.':'Convite com presente criado. Ele tem até <b>'+esc(r.expira)+'</b> pra se cadastrar com '+esc(fmtTel(r.telefone))+'; depois do cadastro o brinde vale '+r.dias+' dias.'} Mensagem pronta:</p>
+    <div class="linkbox" id="prTexto" style="white-space:pre-wrap;word-break:normal;overflow-wrap:anywhere;font-family:inherit">${esc(texto)}</div>
+    <a class="btn" href="${esc(wa)}" target="_blank" rel="noopener noreferrer">📲 Abrir no WhatsApp</a>
+    <button class="btn sec" onclick="presenteCopiar()">📋 Copiar mensagem</button>`;
+  ['prTel','prNome','prPremio1','prPremio2','prMotivo'].forEach(id=>$(id).value=''); $('prQuem').textContent=''; PR_CHECK=null; $('prNomeBox').style.display='block';
+  if($('prLista').innerHTML) presentesListar();
+}
+function presenteCopiar(){ const t=$('prTexto').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>msg('prMsg','Mensagem copiada.',true),()=>msg('prMsg','Não consegui copiar — selecione o texto e copie.')); }
+let PRESENTES=[];
+async function presentesListar(){
+  $('prLista').innerHTML='<p class="muted" style="margin-top:10px">Carregando…</p>';
+  const r=await chamar('/admin/presentes');
+  if(!r.ok){ $('prLista').innerHTML='<p class="muted">'+esc(r.erro||'erro')+'</p>'; return; }
+  PRESENTES=r.presentes||[];
+  $('prLista').innerHTML=PRESENTES.length?PRESENTES.map((p,i)=>`<div class="listItem"><div><b>${esc(p.nome||fmtTel(p.telefone))}</b> · ${esc(presenteFrase(p.premios||[]))}<small>${esc(fmtTel(p.telefone))} · ${esc(fmtDataHora(p.quando))}${p.por?' · por '+esc(p.por):''}${p.motivo?' · '+esc(p.motivo):''}<br>${esc(p.situacao)}</small></div>${p.podeCancelar?`<button class="btn sec" onclick="presenteCancelar(${i})">Cancelar</button>`:''}</div>`).join(''):'<p class="muted" style="margin-top:10px">Nenhum presente dado pelo painel ainda.</p>';
+}
+async function presenteCancelar(i){
+  const p=PRESENTES[i]; if(!p) return;
+  if(!confirm('Cancelar o presente ('+presenteFrase(p.premios||[])+') de '+(p.nome||fmtTel(p.telefone))+'?')) return;
+  const r=await chamar('/admin/presente/cancelar',{id:p.id});
+  if(!r.ok) return msg('prMsg',r.erro);
+  msg('prMsg','Presente cancelado.',true); presentesListar();
+}
+function presentePara(tel){
+  document.querySelector('nav button[data-tab="admin"]').click();
+  $('prTel').value=fmtTel(tel); presenteChecar();
+  setTimeout(()=>{ $('cardPresente').scrollIntoView({behavior:'smooth',block:'start'}); $('prPremio1').focus(); },150);
 }
 
 /* ============ SAÚDE DO CLUBE ============ */
