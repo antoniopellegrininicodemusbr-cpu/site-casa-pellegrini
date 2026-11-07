@@ -637,6 +637,21 @@ async function exportEmailCompleta(){
   exportCarregarCfg(true);
 }
 
+// Motivos de falha do WhatsApp (códigos da Meta): o que é e se é normal (06/11/2026)
+const OKN='<span style="color:#7fe39a">Normal</span>';
+const FALHAS_WA={
+  '131026':['Não entregue: o número não tem WhatsApp, o WhatsApp está desatualizado ou o número está errado. Comum na base antiga que veio do Fidelizi.',OKN+' — se o cliente reclamar, conferir o número dele.'],
+  '131049':['A Meta segurou a mensagem porque essa pessoa já recebeu muito marketing (de várias empresas). Limite da própria Meta, não é erro nosso.',OKN+' — mandar menos mensagens de marketing pra mesma pessoa ajuda.'],
+  '130472':['O número faz parte de um teste da Meta: ela não entrega marketing pra uma parte dos usuários.',OKN+' — nada a fazer.'],
+  '131047':['Passou de 24h desde a última mensagem do cliente: texto livre não sai, só modelo aprovado.',OKN+' — resposta atrasada no atendimento.'],
+  '131050':['O cliente bloqueou as mensagens de marketing da casa no próprio WhatsApp.',OKN+' — escolha dele.'],
+  '131056':['Muitas mensagens seguidas pro mesmo número em pouco tempo.',OKN+' se for raro; se repetir, avisar o Claude.'],
+  '131048':['Limite de spam: muita gente bloqueando ou denunciando as mensagens da casa.','<span style="color:#ff9ba3">NÃO é normal</span> — avisar o Claude e reduzir os envios.'],
+  '132000':['Modelo de mensagem enviado com dados faltando.','<span style="color:#ff9ba3">Erro nosso</span> — avisar o Claude.'],
+  '132001':['Modelo de mensagem não existe ou não está aprovado.','<span style="color:#ff9ba3">Erro nosso</span> — avisar o Claude.'],
+  '132015':['Modelo de mensagem pausado pela Meta por baixa qualidade.','<span style="color:#ff9ba3">Atenção</span> — avisar o Claude.'],
+  '131031':['Conta do WhatsApp da casa bloqueada ou restrita.','<span style="color:#ff9ba3">URGENTE</span> — avisar o Claude.'],
+};
 let AN=null, anChave='';
 async function carregarAnalises(forcar){
   const dias=$('anDias').value, origem=$('anOrigem').value, k=dias+'|'+origem;
@@ -672,7 +687,9 @@ function renderAnalises(){
   $('anWa').innerHTML=box(w.enviadas,'Enviadas')+box(w.entregues,'Entregues','#7fe39a')+box(w.lidas,'Lidas')+box(w.falhas,'Falharam','#ff9ba3')+box(w.descadastros,'Pediram SAIR')+box(w.recebidas,'Recebidas');
   const tpl=Object.entries(w.porTemplate||{}).sort((a,b)=>b[1]-a[1]), fal=Object.entries(w.falhasPorMotivo||{}).sort((a,b)=>b[1]-a[1]);
   $('anWaDet').innerHTML=(tpl.length?'<table><tr><th>Mensagem (template)</th><th>Enviadas</th></tr>'+tpl.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
-    +(fal.length?'<table><tr><th>Motivo da falha</th><th>Qtde</th></tr>'+fal.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
+    +(fal.length?'<table><tr><th>Motivo da falha</th><th>Qtde</th><th>O que é</th><th>É normal?</th></tr>'+fal.map(([k,v])=>{ const x=FALHAS_WA[String(k).split(' ')[0]]||['Código não catalogado — ver na documentação da Meta.','<span style="color:#ffd27a">Verificar</span>'];
+      return `<tr><td>${esc(k)}</td><td>${v}</td><td style="white-space:normal;min-width:200px">${x[0]}</td><td style="white-space:normal;min-width:140px">${x[1]}</td></tr>`; }).join('')+'</table>':'')
+    +(fal.length?'<p class="smallnote">Mensagem que falha <b>não é cobrada</b> pela Meta. As falhas das 10h–11h30 são das mensagens automáticas (pós-visita, prêmio vencendo, aniversário, inatividade); em outros horários costumam ser código de senha ou presente.</p>':'')
     +'<p class="smallnote">O registro das mensagens enviadas e dos recibos (entregue/lida) começou em '+diaBRf(w.desde)+'. Falhas e descadastros vêm de antes.</p>';
 }
 
