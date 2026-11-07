@@ -533,6 +533,22 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#141B2E">
+<script>
+/* Origem da visita (07/11/2026): UTM / ids de clique dos anúncios OU o site de onde a pessoa veio
+   (Google, Instagram...). Guarda 30 dias (última origem conhecida) pra o Clube saber de onde ela veio
+   mesmo que entre pela home e só depois vá pro cadastro / Minha Conta. Não mexe no GA4 (GTM cuida). */
+(function(){try{
+  var p=new URLSearchParams(location.search), o={}, tem=false;
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid','ttclid'].forEach(function(k){
+    var v=p.get(k); if(v){o[k]=String(v).slice(0,150); tem=true;} });
+  if(!tem && document.referrer){ try{ var h=new URL(document.referrer).hostname.replace(/^www\./,'');
+    if(h && h!==location.hostname.replace(/^www\./,'')){ o.ref=h.slice(0,80); tem=true; } }catch(e){} }
+  if(tem){ o.ts=Date.now(); o.pagina=location.pathname.slice(0,60); var s=JSON.stringify(o);
+    sessionStorage.setItem('cp_origem',s); try{localStorage.setItem('cp_origem',s);}catch(e){} }
+}catch(e){}})();
+window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_origem')||localStorage.getItem('cp_origem')||'{}');
+  if(o.ts&&Date.now()-o.ts>30*86400000) return {}; return o;}catch(e){return {}}};
+</script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased overflow-hidden">
     <!-- Google Tag Manager (noscript) -->
