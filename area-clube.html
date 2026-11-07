@@ -208,16 +208,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQ9GBFSJ');</script>
 <!-- End Google Tag Manager -->
 <script>
-/* Origem da visita (UTM e ids de clique dos anuncios). Guarda na sessao do
-   navegador assim que a pessoa chega com eles na URL, pra o evento de cadastro
-   (clube_signup) e a conta saberem de onde ela veio. */
+/* Origem da visita (07/11/2026): UTM / ids de clique dos anúncios OU o site de onde a pessoa veio
+   (Google, Instagram...). Guarda 30 dias (última origem conhecida) pra o Clube saber de onde ela veio
+   mesmo que entre pela home e só depois vá pro cadastro / Minha Conta. Não mexe no GA4 (GTM cuida). */
 (function(){try{
   var p=new URLSearchParams(location.search), o={}, tem=false;
   ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid','ttclid'].forEach(function(k){
     var v=p.get(k); if(v){o[k]=String(v).slice(0,150); tem=true;} });
-  if(tem) sessionStorage.setItem('cp_origem', JSON.stringify(o));
+  if(!tem && document.referrer){ try{ var h=new URL(document.referrer).hostname.replace(/^www\./,'');
+    if(h && h!==location.hostname.replace(/^www\./,'')){ o.ref=h.slice(0,80); tem=true; } }catch(e){} }
+  if(tem){ o.ts=Date.now(); o.pagina=location.pathname.slice(0,60); var s=JSON.stringify(o);
+    sessionStorage.setItem('cp_origem',s); try{localStorage.setItem('cp_origem',s);}catch(e){} }
 }catch(e){}})();
-window.cpOrigem=function(){try{return JSON.parse(sessionStorage.getItem('cp_origem')||'{}')}catch(e){return {}}};
+window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_origem')||localStorage.getItem('cp_origem')||'{}');
+  if(o.ts&&Date.now()-o.ts>30*86400000) return {}; return o;}catch(e){return {}}};
 </script>
 </head>
 <body>
