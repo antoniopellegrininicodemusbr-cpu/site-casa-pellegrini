@@ -111,6 +111,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#141B2E">
+<script>
+/* Origem da visita (07/11/2026): UTM / ids de clique dos anúncios OU o site de onde a pessoa veio
+   (Google, Instagram...). Guarda 30 dias (última origem conhecida) pra o Clube saber de onde ela veio
+   mesmo que entre pela home e só depois vá pro cadastro / Minha Conta. Não mexe no GA4 (GTM cuida). */
+(function(){try{
+  var p=new URLSearchParams(location.search), o={}, tem=false;
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid','ttclid'].forEach(function(k){
+    var v=p.get(k); if(v){o[k]=String(v).slice(0,150); tem=true;} });
+  if(!tem && document.referrer){ try{ var h=new URL(document.referrer).hostname.replace(/^www\./,'');
+    if(h && h!==location.hostname.replace(/^www\./,'')){ o.ref=h.slice(0,80); tem=true; } }catch(e){} }
+  if(tem){ o.ts=Date.now(); o.pagina=location.pathname.slice(0,60); var s=JSON.stringify(o);
+    sessionStorage.setItem('cp_origem',s); try{localStorage.setItem('cp_origem',s);}catch(e){} }
+}catch(e){}})();
+window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_origem')||localStorage.getItem('cp_origem')||'{}');
+  if(o.ts&&Date.now()-o.ts>30*86400000) return {}; return o;}catch(e){return {}}};
+</script>
 </head>
 <body class="text-white">
 <!-- Google Tag Manager (noscript) -->
@@ -153,7 +169,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <p class="text-white/75 text-[15px] md:text-lg leading-relaxed mt-4 max-w-xl mx-auto">
         Cadastro grátis em 30 segundos — <strong class="text-brand-gold">cadastre-se agora e já receba seu primeiro brinde!</strong> A cada <strong class="text-white">R$ 25 você ganha 1 ponto</strong>, e a cada visita <strong class="text-white">gira a roleta de brindes</strong>. Sem mensalidade, sem pegadinha.
       </p>
-      <a href="/cadastro?utm_source=site&utm_medium=landing&utm_campaign=clube" onclick="dataLayer.push({event:'clube_lead'})" class="inline-block mt-6 bg-brand-gold text-brand-navy font-extrabold text-lg px-10 py-4 rounded-full shadow-lg hover:brightness-105 transition pulse-gold">
+      <a href="/cadastro-clube.html" onclick="dataLayer.push({event:'clube_lead'})" class="inline-block mt-6 bg-brand-gold text-brand-navy font-extrabold text-lg px-10 py-4 rounded-full shadow-lg hover:brightness-105 transition pulse-gold">
         Cadastrar grátis →
       </a>
       <p class="text-white/45 text-xs mt-3">Leva 30 segundos · grátis e sem mensalidade</p>
@@ -208,7 +224,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <section class="mt-8 md:mt-12 text-center">
       <h2 class="font-display text-2xl md:text-4xl font-bold">Faça parte. É grátis.</h2>
       <p class="text-white/70 text-[15px] md:text-lg mt-2">Ganhe seu <strong class="text-white">primeiro brinde agora</strong> — e siga ganhando em <strong class="text-white">toda visita</strong> que fizer à Casa Pellegrini.</p>
-      <a href="/cadastro?utm_source=site&utm_medium=landing&utm_campaign=clube" onclick="dataLayer.push({event:'clube_lead'})" class="inline-block mt-5 bg-brand-gold text-brand-navy font-extrabold text-lg px-10 py-4 rounded-full shadow-lg hover:brightness-105 transition">
+      <a href="/cadastro-clube.html" onclick="dataLayer.push({event:'clube_lead'})" class="inline-block mt-5 bg-brand-gold text-brand-navy font-extrabold text-lg px-10 py-4 rounded-full shadow-lg hover:brightness-105 transition">
         Cadastrar grátis →
       </a>
     </section>
@@ -240,7 +256,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </span>
         <span class="text-[11px] font-bold text-wpp mt-1">Reservar</span>
       </a>
-      <a href="/cadastro?utm_source=site&utm_medium=landing&utm_campaign=clube" onclick="dataLayer.push({event:'clube_lead'})" class="flex flex-col items-center gap-0.5 -mt-1.5 py-1 text-brand-gold hover:brightness-110 transition relative">
+      <a href="/cadastro-clube.html" onclick="dataLayer.push({event:'clube_lead'})" class="flex flex-col items-center gap-0.5 -mt-1.5 py-1 text-brand-gold hover:brightness-110 transition relative">
         <span class="absolute -top-2 right-0 bg-brand-red text-white text-[7px] font-black leading-[1.05] text-center px-1.5 py-0.5 rounded-md pulse-gold">GANHE<br>AGORA</span>
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 3 11 3s2 .5 3 .5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z"/><path d="M5 8v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V8"/></svg>
         <span class="text-[11px] font-bold leading-none">Cadastrar</span>
