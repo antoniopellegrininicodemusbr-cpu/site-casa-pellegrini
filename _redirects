@@ -111,6 +111,20 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 # — sem ela o cliente recebe o WhatsApp de pontuação e não tem pra onde ir.
 /minha-conta        /area-clube.html                                                        301
 
+# 07/11/2026: atalhos dos LINKS das mensagens de WhatsApp do Clube (sem botão, link no texto).
+# Cada mensagem aponta pra um atalho diferente → o cadastro/Minha Conta e o GA4 sabem de qual mensagem a pessoa veio.
+# Não são linkados no site (só nas mensagens) — não afetam o Ahrefs.
+/cadastro/convite           /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=convite                  301
+/cadastro/lembrete          /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=lembrete                 301
+/cadastro/presente          /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=presente                 301
+/minha-conta/saldo          /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=saldo                        301
+/minha-conta/visita         /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=visita                       301
+/minha-conta/vencimento     /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=vencimento                   301
+/minha-conta/aniversario    /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=aniversario                  301
+/minha-conta/volta          /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=volta                        301
+/minha-conta/migracao       /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=migracao                     301
+/minha-conta/presente       /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=presente                     301
+
 # REMOVIDOS em 10/08/2026: /inscrever, /cadastrar e /fidelizi.
 # Eram atalhos criados esperando a URL do formulário do Fidelizi, que nunca
 # chegou — ficaram apontando pra home e nunca foram usados em lugar nenhum.
