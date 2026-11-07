@@ -666,12 +666,13 @@ const brl2=(v)=> v==null? '—' : 'R$ '+(+v).toLocaleString('pt-BR',{minimumFrac
 function renderAnalises(){
   if(!AN) return;
   const t=AN.totais, box=(n,l,cor)=>`<div class="segbox"><div class="n"${cor?' style="color:'+cor+'"':''}>${n}</div><div class="l">${l}</div></div>`;
-  $('anTotais').innerHTML=box(t.compras,'Compras pontuadas')+box(brl(Math.round(t.valor)),'Valor pontuado')+box(brl(Math.round(t.ticket)),'Ticket médio')
-    +box(t.convites,'Compras de quem não é do Clube (convite)')+box(t.premiosDados,'Prêmios dados')+box(t.premiosResgatados,'Prêmios resgatados','#7fe39a')
-    +box(t.cadastros,'Cadastros completos')+box(t.preContas,'Pré-contas (só celular)');
+  $('anTotais').innerHTML=box(t.compras,'Compras pontuadas (membros)')+box(brl(Math.round(t.valor)),'Valor pontuado')+box(brl(Math.round(t.ticket)),'Ticket médio')
+    +box(t.convites,'Compras de quem não é do Clube (convite)')+box(t.convitesCadastro||0,'Convites que viraram cadastro','#7fe39a')
+    +box(t.premiosRoleta||0,'Prêmios da roleta')+box(t.premiosAutomaticos||0,'Brindes automáticos (inatividade/aniversário)')+box(t.premiosResgatados,'Prêmios resgatados','#7fe39a')
+    +box(t.cadastros,'Cadastros de gente nova')+box(t.fideliziCompletou||0,'Clientes do Fidelizi que completaram o cadastro');
   const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.valor));
-  $('anDiario').innerHTML='<tr><th>Dia</th><th>Compras</th><th>Valor</th><th>Ticket</th><th>Clientes</th><th>1ª compra</th><th>Convites</th><th>Maquininha</th><th>Prêmios dados</th><th>Resgatados</th><th>Cadastros</th></tr>'
-    +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.compras}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(60*l.valor/maxV)}px"></span>${brl(Math.round(l.valor))}</div></td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.clientes}</td><td>${l.comprasClienteNovo}</td><td>${l.convites}</td><td>${l.vendasStone}</td><td>${l.premiosDados}</td><td>${l.premiosResgatados}</td><td>${l.cadastros+l.preContas}</td></tr>`).join('');
+  $('anDiario').innerHTML='<tr><th>Dia</th><th>Compras</th><th>Valor</th><th>Ticket</th><th>Clientes</th><th>1ª compra</th><th>Convites</th><th>Maquininha</th><th>Prêmios roleta</th><th>Brindes autom.</th><th>Resgatados</th><th>Cadastros novos</th><th>Fidelizi completou</th></tr>'
+    +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.compras}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(60*l.valor/maxV)}px"></span>${brl(Math.round(l.valor))}</div></td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.clientes}</td><td>${l.comprasClienteNovo}</td><td>${l.convites}</td><td>${l.vendasStone}</td><td>${l.premiosRoleta||0}</td><td>${l.premiosAutomaticos||0}</td><td>${l.premiosResgatados}</td><td>${l.cadastros}</td><td>${l.fideliziCompletou||0}</td></tr>`).join('');
   const ord=$('anOrdem').value, rk=AN.ranking.slice();
   const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
   rk.sort(f);
@@ -682,7 +683,10 @@ function renderAnalises(){
   $('anClientes').innerHTML=box(c.total,'Contas no Clube')+box(c.migrados,'Vieram do Fidelizi')+box(c.novos,'Nasceram no Clube','#7fe39a')
     +box(c.comSenha,'Com senha')+box(c.preContas,'Pré-conta (só celular)')+box(c.novosNoPeriodo,'Novos no período','#7fe39a');
   const orig=Object.entries(c.porOrigem||{}).sort((a,b)=>b[1]-a[1]);
-  $('anOrigens').innerHTML=orig.length? '<table><tr><th>De onde vieram os novos</th><th>Quantidade</th></tr>'+orig.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '';
+  const origF=Object.entries(c.porOrigemFidelizi||{}).sort((a,b)=>b[1]-a[1]);
+  $('anOrigens').innerHTML=(orig.length? '<table><tr><th>Gente nova no período — de onde veio</th><th>Quantidade</th></tr>'+orig.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '')
+    +(origF.length? '<table style="margin-top:14px"><tr><th>Clientes do Fidelizi que completaram o cadastro ('+(c.fideliziCompletouNoPeriodo||0)+') — por onde</th><th>Quantidade</th></tr>'+origF.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '')
+    +'<p class="smallnote"><b>Convite</b> = alguém que não é do Clube pagou e digitou o celular na maquininha: recebe o WhatsApp com o link e os pontos ficam guardados até se cadastrar. <b>Pré-conta</b> (só celular, sem cadastro) era o jeito antigo — desde a virada não nasce mais nenhuma.</p>';
   const w=AN.whatsapp;
   $('anWa').innerHTML=box(w.enviadas,'Enviadas')+box(w.entregues,'Entregues','#7fe39a')+box(w.lidas,'Lidas')+box(w.falhas,'Falharam','#ff9ba3')+box(w.descadastros,'Pediram SAIR')+box(w.recebidas,'Recebidas');
   const tpl=Object.entries(w.porTemplate||{}).sort((a,b)=>b[1]-a[1]), fal=Object.entries(w.falhasPorMotivo||{}).sort((a,b)=>b[1]-a[1]);
