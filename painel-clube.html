@@ -243,6 +243,13 @@
       <button class="btn sec" onclick="presentesListar()" style="margin-top:14px">📜 Ver presentes dados</button>
       <div id="prLista"></div>
     </div>
+    <div class="card" id="cardVencidos" style="border-color:rgba(255,155,163,.35)">
+      <h2>⏰ Convites vencidos de quem já se cadastrou</h2>
+      <p class="sub">Cliente que não era do Clube comprou, ganhou pontos e prêmio na roleta, mas fez o cadastro <b>depois do prazo</b> do convite — a conta nasceu zerada. Aqui você credita a compra (pontos, visita e prêmio, com validade contando a partir de hoje).</p>
+      <button class="btn sec" id="cvBtn" onclick="vencidosListar()">🔎 Procurar</button>
+      <div class="erro" id="cvMsg"></div>
+      <div id="cvLista"></div>
+    </div>
     <div class="card" id="cardExport" style="border-color:rgba(120,170,255,.35)">
       <h2>📦 Exportação de dados</h2>
       <p class="sub">Pacote .zip com todos os registros do Clube em CSV (clientes, pontuações, prêmios, convites, vendas da Stone, mensagens do WhatsApp…), com <b>manifest.json</b> e <b>dicionário de dados</b> — no formato que a Central de Dados (Augusto) pediu. Tem dados pessoais: guarde só em lugar da empresa.</p>
@@ -700,6 +707,22 @@ function renderAnalises(){
       return `<tr><td>${esc(k)}</td><td>${v}</td><td style="white-space:normal;min-width:200px">${x[0]}</td><td style="white-space:normal;min-width:140px">${x[1]}</td></tr>`; }).join('')+'</table>':'')
     +(fal.length?'<p class="smallnote">Mensagem que falha <b>não é cobrada</b> pela Meta. As falhas das 10h–11h30 são das mensagens automáticas (pós-visita, prêmio vencendo, aniversário, inatividade); em outros horários costumam ser código de senha ou presente.</p>':'')
     +'<p class="smallnote">O registro das mensagens enviadas e dos recibos (entregue/lida) começou em '+diaBRf(w.desde)+'. Falhas e descadastros vêm de antes.</p>';
+}
+
+/* ============ ⏰ CONVITES VENCIDOS (07/11/2026) ============ */
+async function vencidosListar(){
+  msg('cvMsg',''); ocupado('cvBtn',true,'Procurando…');
+  const r=await chamar('/admin/convites/vencidos'); ocupado('cvBtn',false);
+  if(!r.ok) return msg('cvMsg',r.erro||'Não carregou.');
+  if(!r.convites.length){ $('cvLista').innerHTML='<p class="muted" style="margin-top:8px">Nenhum caso agora. ✅</p>'; return; }
+  $('cvLista').innerHTML='<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Compra</th><th>Pontos</th><th>Prêmio</th><th></th></tr>'+r.convites.map(c=>`<tr id="cv_${esc(c.id)}"><td style="white-space:normal">${esc(c.nome)}<br><span class="muted">${esc(c.telefone)}</span></td><td>${esc(c.compraEm)}<br><span class="muted">${brl(c.valor)}</span></td><td>${c.pontos}</td><td style="white-space:normal;min-width:160px">${c.premios.map(esc).join('<br>')||'—'}</td><td><button class="btn" style="padding:8px 12px;margin:0" onclick="vencidoCreditar('${esc(c.id)}',this)">Creditar</button></td></tr>`).join('')+'</table></div>';
+}
+async function vencidoCreditar(id,btn){
+  btn.disabled=true; btn.textContent='Creditando…';
+  const r=await chamar('/admin/convites/creditar',{id});
+  if(!r.ok){ btn.disabled=false; btn.textContent='Creditar'; return msg('cvMsg',r.erro||'Não creditou.'); }
+  const tr=$('cv_'+id); if(tr) tr.lastElementChild.innerHTML='<span style="color:#7fe39a">✅ '+r.pontos+' pts'+(r.premios&&r.premios.length?' + prêmio':'')+'</span>';
+  msg('cvMsg',(r.nome||'Cliente')+': creditado. Saldo agora '+r.saldo+' pontos.',true);
 }
 
 function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='saude'){ renderSaude(); carregarAnalises(false); } if(abaAtual==='admin') exportCarregarCfg(); }
