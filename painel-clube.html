@@ -99,6 +99,7 @@
     border-radius:11px;margin-bottom:8px;background:rgba(0,0,0,.18);gap:8px}
   .tag{font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-weight:700}
   .smallnote{font-size:11px;color:var(--muted);margin-top:6px}
+  #anDiario td,#anRanking td,#anRanking th,#anDiario th{white-space:nowrap} #anRanking td:first-child{white-space:normal;min-width:150px}
   .danger{background:transparent;color:#ff7a85;border:1px solid #ff7a85}
   .niveis{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:4px}
   .nvchip{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;border:1px solid}
@@ -242,6 +243,30 @@
       <button class="btn sec" onclick="presentesListar()" style="margin-top:14px">📜 Ver presentes dados</button>
       <div id="prLista"></div>
     </div>
+    <div class="card" id="cardExport" style="border-color:rgba(120,170,255,.35)">
+      <h2>📦 Exportação de dados</h2>
+      <p class="sub">Pacote .zip com todos os registros do Clube em CSV (clientes, pontuações, prêmios, convites, vendas da Stone, mensagens do WhatsApp…), com <b>manifest.json</b> e <b>dicionário de dados</b> — no formato que a Central de Dados (Augusto) pediu. Tem dados pessoais: guarde só em lugar da empresa.</p>
+      <div class="row">
+        <div><label>De</label><input type="date" id="exIni"></div>
+        <div><label>Até</label><input type="date" id="exFim"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div><button class="btn" id="exBtn7" onclick="exportBaixar(7)">⬇️ Últimos 7 dias</button></div>
+        <div><button class="btn sec" id="exBtnP" onclick="exportBaixar(0)">⬇️ Período escolhido</button></div>
+      </div>
+      <button class="btn sec" id="exBtnC" onclick="exportEmailCompleta()" style="margin-top:10px">✉️ Mandar a COMPLETA por e-mail agora</button>
+      <div class="erro" id="exMsg"></div>
+      <h3 style="margin-top:16px">Envio automático</h3>
+      <p class="smallnote">Todo dia às 7h15 sai um e-mail com o .zip dos últimos 7 dias (dia 1 de cada mês vai a completa). A planilha de resumo atualiza sozinha de hora em hora.</p>
+      <label>E-mails (separe por vírgula)</label>
+      <input id="exEmails" placeholder="augustonicodemus@gmail.com">
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px"><input type="checkbox" id="exAtivo" style="width:auto"> Mandar o e-mail diário</label>
+      <label>Planilha de resumo (link do Google Sheets)</label>
+      <input id="exPlanilha" placeholder="https://docs.google.com/spreadsheets/d/…">
+      <p class="smallnote" id="exSa"></p>
+      <button class="btn sec" id="exSalvar" onclick="exportSalvarCfg()">💾 Salvar envio automático</button>
+      <div id="exStatus" class="muted" style="margin-top:8px"></div>
+    </div>
     <div class="card">
       <h2>🎡 Roletas por nível</h2>
       <p class="sub">Cada nível tem a própria roleta. A maquininha abre conforme o valor da compra — quanto mais gasta, melhor o nível.</p>
@@ -338,6 +363,38 @@
       <h2>🩺 Leitura rápida</h2>
       <div id="saudeDiag"></div>
     </div>
+    <div class="card" id="cardAnalises" style="border-color:rgba(242,183,5,.35)">
+      <h2>📅 Movimento do Clube (direto do servidor)</h2>
+      <p class="sub">Calculado na hora com os registros do Clube — os mesmos números da planilha de resumo.</p>
+      <div class="row" style="align-items:flex-end">
+        <div><label>Período</label><select id="anDias" onchange="carregarAnalises(true)"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option></select></div>
+        <div><button class="btn sec" onclick="carregarAnalises(true)">🔄 Atualizar</button></div>
+      </div>
+      <div class="erro" id="anMsg"></div>
+      <div class="segrid" id="anTotais" style="margin-top:10px"></div>
+      <div style="overflow-x:auto"><table id="anDiario"></table></div>
+    </div>
+    <div class="card">
+      <h2>🏆 Ranking de prêmios</h2>
+      <p class="sub">Quantos de cada prêmio saíram na roleta, quantos o cliente <b>voltou pra resgatar</b> e a % de resgate. Prêmio com % alta é o que traz o cliente de volta. Preço e custo estimados pelo CMV (33% do preço do cardápio) — pra trocar por outro de valor parecido.</p>
+      <div class="row" style="align-items:flex-end">
+        <div><label>Ordenar por</label><select id="anOrdem" onchange="renderAnalises()"><option value="taxa">% de resgate</option><option value="dados">Mais dados</option><option value="custo">Custo (CMV)</option><option value="dias">Dias até voltar</option></select></div>
+        <div><label>Origem</label><select id="anOrigem" onchange="carregarAnalises(true)"><option value="roleta">Só roleta</option><option value="todas">Todos (pontos, aniversário, presentes…)</option></select></div>
+      </div>
+      <div style="overflow-x:auto"><table id="anRanking"></table></div>
+      <p class="smallnote">% de resgate = resgatados ÷ dados (sem os cancelados). Prêmios ainda dentro da validade contam como "em aberto" — a % sobe com o tempo; compare prêmios dados na mesma época. Prêmios trazidos do Fidelizi ficam de fora.</p>
+    </div>
+    <div class="card">
+      <h2>🆕 Clientes novos x antigos</h2>
+      <div class="segrid" id="anClientes"></div>
+      <div id="anOrigens"></div>
+    </div>
+    <div class="card">
+      <h2>💬 Mensagens do WhatsApp</h2>
+      <div class="segrid" id="anWa"></div>
+      <div id="anWaDet"></div>
+    </div>
+
   </section>
 </main>
 </div>
@@ -526,7 +583,100 @@ async function enviarConfig(){
   if(!r.ok) alert('❌ Não salvou: '+(r.erro||'sem conexão')+'\n\nRecarregue a página e tente de novo.');
   return r;
 }
-function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='saude') renderSaude(); }
+
+/* ============ 📦 EXPORTAÇÃO + 📊 ANÁLISES (06/11/2026) ============ */
+const hojeISO=()=>{ const d=new Date(Date.now()-3*3600000); return d.toISOString().slice(0,10); };
+const diaBRf=(s)=>s? s.split('-').reverse().join('/') : '';
+let exCfgCarregada=false;
+async function exportCarregarCfg(forcar){
+  if(exCfgCarregada && !forcar) return; exCfgCarregada=true;
+  if(!$('exFim').value){ $('exFim').value=hojeISO(); $('exIni').value=new Date(Date.now()-3*3600000-6*86400000).toISOString().slice(0,10); }
+  const r=await chamar('/admin/exportacao/config');
+  if(!r.ok){ exCfgCarregada=false; return; }
+  $('exEmails').value=(r.emails||[]).join(', ');
+  $('exAtivo').checked=r.emailAtivo!==false;
+  $('exPlanilha').value=r.planilha? 'https://docs.google.com/spreadsheets/d/'+r.planilha+'/edit' : '';
+  $('exSa').innerHTML=r.contaServico? 'A planilha precisa estar compartilhada como <b>Editor</b> com <b>'+esc(r.contaServico)+'</b>.' : '';
+  const st=[];
+  if(r.ultimoEnvio) st.push('Último e-mail: '+fmtDataHora(r.ultimoEnvio.emTs)+' ('+(r.ultimoEnvio.tipo==='completa'?'completa':'7 dias')+') → '+esc((r.ultimoEnvio.para||[]).join(', ')));
+  if(r.ultimaPlanilha) st.push('Planilha: '+fmtDataHora(r.ultimaPlanilha.emTs)+(r.ultimaPlanilha.ok?' ✅':' ❌ '+esc(r.ultimaPlanilha.erro||'')));
+  $('exStatus').innerHTML=st.join('<br>');
+}
+async function exportSalvarCfg(){
+  msg('exMsg','');
+  ocupado('exSalvar',true,'Salvando…');
+  const r=await chamar('/admin/exportacao/config',{emails:$('exEmails').value,planilha:$('exPlanilha').value,emailAtivo:$('exAtivo').checked});
+  ocupado('exSalvar',false);
+  if(!r.ok) return msg('exMsg',r.erro||'Não salvou.');
+  msg('exMsg','Salvo.',true); exportCarregarCfg(true);
+}
+async function exportBaixar(dias){
+  msg('exMsg','');
+  let ini=$('exIni').value, fim=$('exFim').value;
+  if(dias){ fim=hojeISO(); ini=new Date(Date.parse(fim+'T12:00:00-03:00')-(dias-1)*86400000).toISOString().slice(0,10); }
+  if(!ini||!fim||ini>fim) return msg('exMsg','Escolha as datas (De ≤ Até).');
+  const id=dias?'exBtn7':'exBtnP'; ocupado(id,true,'Gerando…');
+  try{
+    const h={}; if(SESSAO) h['X-Painel-Sessao']=SESSAO;
+    const r=await fetch(API+'/admin/exportacao?tipo=janela&inicio='+ini+'&fim='+fim,{headers:h,cache:'no-store'});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.erro||('erro '+r.status)); }
+    const nome=((r.headers.get('Content-Disposition')||'').match(/filename="([^"]+)"/)||[])[1]||('clube_pellegrini_'+ini+'_'+fim+'.zip');
+    const blob=await r.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000);
+    msg('exMsg','Baixado: '+nome+' ('+Math.round(blob.size/1024)+' KB)',true);
+  }catch(e){ msg('exMsg','Não deu pra gerar: '+e.message); }
+  ocupado(id,false);
+}
+async function exportEmailCompleta(){
+  msg('exMsg','');
+  ocupado('exBtnC',true,'Montando e enviando…');
+  const r=await chamar('/admin/exportacao/enviar',{tipo:'completa'});
+  ocupado('exBtnC',false);
+  if(!r.ok) return msg('exMsg',r.erro||'Não enviou.');
+  msg('exMsg','Enviado pra '+(r.para||[]).join(', ')+' — '+r.arquivo+' ('+Math.round((r.bytes||0)/1024)+' KB)',true);
+  exportCarregarCfg(true);
+}
+
+let AN=null, anChave='';
+async function carregarAnalises(forcar){
+  const dias=$('anDias').value, origem=$('anOrigem').value, k=dias+'|'+origem;
+  if(AN && k===anChave && !forcar) return renderAnalises();
+  msg('anMsg','Calculando…',true);
+  const r=await chamar('/admin/analises?dias='+dias+'&origem='+origem);
+  if(!r.ok) return msg('anMsg',r.erro||'Não carregou.');
+  msg('anMsg',''); AN=r; anChave=k; renderAnalises();
+}
+const pct=(v)=> v==null? '—' : (Math.round(v*10)/10).toLocaleString('pt-BR')+'%';
+const brl2=(v)=> v==null? '—' : 'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+function renderAnalises(){
+  if(!AN) return;
+  const t=AN.totais, box=(n,l,cor)=>`<div class="segbox"><div class="n"${cor?' style="color:'+cor+'"':''}>${n}</div><div class="l">${l}</div></div>`;
+  $('anTotais').innerHTML=box(t.compras,'Compras pontuadas')+box(brl(Math.round(t.valor)),'Valor pontuado')+box(brl(Math.round(t.ticket)),'Ticket médio')
+    +box(t.convites,'Compras de quem não é do Clube (convite)')+box(t.premiosDados,'Prêmios dados')+box(t.premiosResgatados,'Prêmios resgatados','#7fe39a')
+    +box(t.cadastros,'Cadastros completos')+box(t.preContas,'Pré-contas (só celular)');
+  const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.valor));
+  $('anDiario').innerHTML='<tr><th>Dia</th><th>Compras</th><th>Valor</th><th>Ticket</th><th>Clientes</th><th>1ª compra</th><th>Convites</th><th>Maquininha</th><th>Prêmios dados</th><th>Resgatados</th><th>Cadastros</th></tr>'
+    +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.compras}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(60*l.valor/maxV)}px"></span>${brl(Math.round(l.valor))}</div></td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.clientes}</td><td>${l.comprasClienteNovo}</td><td>${l.convites}</td><td>${l.vendasStone}</td><td>${l.premiosDados}</td><td>${l.premiosResgatados}</td><td>${l.cadastros+l.preContas}</td></tr>`).join('');
+  const ord=$('anOrdem').value, rk=AN.ranking.slice();
+  const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
+  rk.sort(f);
+  $('anRanking').innerHTML=rk.length? '<tr><th>Prêmio</th><th>Dados</th><th>Resgatados</th><th>% resgate</th><th>Vencidos</th><th>Em aberto</th><th>Dias até voltar</th><th>Preço (cardápio)</th><th>Custo (CMV)</th><th>Custo dos resgatados</th></tr>'
+    +rk.map(r=>`<tr><td>${esc(r.premio)}</td><td>${r.dados}</td><td>${r.resgatados}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:#7fe39a;width:${Math.round(0.6*(r.taxaResgate||0))}px"></span>${pct(r.taxaResgate)}</div></td><td>${r.vencidos}</td><td>${r.emAberto}</td><td>${r.diasAteVoltar==null?'—':r.diasAteVoltar.toLocaleString('pt-BR')}</td><td>${brl2(r.preco)}</td><td>${brl2(r.custo)}</td><td>${brl2(r.custoResgatado)}</td></tr>`).join('')
+    : '<tr><td class="muted">Nenhum prêmio no período.</td></tr>';
+  const c=AN.clientes;
+  $('anClientes').innerHTML=box(c.total,'Contas no Clube')+box(c.migrados,'Vieram do Fidelizi')+box(c.novos,'Nasceram no Clube','#7fe39a')
+    +box(c.comSenha,'Com senha')+box(c.preContas,'Pré-conta (só celular)')+box(c.novosNoPeriodo,'Novos no período','#7fe39a');
+  const orig=Object.entries(c.porOrigem||{}).sort((a,b)=>b[1]-a[1]);
+  $('anOrigens').innerHTML=orig.length? '<table><tr><th>De onde vieram os novos</th><th>Quantidade</th></tr>'+orig.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '';
+  const w=AN.whatsapp;
+  $('anWa').innerHTML=box(w.enviadas,'Enviadas')+box(w.entregues,'Entregues','#7fe39a')+box(w.lidas,'Lidas')+box(w.falhas,'Falharam','#ff9ba3')+box(w.descadastros,'Pediram SAIR')+box(w.recebidas,'Recebidas');
+  const tpl=Object.entries(w.porTemplate||{}).sort((a,b)=>b[1]-a[1]), fal=Object.entries(w.falhasPorMotivo||{}).sort((a,b)=>b[1]-a[1]);
+  $('anWaDet').innerHTML=(tpl.length?'<table><tr><th>Mensagem (template)</th><th>Enviadas</th></tr>'+tpl.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
+    +(fal.length?'<table><tr><th>Motivo da falha</th><th>Qtde</th></tr>'+fal.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
+    +'<p class="smallnote">O registro das mensagens enviadas e dos recibos (entregue/lida) começou em '+diaBRf(w.desde)+'. Falhas e descadastros vêm de antes.</p>';
+}
+
+function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='saude'){ renderSaude(); carregarAnalises(false); } if(abaAtual==='admin') exportCarregarCfg(); }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
