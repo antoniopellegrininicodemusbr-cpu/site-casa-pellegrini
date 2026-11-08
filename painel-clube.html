@@ -675,16 +675,17 @@ const brl2=(v)=> v==null? '—' : 'R$ '+(+v).toLocaleString('pt-BR',{minimumFrac
 function renderAnalises(){
   if(!AN) return;
   const t=AN.totais, box=(n,l,cor)=>`<div class="segbox"><div class="n"${cor?' style="color:'+cor+'"':''}>${n}</div><div class="l">${l}</div></div>`;
+  // 07/11/2026 (Antonio): sem "Valor pontuado" e sem "Prêmios da roleta"; a tabela por dia segue esta mesma ordem
   $('anTotais').innerHTML=box(t.vendasStone||0,'Compras totais na máquina ('+brl(Math.round(t.vendasStoneValor||0))+')')+box(t.compras,'Compras pontuadas (membros)')+box(t.convites,'Convites enviados com prêmio na roleta (não membros)')
-    +box(brl(Math.round(t.valor)),'Valor pontuado')+box(brl(Math.round(t.ticket)),'Ticket médio')+box(t.convitesCadastro||0,'Convites que viraram cadastro<br><span style="font-size:10px">'+(t.convitesCadastroNovos||0)+' gente nova · '+(t.convitesCadastroFidelizi||0)+' clientes antigos do Fidelizi</span>','#7fe39a')
-    +box(t.premiosRoleta||0,'Prêmios da roleta')+box(t.premiosAutomaticos||0,'Brindes automáticos (inatividade e aniversário)')+box(t.premiosResgatados,'Prêmios resgatados','#7fe39a')
+    +box(brl(Math.round(t.ticket)),'Ticket médio')+box(t.convitesCadastro||0,'Convites que viraram cadastro<br><span style="font-size:10px">'+(t.convitesCadastroNovos||0)+' gente nova · '+(t.convitesCadastroFidelizi||0)+' clientes antigos do Fidelizi</span>','#7fe39a')
+    +box(t.premiosAutomaticos||0,'Brindes automáticos (inatividade e aniversário)')+box(t.premiosResgatados,'Prêmios resgatados','#7fe39a')
     ;
   const tabOrig=(obj,tit)=>{ const e=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]); return e.length? '<table><tr><th>'+tit+'</th><th>Qtde</th></tr>'+e.map(([k,v])=>`<tr><td style="white-space:normal">${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '<p class="muted">Nenhum no período.</p>'; };
   $('anCad').innerHTML='<div style="min-width:260px"><div class="segrid">'+box(t.cadastros,'Cadastros de gente nova (nunca foram do Fidelizi)','#7fe39a')+'</div>'+tabOrig(AN.clientes.cadastrosPorOrigem,'De onde vieram os novos membros')+'</div>'
     +'<div style="min-width:260px"><div class="segrid">'+box(t.fideliziCompletou||0,'Clientes antigos do Fidelizi que completaram o cadastro aqui')+'</div>'+tabOrig(AN.clientes.porOrigemFidelizi,'Por onde entraram')+'</div>';
-  const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.valor));
-  $('anDiario').innerHTML='<tr><th>Dia</th><th>Compras</th><th>Valor</th><th>Ticket</th><th>Clientes</th><th>1ª compra</th><th>Convites</th><th>Maquininha</th><th>Prêmios roleta</th><th>Brindes autom.</th><th>Resgatados</th><th>Cadastros novos</th><th>Fidelizi completou</th></tr>'
-    +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.compras}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(60*l.valor/maxV)}px"></span>${brl(Math.round(l.valor))}</div></td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.clientes}</td><td>${l.comprasClienteNovo}</td><td>${l.convites}</td><td>${l.vendasStone}</td><td>${l.premiosRoleta||0}</td><td>${l.premiosAutomaticos||0}</td><td>${l.premiosResgatados}</td><td>${l.cadastros}</td><td>${l.fideliziCompletou||0}</td></tr>`).join('');
+  const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.vendasStone||0));
+  $('anDiario').innerHTML='<tr><th>Dia</th><th>Máquina</th><th>Compras (membros)</th><th>Convites</th><th>Ticket</th><th>Convites → cadastro</th><th>Brindes autom.</th><th>Resgatados</th><th>Cadastros novos</th><th>Fidelizi completou</th></tr>'
+    +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(50*(l.vendasStone||0)/maxV)}px"></span>${l.vendasStone||0}</div></td><td>${l.compras}</td><td>${l.convites}</td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.convitesCadastro||0}</td><td>${l.premiosAutomaticos||0}</td><td>${l.premiosResgatados}</td><td>${l.cadastros}</td><td>${l.fideliziCompletou||0}</td></tr>`).join('');
   const ord=$('anOrdem').value, rk=AN.ranking.slice();
   const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
   rk.sort(f);
