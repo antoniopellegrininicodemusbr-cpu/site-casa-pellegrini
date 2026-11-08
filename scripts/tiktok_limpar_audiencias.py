@@ -31,6 +31,10 @@ def fim(code=0, erro=None):
     txt = "%0A".join(m.replace("%", "%25").replace("\n", "%0A") for m in RESUMO)[-60000:]
     _print(f"::{'error' if erro else 'notice'} title=resumo::{txt}")
     sys.exit(code)
+
+
+import traceback  # noqa: E402
+sys.excepthook = lambda t, v, tb: fim(1, "".join(traceback.format_exception(t, v, tb))[-1500:])
 PREFIXOS = ("Fidelizi - ", "Clube Pellegrini - ")
 
 nome = lambda a: a.get("custom_audience_name") or a.get("name") or a.get("audience_name") or ""
