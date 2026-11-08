@@ -1,0 +1,23 @@
+name: TikTok - limpar publicos repetidos
+on:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "simular = so mostra | apagar = apaga as copias"
+        default: "simular"
+jobs:
+  limpar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests
+      - name: Limpar
+        env:
+          TIKTOK_BUSINESS_TOKEN: ${{ secrets.TIKTOK_BUSINESS_TOKEN }}
+          TIKTOK_ADVERTISER_ID:  ${{ secrets.TIKTOK_ADVERTISER_ID }}
+          MODO: ${{ github.event.inputs.modo }}
+        run: python scripts/tiktok_limpar_audiencias.py
