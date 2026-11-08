@@ -58,28 +58,59 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "@id": "https://casapellegrini.com.br/#restaurant",
-  "name": "Casa Pellegrini",
-  "url": "https://casapellegrini.com.br/",
-  "image": [
-    "https://casapellegrini.com.br/historia_frente.jpg",
-    "https://casapellegrini.com.br/burger-bacon.webp",
-    "https://casapellegrini.com.br/frango-parmegiana.webp"
-  ],
-  "telephone": "+552422316110",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Rua Treze de Maio, 184",
-    "addressLocality": "Petrópolis",
-    "addressRegion": "RJ",
-    "postalCode": "25685-231",
-    "addressCountry": "BR"
-  },
-  "alternateName": ["Bar e Restaurante Petrópolis", "Hamburgueria Petrópolis", "Hambúrguer Artesanal Petrópolis"],
-  "servesCuisine": ["Brasileira", "Hambúrgueres Artesanais", "Bar", "Happy Hour"],
-  "priceRange": "$$"
+ "@context": "https://schema.org",
+ "@type": "Restaurant",
+ "@id": "https://casapellegrini.com.br/#restaurant",
+ "name": "Casa Pellegrini",
+ "url": "https://casapellegrini.com.br/",
+ "image": [
+  "https://casapellegrini.com.br/historia_frente.jpg",
+  "https://casapellegrini.com.br/burger-bacon.webp",
+  "https://casapellegrini.com.br/frango-parmegiana.webp"
+ ],
+ "telephone": "+552422316110",
+ "address": {
+  "@type": "PostalAddress",
+  "streetAddress": "Rua Treze de Maio, 184",
+  "addressLocality": "Petrópolis",
+  "addressRegion": "RJ",
+  "postalCode": "25685-231",
+  "addressCountry": "BR"
+ },
+ "alternateName": [
+  "Bar e Restaurante Petrópolis",
+  "Hamburgueria Petrópolis",
+  "Hambúrguer Artesanal Petrópolis"
+ ],
+ "servesCuisine": [
+  "Brasileira",
+  "Hambúrgueres Artesanais",
+  "Bar",
+  "Happy Hour"
+ ],
+ "priceRange": "$$",
+ "hasMemberProgram": {
+  "@type": "MemberProgram",
+  "@id": "https://casapellegrini.com.br/clube-pellegrini#clube",
+  "name": "Clube Pellegrini",
+  "description": "Programa de fidelidade gratuito da Casa Pellegrini: 1 ponto a cada R$ 25 em compras, roleta de prêmios em toda compra a partir de R$ 25, troca de pontos por pratos, bebidas e vale-consumo, e mimo de aniversário.",
+  "url": "https://casapellegrini.com.br/clube-pellegrini",
+  "hasTiers": [
+   {
+    "@type": "MemberProgramTier",
+    "@id": "https://casapellegrini.com.br/clube-pellegrini#membro",
+    "name": "Membro do Clube Pellegrini",
+    "hasTierBenefit": [
+     "https://schema.org/TierBenefitLoyaltyPoints"
+    ],
+    "membershipPointsEarned": {
+     "@type": "QuantitativeValue",
+     "value": 1,
+     "unitText": "ponto a cada R$ 25 em compras"
+    }
+   }
+  ]
+ }
 }
 </script>
 <script type="application/ld+json">
@@ -96,16 +127,98 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {"@type": "Question", "name": "O que é o Clube Pellegrini?", "acceptedAnswer": {"@type": "Answer", "text": "O Clube Pellegrini é o programa de fidelidade da Casa Pellegrini, bar e restaurante no Centro Histórico de Petrópolis. A cada R$25 consumidos você ganha 1 ponto e, a cada visita, gira uma roleta de prêmios online — com brinde garantido já na primeira visita. Os pontos são trocados por prêmios do cardápio. O cadastro é gratuito."}},
-    {"@type": "Question", "name": "O Clube Pellegrini é gratuito?", "acceptedAnswer": {"@type": "Answer", "text": "Sim, 100% gratuito. Não tem mensalidade, taxa de cadastro nem custo escondido. Basta um cadastro rápido para fazer parte e começar a pontuar no próximo almoço, jantar ou happy hour."}},
-    {"@type": "Question", "name": "Como me cadastro no Clube Pellegrini?", "acceptedAnswer": {"@type": "Answer", "text": "O cadastro é online e leva cerca de 30 segundos. Também dá para se cadastrar pelo QR code disponível na mesa, no balcão e no cardápio físico do restaurante."}},
-    {"@type": "Question", "name": "Como funciona a roleta de prêmios?", "acceptedAnswer": {"@type": "Answer", "text": "No fim do atendimento você gira a roleta online no celular. Sempre cai um prêmio (brinde de cozinha, bebida gelada, sobremesa, oferta especial) — nunca sai vazio. O brinde é resgatado na próxima visita, dentro do prazo de validade."}},
-    {"@type": "Question", "name": "Por quais prêmios posso trocar meus pontos?", "acceptedAnswer": {"@type": "Answer", "text": "Os pontos do Clube Pellegrini trocam por uma variedade de prêmios, de bebidas, sobremesas e porções a vales de consumo livre de maior valor. Quanto mais você visita, mais pontos acumula e melhores os prêmios que pode resgatar."}},
-    {"@type": "Question", "name": "Membros do Clube Pellegrini recebem benefícios extras?", "acceptedAnswer": {"@type": "Answer", "text": "Sim. Além de acumular pontos e girar a roleta, membros recebem mimos automáticos no aniversário, brindes surpresa e ofertas exclusivas. Os avisos chegam pelo WhatsApp, e você pode descadastrar quando quiser."}}
-  ]
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "O que é o Clube Pellegrini?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "É o programa de fidelidade da Casa Pellegrini, bar e restaurante no Centro Histórico de Petrópolis. A cada R$ 25 em compras você ganha 1 ponto, gira uma roleta de prêmios na hora de pagar e troca os pontos por pratos, porções, bebidas ou vale-consumo. O cadastro é gratuito."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "O Clube Pellegrini é gratuito?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Sim, 100% gratuito. Não tem mensalidade, taxa de cadastro nem custo escondido."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Como faço meu cadastro?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Pelo site (casapellegrini.com.br/cadastro), pelo QR code da mesa ou do cardápio, ou na hora de pagar: é só digitar seu celular na maquininha e você recebe pelo WhatsApp o link pra completar o cadastro. Leva menos de um minuto."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Como ganho pontos?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Na hora de pagar, você se identifica na maquininha com CPF, celular ou o próprio cartão. A cada R$ 25 da conta entra 1 ponto na sua conta do Clube, no almoço, no happy hour ou no jantar."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Os pontos vencem?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Não. Os pontos ficam na sua conta até você trocar por um prêmio."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Como funciona a roleta de prêmios?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Toda compra a partir de R$ 25 dá direito a girar a roleta na maquininha, logo depois do pagamento, e sempre cai um prêmio. Quanto maior a conta, melhor a roleta: a cada R$ 50 ela sobe de nível (são 11 níveis, do Madeira ao Diamante) e contas grandes podem girar mais de uma vez."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Quanto tempo vale o prêmio da roleta?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "O prêmio vale por 20 dias e pode ser resgatado a partir da próxima visita. Antes de vencer, você recebe um lembrete no WhatsApp."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Como resgato um prêmio?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Entre na sua conta (casapellegrini.com.br/minha-conta), gere o código do prêmio e mostre ao garçom. O resgate é feito junto com uma compra pontuada (mínimo de R$ 25) e vale para consumo no local."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Por quais prêmios posso trocar meus pontos?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Alguns exemplos: Coca-Cola KS por 8 pontos, chopp por 10, hambúrguer artesanal por 20, almoço de frango à parmegiana por 25, combo de 4 meias porções por 55 e R$ 200 em consumo por 80 pontos. A lista completa aparece na sua conta e pode mudar."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Ganho alguma coisa no meu aniversário?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Sim. No dia do seu aniversário você recebe um mimo da casa no WhatsApp, válido por 7 dias. E quem fica um tempo sem aparecer também recebe brindes pra voltar."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Paguei sem estar no Clube. Perdi os pontos e o prêmio?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Não. Se você digitou seu celular na maquininha, os pontos e o prêmio da roleta ficam guardados por 20 dias esperando o seu cadastro. É só usar o link que chega no WhatsApp."
+   }
+  }
+ ]
 }
 </script>
 
@@ -132,6 +245,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_origem')||localStorage.getItem('cp_origem')||'{}');
   if(o.ts&&Date.now()-o.ts>30*86400000) return {}; return o;}catch(e){return {}}};
 </script>
+<style>
+/* 07/11/2026: exemplos de prêmios + perguntas frequentes */
+.cp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
+@media(min-width:768px){.cp-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
+.cp-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;text-align:left}
+.cp-card img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+.cp-card div{padding:10px 12px 12px}.cp-card b{display:block;font-size:14px;line-height:1.25}.cp-card span{display:block;color:#F2B705;font-weight:800;font-size:13px;margin-top:4px}
+.cp-niveis{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px;text-align:left}
+@media(min-width:768px){.cp-niveis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.cp-nivel{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;font-size:14px;color:rgba(255,255,255,.75)}
+.cp-nivel b{color:#F2B705;display:block;margin-bottom:4px}
+.cp-faq{margin-top:16px;text-align:left}
+.cp-faq details{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.cp-faq summary{cursor:pointer;font-weight:700;color:#fff;list-style:none}
+.cp-faq summary::-webkit-details-marker{display:none}
+.cp-faq summary:after{content:"+";float:right;color:#F2B705;font-weight:800}
+.cp-faq details[open] summary:after{content:"–"}
+.cp-faq p{color:rgba(255,255,255,.72);font-size:15px;line-height:1.55;margin-top:8px}
+</style>
 </head>
 <body class="text-white">
 <!-- Google Tag Manager (noscript) -->
@@ -172,7 +304,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       <h1 class="font-display font-black leading-none mt-2 text-[40px] md:text-[64px]">Clube Pellegrini</h1>
       <p class="font-display text-brand-gold text-xl md:text-3xl mt-1">Toda visita vira prêmio.</p>
       <p class="text-white/75 text-[15px] md:text-lg leading-relaxed mt-4 max-w-xl mx-auto">
-        Cadastro grátis em 30 segundos — <strong class="text-brand-gold">cadastre-se agora e já receba seu primeiro brinde!</strong> A cada <strong class="text-white">R$ 25 você ganha 1 ponto</strong>, e a cada visita <strong class="text-white">gira a roleta de brindes</strong>. Sem mensalidade, sem pegadinha.
+        Cadastro grátis em 30 segundos — <strong class="text-brand-gold">e já ganhe brinde na primeira visita!</strong> A cada <strong class="text-white">R$ 25 você ganha 1 ponto</strong>, e toda compra a partir de R$ 25 <strong class="text-white">gira a roleta de brindes</strong>. Sem mensalidade, sem pegadinha.
       </p>
       <a href="/cadastro-clube.html" onclick="dataLayer.push({event:'clube_lead'})" class="inline-block mt-6 bg-brand-gold text-brand-navy font-extrabold text-lg px-10 py-4 rounded-full shadow-lg hover:brightness-105 transition pulse-gold">
         Cadastrar grátis →
@@ -186,17 +318,17 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
         <div class="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
           <div class="text-brand-gold font-display text-3xl font-black">1</div>
           <h3 class="font-bold text-brand-gold text-base mt-1">Cadastra grátis</h3>
-          <p class="text-white/65 text-sm mt-1 leading-snug">Em 30 segundos, no site ou pelo QR code da mesa — e já ganha o primeiro brinde.</p>
+          <p class="text-white/65 text-sm mt-1 leading-snug">Em 30 segundos: no site, pelo QR code da mesa ou digitando o celular na maquininha na hora de pagar.</p>
         </div>
         <div class="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
           <div class="text-brand-gold font-display text-3xl font-black">2</div>
           <h3 class="font-bold text-brand-gold text-base mt-1">Consome e pontua</h3>
-          <p class="text-white/65 text-sm mt-1 leading-snug">A cada R$ 25 no almoço, happy hour ou jantar, você ganha 1 ponto.</p>
+          <p class="text-white/65 text-sm mt-1 leading-snug">A cada R$ 25 no almoço, happy hour ou jantar, você ganha 1 ponto. Os pontos não vencem.</p>
         </div>
         <div class="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
           <div class="text-brand-gold font-display text-3xl font-black">3</div>
           <h3 class="font-bold text-brand-gold text-base mt-1">Gira e ganha</h3>
-          <p class="text-white/65 text-sm mt-1 leading-snug">Gira a roleta a cada visita (brinde garantido) e troca pontos por prêmios.</p>
+          <p class="text-white/65 text-sm mt-1 leading-snug">Ao pagar na maquininha você gira a roleta (sempre cai prêmio) e troca seus pontos por prêmios.</p>
         </div>
       </div>
     </section>
@@ -216,6 +348,28 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       </div>
     </section>
 
+
+    <!-- ===== EXEMPLOS DE PRÊMIOS (07/11/2026) ===== -->
+    <section class="mt-8 md:mt-12 text-center">
+      <h2 class="font-display text-2xl md:text-3xl font-bold">Exemplos do que você troca com seus pontos</h2>
+      <p class="text-white/70 text-[15px] md:text-lg mt-2">1 ponto a cada R$ 25. Os pontos não vencem — junte e escolha.</p>
+      <div class="cp-grid">
+        <div class="cp-card"><img src="/cerveja-original.webp" alt="Cerveja Original 600ml gelada na Casa Pellegrini" width="540" height="675" loading="lazy"><div><b>1 Original 600ml</b><span>15 pontos</span></div></div>
+        <div class="cp-card"><img src="/burger-bacon.webp" alt="Hambúrguer artesanal da Casa Pellegrini" width="540" height="675" loading="lazy"><div><b>1 Hambúrguer artesanal</b><span>20 pontos</span></div></div>
+        <div class="cp-card"><img src="/frango-parmegiana.webp" alt="Almoço de frango à parmegiana com fritas na Casa Pellegrini" width="540" height="675" loading="lazy"><div><b>Almoço: frango à parmegiana c/ fritas</b><span>25 pontos</span></div></div>
+        <div class="cp-card"><img src="/drink-sol.webp" alt="Drink na Casa Pellegrini, em Petrópolis" width="540" height="675" loading="lazy"><div><b>R$ 200 em consumo</b><span>80 pontos</span></div></div>
+      </div>
+      <p class="text-white/50 text-xs mt-3">Também tem Coca-Cola KS (8), chopp (10), meia porção de batata c/ cheddar (20), combo de 4 meias porções (55) e mais. A lista completa fica na sua conta e pode mudar.</p>
+
+      <h3 class="font-display text-xl md:text-2xl font-bold mt-10">E na roleta, toda compra a partir de R$ 25</h3>
+      <p class="text-white/70 text-[15px] mt-2">A cada R$ 50 da conta a roleta sobe de nível — são 11, do Madeira ao Diamante.</p>
+      <div class="cp-niveis">
+        <div class="cp-nivel"><b>🪵 Madeira (a partir de R$ 25)</b>Pastel, croquete, espeto de queijo coalho, sorvete com calda, chopp ou caipirinha.</div>
+        <div class="cp-nivel"><b>🥇 Ouro (a partir de R$ 200)</b>Smoked burger, meia porção de pernil, onion ou dadinhos de tapioca, brownie com sorvete.</div>
+        <div class="cp-nivel"><b>💎 Diamante (a partir de R$ 500)</b>Porção inteira de alcatra ou de frango, combo de 4 meias porções, 2 hambúrgueres com batata.</div>
+      </div>
+    </section>
+
     <!-- ===== PROVA SOCIAL ===== -->
     <section class="mt-8 md:mt-12 text-center">
       <a href="https://g.page/casapellegrini" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-white/5 border border-brand-gold/60 rounded-full px-4 py-2">
@@ -225,10 +379,29 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       </a>
     </section>
 
+
+    <!-- ===== PERGUNTAS FREQUENTES (07/11/2026 — o mesmo texto do FAQPage) ===== -->
+    <section class="mt-8 md:mt-12">
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-center">Perguntas frequentes</h2>
+      <div class="cp-faq">
+        <details><summary>O que é o Clube Pellegrini?</summary><p>É o programa de fidelidade da Casa Pellegrini, bar e restaurante no Centro Histórico de Petrópolis. A cada R$ 25 em compras você ganha 1 ponto, gira uma roleta de prêmios na hora de pagar e troca os pontos por pratos, porções, bebidas ou vale-consumo. O cadastro é gratuito.</p></details>
+        <details><summary>O Clube Pellegrini é gratuito?</summary><p>Sim, 100% gratuito. Não tem mensalidade, taxa de cadastro nem custo escondido.</p></details>
+        <details><summary>Como faço meu cadastro?</summary><p>Pelo site (casapellegrini.com.br/cadastro), pelo QR code da mesa ou do cardápio, ou na hora de pagar: é só digitar seu celular na maquininha e você recebe pelo WhatsApp o link pra completar o cadastro. Leva menos de um minuto.</p></details>
+        <details><summary>Como ganho pontos?</summary><p>Na hora de pagar, você se identifica na maquininha com CPF, celular ou o próprio cartão. A cada R$ 25 da conta entra 1 ponto na sua conta do Clube, no almoço, no happy hour ou no jantar.</p></details>
+        <details><summary>Os pontos vencem?</summary><p>Não. Os pontos ficam na sua conta até você trocar por um prêmio.</p></details>
+        <details><summary>Como funciona a roleta de prêmios?</summary><p>Toda compra a partir de R$ 25 dá direito a girar a roleta na maquininha, logo depois do pagamento, e sempre cai um prêmio. Quanto maior a conta, melhor a roleta: a cada R$ 50 ela sobe de nível (são 11 níveis, do Madeira ao Diamante) e contas grandes podem girar mais de uma vez.</p></details>
+        <details><summary>Quanto tempo vale o prêmio da roleta?</summary><p>O prêmio vale por 20 dias e pode ser resgatado a partir da próxima visita. Antes de vencer, você recebe um lembrete no WhatsApp.</p></details>
+        <details><summary>Como resgato um prêmio?</summary><p>Entre na sua conta (casapellegrini.com.br/minha-conta), gere o código do prêmio e mostre ao garçom. O resgate é feito junto com uma compra pontuada (mínimo de R$ 25) e vale para consumo no local.</p></details>
+        <details><summary>Por quais prêmios posso trocar meus pontos?</summary><p>Alguns exemplos: Coca-Cola KS por 8 pontos, chopp por 10, hambúrguer artesanal por 20, almoço de frango à parmegiana por 25, combo de 4 meias porções por 55 e R$ 200 em consumo por 80 pontos. A lista completa aparece na sua conta e pode mudar.</p></details>
+        <details><summary>Ganho alguma coisa no meu aniversário?</summary><p>Sim. No dia do seu aniversário você recebe um mimo da casa no WhatsApp, válido por 7 dias. E quem fica um tempo sem aparecer também recebe brindes pra voltar.</p></details>
+        <details><summary>Paguei sem estar no Clube. Perdi os pontos e o prêmio?</summary><p>Não. Se você digitou seu celular na maquininha, os pontos e o prêmio da roleta ficam guardados por 20 dias esperando o seu cadastro. É só usar o link que chega no WhatsApp.</p></details>
+      </div>
+    </section>
+
     <!-- ===== CTA FINAL ===== -->
     <section class="mt-8 md:mt-12 text-center">
       <h2 class="font-display text-2xl md:text-4xl font-bold">Faça parte. É grátis.</h2>
-      <p class="text-white/70 text-[15px] md:text-lg mt-2">Ganhe seu <strong class="text-white">primeiro brinde agora</strong> — e siga ganhando em <strong class="text-white">toda visita</strong> que fizer à Casa Pellegrini.</p>
+      <p class="text-white/70 text-[15px] md:text-lg mt-2">Ganhe <strong class="text-white">brinde já na primeira visita</strong> — e siga ganhando em <strong class="text-white">toda visita</strong> que fizer à Casa Pellegrini.</p>
       <a href="/cadastro-clube.html" onclick="dataLayer.push({event:'clube_lead'})" class="inline-block mt-5 bg-brand-gold text-brand-navy font-extrabold text-lg px-10 py-4 rounded-full shadow-lg hover:brightness-105 transition">
         Cadastrar grátis →
       </a>
