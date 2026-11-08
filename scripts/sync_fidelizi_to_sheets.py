@@ -651,12 +651,33 @@ def tiktok_list_audiences(token, advertiser_id):
     return audiences
 
 
+def _tt_nome(a):
+    return a.get("custom_audience_name") or a.get("name") or a.get("audience_name")
+
+
+def _tt_id(a):
+    return a.get("custom_audience_id") or a.get("audience_id")
+
+
+def _tt_escolher(existing, name):
+    """08/11/2026: a lista do TikTok devolve 'name'/'audience_id' (nao 'custom_audience_name'),
+    entao o robo nunca achava a audiencia e criava uma NOVA todo dia - lotou o limite de 400.
+    Agora acha pelo nome e, havendo copias, usa a mais recente."""
+    iguais = [a for a in existing if _tt_nome(a) == name and _tt_id(a)]
+    if not iguais:
+        return None
+    iguais.sort(key=lambda a: str(a.get("create_time") or a.get("created_time") or ""), reverse=True)
+    if len(iguais) > 1:
+        print(f"[tiktok-audience] {name}: {len(iguais)} copias na conta (usando a mais recente {_tt_id(iguais[0])})")
+    return _tt_id(iguais[0])
+
+
 def tiktok_get_or_create_audience(token, advertiser_id, name, file_path, calculate_type="EMAIL_SHA256"):
     """Cria nova Custom Audience ou retorna id existente."""
     existing = tiktok_list_audiences(token, advertiser_id)
-    for a in existing:
-        if a.get("custom_audience_name") == name:
-            return a.get("custom_audience_id")
+    achado = _tt_escolher(existing, name)
+    if achado:
+        return achado
     url = f"{TIKTOK_API_BASE}/dmp/custom_audience/create/"
     body = {
         "advertiser_id": advertiser_id,
@@ -697,9 +718,9 @@ def tiktok_update_audience(token, advertiser_id, custom_audience_id, file_path):
 def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type, name, country="BR"):
     """Cria Lookalike TikTok. expand_type: PRECISE (mais qualificado), BALANCE (medio), EXTENSIVE (mais alcance)."""
     existing = tiktok_list_audiences(token, advertiser_id)
-    for a in existing:
-        if a.get("custom_audience_name") == name:
-            return a.get("custom_audience_id")
+    achado = _tt_escolher(existing, name)
+    if achado:
+        return achado
     url = f"{TIKTOK_API_BASE}/dmp/custom_audience/lookalike/create/"
     body = {
         "advertiser_id": advertiser_id,
