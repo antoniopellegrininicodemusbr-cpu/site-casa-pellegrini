@@ -52,6 +52,11 @@ FIDELIZI_JANELA_DIAS = 120
 TIKTOK_AUDIENCE_NAME = "Fidelizi - Compradores (Email)"
 TIKTOK_AUDIENCE_ATIVOS_NAME = "Fidelizi - Ativos 120d (Email)"
 TIKTOK_AUDIENCE_INATIVOS_NAME = "Fidelizi - Inativos +120d (Email)"
+# 08/11/2026: publicos por TELEFONE (pega quem so deu o celular na maquininha e quem nao tem e-mail).
+# TikTok nao mistura e-mail e telefone no mesmo publico -> publicos separados; nas campanhas usa os dois.
+TIKTOK_AUDIENCE_TEL_NAME = "Clube Pellegrini - Compradores (Telefone)"
+TIKTOK_AUDIENCE_TEL_ATIVOS_NAME = "Clube Pellegrini - Ativos 120d (Telefone)"
+TIKTOK_AUDIENCE_TEL_INATIVOS_NAME = "Clube Pellegrini - Inativos +120d (Telefone)"
 # TikTok Lookalike: EXTENSIVE = ratio mais largo (~10%), BALANCE = medio (~3%), PRECISE = mais qualificado (~1%)
 TIKTOK_LOOKALIKE_TYPES = [("PRECISE", "1pct"), ("BALANCE", "3pct"), ("EXTENSIVE", "5pct")]
 
@@ -748,20 +753,20 @@ def tiktok_get_or_create_lookalike(token, advertiser_id, source_id, expand_type,
     return resp.get("data", {}).get("audience_id")
 
 
-def _tiktok_sync_one_audience(token, advertiser_id, name, emails):
-    """Helper: upload + create/get audience by name. Skip se emails vazio."""
+def _tiktok_sync_one_audience(token, advertiser_id, name, emails, calculate_type="EMAIL_SHA256"):
+    """Helper: upload + create/get audience by name. Skip se lista vazia."""
     if not emails:
-        print(f"[tiktok-audience] {name}: 0 emails, audience SKIP (TikTok nao aceita vazio)")
+        print(f"[tiktok-audience] {name}: 0 registros, audience SKIP (TikTok nao aceita vazio)")
         return None
     csv_content = "\n".join(emails) + "\n"
-    file_path = tiktok_upload_audience_file(token, advertiser_id, csv_content, "EMAIL_SHA256")
+    file_path = tiktok_upload_audience_file(token, advertiser_id, csv_content, calculate_type)
     if not file_path:
         print(f"[tiktok-audience] {name}: falha upload, skip")
         return None
-    audience_id = tiktok_get_or_create_audience(token, advertiser_id, name, file_path, "EMAIL_SHA256")
+    audience_id = tiktok_get_or_create_audience(token, advertiser_id, name, file_path, calculate_type)
     if not audience_id:
         return None
-    print(f"[tiktok-audience] {name} id={audience_id} ({len(emails)} emails)")
+    print(f"[tiktok-audience] {name} id={audience_id} ({len(emails)} registros)")
     tiktok_update_audience(token, advertiser_id, audience_id, file_path)
     return audience_id
 
@@ -781,6 +786,22 @@ def get_compradores_emails_filtered(clients, predicate, now=None):
         if em:
             emails.append(em)
     return emails
+
+
+def get_compradores_phones_filtered(clients, predicate, now=None):
+    """Telefones (E.164 +55..., SHA256) dos compradores, com filtro."""
+    out = []
+    for c in clients:
+        if is_test_client(c):
+            continue
+        if (c.get("compras", 0) or 0) <= 0:
+            continue
+        if predicate is not None and not predicate(c, now):
+            continue
+        ph = hash_sha256(normalize_phone_e164(c.get("celular") or ""))
+        if ph:
+            out.append(ph)
+    return sorted(set(out))
 
 
 def sync_tiktok_audiences(clients):
@@ -803,6 +824,14 @@ def sync_tiktok_audiences(clients):
     _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_ATIVOS_NAME, emails_ativos)
     # 3. Inativos +120d
     _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_INATIVOS_NAME, emails_inativos)
+    # 3b. Mesmos 3 publicos por TELEFONE (08/11/2026)
+    tel_total = get_compradores_phones_filtered(clients, None)
+    tel_ativos = get_compradores_phones_filtered(clients, _within_fidelizi_window, now)
+    tel_inativos = get_compradores_phones_filtered(clients, lambda c, n: not _within_fidelizi_window(c, n), now)
+    print(f"[tiktok-audience] TELEFONE: {len(tel_total)} TOTAL | {len(tel_ativos)} ATIVOS 120d | {len(tel_inativos)} INATIVOS +120d")
+    _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_TEL_NAME, tel_total, "PHONE_SHA256")
+    _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_TEL_ATIVOS_NAME, tel_ativos, "PHONE_SHA256")
+    _tiktok_sync_one_audience(token, advertiser_id, TIKTOK_AUDIENCE_TEL_INATIVOS_NAME, tel_inativos, "PHONE_SHA256")
     # 4. Lookalikes - so se TOTAL >= 1000
     if not audience_id:
         return
