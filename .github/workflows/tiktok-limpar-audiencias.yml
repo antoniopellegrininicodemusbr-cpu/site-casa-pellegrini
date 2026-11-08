@@ -5,6 +5,9 @@ on:
       modo:
         description: "simular = so mostra | apagar = apaga as copias"
         default: "simular"
+      sem_campanhas:
+        description: "sim = confirmo que a conta TikTok nao tem campanhas (token nao le anuncios)"
+        default: "nao"
 jobs:
   limpar:
     runs-on: ubuntu-latest
@@ -20,4 +23,5 @@ jobs:
           TIKTOK_BUSINESS_TOKEN: ${{ secrets.TIKTOK_BUSINESS_TOKEN }}
           TIKTOK_ADVERTISER_ID:  ${{ secrets.TIKTOK_ADVERTISER_ID }}
           MODO: ${{ github.event.inputs.modo }}
+          SEM_CAMPANHAS: ${{ github.event.inputs.sem_campanhas }}
         run: python scripts/tiktok_limpar_audiencias.py
