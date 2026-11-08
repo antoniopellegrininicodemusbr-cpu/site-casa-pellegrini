@@ -146,6 +146,8 @@ def run(key, center_lat, center_lng, rows, cols, spacing_km, topn, keywords, sle
         found_ranks = []     # so os encontrados, pra media
         top3 = 0
         total_pts = rows * cols
+        acima = {}           # quem aparece ACIMA da Casa: nome -> stats
+        casa_aberta = []     # open_now da Casa em cada ponto (quando o Google informa)
         for r in range(rows):
             row_ranks = []
             for c in range(cols):
@@ -158,8 +160,25 @@ def run(key, center_lat, center_lng, rows, cols, spacing_km, topn, keywords, sle
                                                "msg": data.get("error_message", "")})
                         row_ranks.append(None)
                         continue
-                    rank = rank_of_target(data.get("results", []), target_norm, topn)
+                    results = data.get("results", [])
+                    rank = rank_of_target(results, target_norm, topn)
                     row_ranks.append(rank)
+                    # Concorrentes acima da Casa neste ponto (ou todo o topN se a Casa nao apareceu)
+                    lim = (rank - 1) if rank else topn
+                    for pos, place in enumerate(results[:lim], start=1):
+                        nm = place.get("name", "?")
+                        a = acima.setdefault(nm, {"pts": 0, "soma_pos": 0, "rating": place.get("rating"),
+                                                  "avaliacoes": place.get("user_ratings_total"),
+                                                  "aberto": 0, "fechado": 0})
+                        a["pts"] += 1
+                        a["soma_pos"] += pos
+                        on = (place.get("opening_hours") or {}).get("open_now")
+                        if on is True: a["aberto"] += 1
+                        elif on is False: a["fechado"] += 1
+                    if rank:
+                        on = (results[rank - 1].get("opening_hours") or {}).get("open_now")
+                        if on is not None:
+                            casa_aberta.append(bool(on))
                     if rank is not None:
                         found_ranks.append(rank)
                         if rank <= 3:
@@ -179,6 +198,14 @@ def run(key, center_lat, center_lng, rows, cols, spacing_km, topn, keywords, sle
             "total_pts": total_pts,
             "top3_pts": top3,
             "top3_share": round(top3 / total_pts, 2),
+            "concorrentes_acima": [
+                {"nome": nm, "pts": a["pts"], "pos_media": round(a["soma_pos"] / a["pts"], 1),
+                 "rating": a["rating"], "avaliacoes": a["avaliacoes"],
+                 "aberto_pts": a["aberto"], "fechado_pts": a["fechado"]}
+                for nm, a in sorted(acima.items(), key=lambda kv: (-kv[1]["pts"], kv[1]["soma_pos"]))[:10]
+            ],
+            "casa_aberta_pts": sum(casa_aberta) if casa_aberta else None,
+            "casa_fechada_pts": (len(casa_aberta) - sum(casa_aberta)) if casa_aberta else None,
         }
     return out
 

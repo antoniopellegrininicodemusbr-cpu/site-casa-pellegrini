@@ -226,6 +226,7 @@ async function populateDates(){
   } catch(e) { console.warn('history fail', e); }
 }
 
+function esc(t){return String(t).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function cellColor(v){
   if(v===null||v===undefined) return null;
   if(v===1) return 'var(--g1)';
@@ -273,7 +274,8 @@ function renderSEO(data){
     }
     div.innerHTML=`<h3>${kw}</h3>
       <div class="grid" style="grid-template-columns:repeat(${cols},26px)">${cells}</div>
-      <div class="kwstat">posição média <b>${d.avg_rank??'—'}</b> · aparece em <b>${d.found_pts}/${d.total_pts}</b> pontos · top 3 em <b>${Math.round((d.top3_share||0)*100)}%</b></div>`;
+      <div class="kwstat">posição média <b>${d.avg_rank??'—'}</b> · aparece em <b>${d.found_pts}/${d.total_pts}</b> pontos · top 3 em <b>${Math.round((d.top3_share||0)*100)}%</b></div>`+
+      ((d.concorrentes_acima&&d.concorrentes_acima.length)?`<div class="kwstat" style="opacity:.8">na frente: ${d.concorrentes_acima.slice(0,3).map(c=>esc(c.nome)+' ('+c.pts+' pts)').join(', ')}</div>`:'');
     wrap.appendChild(div);
   }
   const dt=data.generated_at?new Date(data.generated_at):null;
