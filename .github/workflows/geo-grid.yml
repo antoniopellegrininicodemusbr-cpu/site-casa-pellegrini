@@ -2,10 +2,18 @@ name: Geo-grid SEO/GEO local (Casa Pellegrini)
 
 on:
   schedule:
-    # Segunda-feira 11:00 America/Sao_Paulo (BRT = UTC-3) -> 14:00 UTC
-    # Cadencia movida pra segunda em 28/05/2026 — dado fresco pra reuniao de terca com Matheus (publicidade)
-    - cron: '0 14 * * 1'
+    # Leitura vale so entre 11h e 17h BRT (segunda). O agendador do GitHub atrasa 4h-8h30 neste repo
+    # (medido out-nov/2026: agendado 11h rodava 16h40-19h40). Depois das ~18h as hamburguerias concorrentes
+    # abrem e o Google favorece quem esta aberto -> leitura da noite nao e comparavel (ver painel).
+    # Mesma logica do robo do clima: agenda cedo contando com o atraso.
+    - cron: '30 10 * * 1'   # 07:30 BRT -> deve cair ~11h30-16h
+    - cron: '30 13 * * 1'   # 10:30 BRT -> reserva, se a 1a caiu cedo demais e foi descartada
   workflow_dispatch:
+    inputs:
+      forcar:
+        description: 'Rodar fora da janela 11h-17h (a leitura NAO sera comparavel)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -22,12 +30,32 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Trava de horario (so 11h-16h45 BRT, uma leitura por dia)
+        id: trava
+        env:
+          FORCAR: ${{ inputs.forcar }}
+        run: |
+          H=$(TZ=America/Sao_Paulo date +%H%M); HOJE=$(date -u +%Y-%m-%d)
+          echo "Agora (BRT): $H"
+          if [ "$FORCAR" = "true" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; echo "Forcado manualmente."; exit 0; fi
+          if [ "$H" -lt 1100 ] || [ "$H" -gt 1645 ]; then
+            echo "Fora da janela 11h-16h45 BRT -> descartado (leitura nao seria comparavel)."
+            echo "run=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -f "data/geo-grid-$HOJE.json" ]; then
+            echo "Ja existe leitura de hoje ($HOJE) -> nada a fazer."
+            echo "run=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+
       - name: Setup Python
+        if: steps.trava.outputs.run == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Run geo-grid (Places API)
+        if: steps.trava.outputs.run == 'true'
         env:
           PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
         run: |
@@ -36,6 +64,7 @@ jobs:
             --out data/geo-grid-latest.json
 
       - name: Append to history
+        if: steps.trava.outputs.run == 'true'
         run: |
           mkdir -p data
           python - <<'PY'
@@ -59,6 +88,7 @@ jobs:
           PY
 
       - name: Commit results (com rebase para evitar conflito)
+        if: steps.trava.outputs.run == 'true'
         run: |
           git config user.name "geo-grid-bot"
           git config user.email "actions@github.com"

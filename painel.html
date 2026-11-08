@@ -100,7 +100,8 @@
       <option value="">📅 Atual</option>
     </select>
   </h2>
-  <div class="blocknote">Mapa de calor do ranking da Casa Pellegrini no Google Maps por termo, ponto a ponto ao redor do Centro. Número = posição naquele ponto; quanto mais verde e baixo, melhor. Atualiza toda quarta (geo-grid).</div>
+  <div class="blocknote">Mapa de calor do ranking da Casa Pellegrini no Google Maps por termo, ponto a ponto ao redor do Centro. Número = posição naquele ponto; quanto mais verde e baixo, melhor. Atualiza toda segunda, com leitura sempre entre 11h e 17h (depois das 18h as hamburguerias concorrentes abrem e o ranking muda — leitura fora do horário é descartada).</div>
+  <div id="seo-aviso" class="err" style="display:none"></div>
   <div id="seo"></div>
   <div class="legend">
     <span><i class="sw" style="background:var(--g1)"></i>1º</span>
@@ -218,7 +219,7 @@ async function populateDates(){
         const d = new Date(rec.generated_at);
         const opt = document.createElement('option');
         opt.value = dateKey;
-        opt.textContent = d.toLocaleDateString('pt-BR');
+        opt.textContent = d.toLocaleDateString('pt-BR')+' · '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
         sel.appendChild(opt);
       } catch(err) {}
     });
@@ -237,7 +238,26 @@ function renderSEO(data){
   const badge=document.getElementById('seo-badge');
   badge.className='badge '+(data.sample?'sample':'live');
   const _dt=data.generated_at?new Date(data.generated_at):null;
-  badge.textContent=data.sample?'exemplo':(_dt?_dt.toLocaleDateString('pt-BR'):'—');
+  badge.textContent=data.sample?'exemplo':(_dt?_dt.toLocaleDateString('pt-BR')+' · '+_dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—');
+  // Aviso: a leitura desta segunda ainda nao saiu ou foi descartada por cair fora do horario
+  const av=document.getElementById('seo-aviso');
+  if(av){
+    av.style.display='none';
+    const sel=document.getElementById('seo-date');
+    const vendoAtual=!sel||!sel.value;
+    if(vendoAtual&&_dt&&!data.sample){
+      const agora=new Date();
+      const brt=new Date(agora.toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));
+      const seg=new Date(brt); seg.setHours(17,0,0,0); seg.setDate(seg.getDate()-((brt.getDay()+6)%7));
+      if(brt<seg) seg.setDate(seg.getDate()-7); // segunda ainda antes das 17h -> vale a anterior
+      const ultBrt=new Date(_dt.toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));
+      const segDia=new Date(seg); segDia.setHours(0,0,0,0);
+      if(ultBrt<segDia){
+        av.textContent='⚠ A leitura de segunda '+segDia.toLocaleDateString('pt-BR')+' não saiu entre 11h e 17h e foi descartada (o GitHub atrasou o robô). Mostrando a última leitura válida, de '+_dt.toLocaleDateString('pt-BR')+'.';
+        av.style.display='block';
+      }
+    }
+  }
   const wrap=document.getElementById('seo');
   wrap.innerHTML='';
   const cols=data.grid.cols;
