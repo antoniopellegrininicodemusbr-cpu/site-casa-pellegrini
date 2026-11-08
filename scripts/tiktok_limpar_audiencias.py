@@ -15,6 +15,22 @@ TOKEN = os.environ["TIKTOK_BUSINESS_TOKEN"].strip()
 ADV = os.environ["TIKTOK_ADVERTISER_ID"].strip()
 MODO = os.environ.get("MODO", "simular").strip().lower()
 H = {"Access-Token": TOKEN}
+RESUMO = []
+_print = print
+
+
+def print(*a, **k):  # noqa: A001 - tudo que sai no log tambem vai pro resumo (anotacao lida pela API)
+    msg = " ".join(str(x) for x in a)
+    RESUMO.append(msg)
+    _print(msg, **k)
+
+
+def fim(code=0, erro=None):
+    if erro:
+        RESUMO.append("ERRO: " + erro)
+    txt = "%0A".join(m.replace("%", "%25").replace("\n", "%0A") for m in RESUMO)[-60000:]
+    _print(f"::{'error' if erro else 'notice'} title=resumo::{txt}")
+    sys.exit(code)
 PREFIXOS = ("Fidelizi - ", "Clube Pellegrini - ")
 
 nome = lambda a: a.get("custom_audience_name") or a.get("name") or a.get("audience_name") or ""
@@ -28,7 +44,7 @@ def listar():
         b = requests.get(f"{API}/dmp/custom_audience/list/", headers=H,
                          params={"advertiser_id": ADV, "page": page, "page_size": 100}, timeout=30).json()
         if b.get("code") != 0:
-            sys.exit(f"LIST erro: {b.get('message')}")
+            fim(1, f"LIST erro: {b.get('message')}")
         out += b["data"].get("list", [])
         if page >= b["data"].get("page_info", {}).get("total_page", 1):
             return out
@@ -41,7 +57,7 @@ def usados_em_anuncios():
         b = requests.get(f"{API}/adgroup/get/", headers=H,
                          params={"advertiser_id": ADV, "page": page, "page_size": 1000}, timeout=30).json()
         if b.get("code") != 0:
-            sys.exit(f"ADGROUP erro: {b.get('message')} (nao apago nada sem saber o que os anuncios usam)")
+            fim(1, f"ADGROUP erro: {b.get('message')} (nao apago nada sem saber o que os anuncios usam)")
         for g in b["data"].get("list", []):
             for k in ("audience_ids", "excluded_audience_ids"):
                 usados |= {str(x) for x in (g.get(k) or [])}
@@ -69,7 +85,12 @@ def origens(ids):
     return src
 
 
-todos = listar()
+try:
+    todos = listar()
+except SystemExit:
+    raise
+except Exception as e:  # erro inesperado tambem aparece no resumo
+    fim(1, repr(e))
 print(f"[tiktok] {len(todos)} publicos na conta")
 if todos:
     print("[tiktok] campos da lista:", sorted(todos[0].keys()))
@@ -110,7 +131,7 @@ print(f"[tiktok] TOTAL a apagar: {len(apagar)} (fica {len(manter)})")
 
 if MODO != "apagar":
     print("[simular] nada apagado. Rode com modo=apagar.")
-    sys.exit(0)
+    fim(0)
 ok = 0
 for i in range(0, len(apagar), 100):
     lote = apagar[i:i + 100]
@@ -120,3 +141,4 @@ for i in range(0, len(apagar), 100):
     if b.get("code") == 0:
         ok += len(lote)
 print(f"[tiktok] apagados: {ok} de {len(apagar)}")
+fim(0)
