@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Sync Fidelizi -> Sheets + Meta CAPI + TikTok Events + Meta/TikTok Custom Audiences."""
+"""Sync da base de clientes -> Sheets (pixel offline) + Meta/TikTok Custom Audiences.
+
+07/11/2026: a base agora vem do CLUBE PELLEGRINI (sistema proprio), nao mais da API do
+Fidelizi. Endpoint /publico/pixel-base devolve os clientes no MESMO formato do Fidelizi
+(id_cliente, nome, email, celular, receita, compras, primeira/ultima_compra...), entao o
+resto do robo nao mudou. Autenticacao: JWT assinado com a conta de servico do Sheets
+(o mesmo segredo GOOGLE_SHEETS_CREDS). Clientes que vieram do Fidelizi mantem o id_cliente
+antigo -> a planilha continua com os mesmos ids. FONTE_BASE=fidelizi volta pro jeito antigo.
+As compras (Purchase) continuam saindo direto do Clube na hora (pixel-status = clube)."""
 
 import hashlib
 import json
@@ -13,6 +21,8 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 FIDELIZI_BASE = "https://integracao.fidelizii.com.br/api/v4"
+CLUBE_BASE_URL = os.environ.get("CLUBE_BASE_URL", "https://us-central1-pellegrini-app.cloudfunctions.net/api/publico/pixel-base")
+AUD_PUBLICOS = "https://casapellegrini.com.br/api/clube/publicos"
 SHEET_NAME = "Página1"
 HEADER_RANGE = f"{SHEET_NAME}!A1:P1"
 DATA_RANGE_CLEAR = f"{SHEET_NAME}!A2:P"
@@ -114,6 +124,25 @@ def fetch_fidelizi_clients(app_token, access_token, shop_id):
     return out
 
 
+def fetch_clube_clients(creds_dict):
+    """Base do Clube Pellegrini (07/11/2026). JWT RS256 assinado pela conta de servico."""
+    import time
+    from google.auth import crypt
+    from google.auth import jwt as gjwt
+    signer = crypt.RSASigner.from_service_account_info(creds_dict)
+    agora = int(time.time())
+    tok = gjwt.encode(signer, {"iss": creds_dict["client_email"], "aud": AUD_PUBLICOS, "iat": agora, "exp": agora + 600})
+    if isinstance(tok, bytes):
+        tok = tok.decode()
+    r = requests.get(CLUBE_BASE_URL, headers={"Authorization": "Bearer " + tok}, timeout=120)
+    if r.status_code >= 400:
+        raise RuntimeError(f"Clube {r.status_code}: {r.text[:300]}")
+    body = r.json()
+    if not body.get("ok"):
+        raise RuntimeError(f"Clube retornou ok=false: {str(body)[:300]}")
+    return body.get("clientes", [])
+
+
 def read_current_state(sheets, spreadsheet_id):
     result = sheets.values().get(
         spreadsheetId=spreadsheet_id,
@@ -182,7 +211,7 @@ def process_client(c, now):
     ]
 
 
-TEST_NAME_PATTERNS = ("testador", "teste fidelizi", "fidelizi teste")
+TEST_NAME_PATTERNS = ("testador", "teste fidelizi", "fidelizi teste", "teste clube", "cliente teste")
 
 
 def is_test_client(c):
@@ -524,7 +553,7 @@ def sync_meta_audiences(clients):
     if len(users) < 100:
         print(f"[meta-audience] AVISO: menos de 100 compradores - Lookalike pode falhar")
     # 1. Compradores TOTAL (source do Lookalike)
-    desc = "Casa Pellegrini - TODOS clientes com compras>0 (source do Lookalike). Sincronizado diariamente do Fidelizi."
+    desc = "Casa Pellegrini - TODOS clientes com compras>0 (source do Lookalike). Sincronizado diariamente do Clube Pellegrini."
     audience_id = meta_get_or_create_custom_audience(token, ad_account, META_AUDIENCE_NAME, desc)
     if not audience_id:
         print("[meta-audience] falha ao criar/obter Custom Audience - pulando Lookalikes")
@@ -767,9 +796,7 @@ def sync_tiktok_audiences(clients):
 # ---------- Main ------------------------------------------------------------
 
 def main():
-    app_token = os.environ["FIDELIZI_APP_TOKEN"]
-    access_token = os.environ["FIDELIZI_ACCESS_TOKEN"]
-    shop_id = os.environ.get("FIDELIZI_SHOP_ID", "4477")
+    fonte = os.environ.get("FONTE_BASE", "clube").strip().lower()
     spreadsheet_id = os.environ["SPREADSHEET_ID"]
     creds_json = os.environ["GOOGLE_SHEETS_CREDS"]
 
@@ -786,8 +813,13 @@ def main():
     previous_state = read_current_state(sheets, spreadsheet_id)
     print(f"[sheets] estado anterior: {len(previous_state)} clientes")
 
-    clients = fetch_fidelizi_clients(app_token, access_token, shop_id)
-    print(f"[fidelizi] {len(clients)} clientes encontrados")
+    if fonte == "fidelizi":
+        clients = fetch_fidelizi_clients(os.environ["FIDELIZI_APP_TOKEN"], os.environ["FIDELIZI_ACCESS_TOKEN"],
+                                         os.environ.get("FIDELIZI_SHOP_ID", "4477"))
+        print(f"[fidelizi] {len(clients)} clientes encontrados")
+    else:
+        clients = fetch_clube_clients(creds_dict)
+        print(f"[clube] {len(clients)} clientes encontrados (base do Clube Pellegrini)")
 
     if not clients:
         print("[abort] nenhum cliente retornado")
