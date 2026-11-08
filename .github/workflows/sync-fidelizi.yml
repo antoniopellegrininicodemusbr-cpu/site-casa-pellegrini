@@ -1,4 +1,4 @@
-name: Sync Fidelizi → Sheets + Meta CAPI + TikTok Events + Custom Audiences
+name: Sync Clube Pellegrini → Sheets (pixel offline) + Custom Audiences Meta/TikTok
 
 on:
   schedule:
