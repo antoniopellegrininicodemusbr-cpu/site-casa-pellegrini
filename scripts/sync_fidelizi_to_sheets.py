@@ -38,6 +38,27 @@ HEADERS = [
 ]
 
 META_GRAPH_VERSION = "v21.0"
+# 08/11/2026: resumo do que importa vira uma anotacao "resumo" no run (o Claude le pela API do GitHub
+# sem precisar abrir o log). So linhas de contagem/status - nada de nome, e-mail ou telefone.
+import atexit as _atexit
+import builtins as _bi
+_RESUMO = []
+_RES_PREFIXOS = ("[clube]", "[fidelizi]", "[delta]", "[pixel]", "[meta-audience]", "[tiktok-audience]",
+                 "[tiktok-lookalike]", "[sheets]")
+
+
+def print(*a, **k):  # noqa: A001
+    msg = " ".join(str(x) for x in a)
+    if msg.startswith(_RES_PREFIXOS) and "session_id" not in msg:
+        _RESUMO.append(msg[:220])
+    _bi.print(*a, **k)
+
+
+@_atexit.register
+def _emitir_resumo():
+    if _RESUMO:
+        _bi.print("::notice title=resumo::" + "%0A".join(m.replace("%", "%25") for m in _RESUMO[-80:]))
+
 TIKTOK_EVENTS_ENDPOINT = "https://business-api.tiktok.com/open_api/v1.3/event/track/"
 TIKTOK_API_BASE = "https://business-api.tiktok.com/open_api/v1.3"
 
