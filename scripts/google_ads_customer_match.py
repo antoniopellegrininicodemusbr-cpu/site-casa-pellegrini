@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Customer Match Google Ads (Casa Pellegrini) — sobe a base do Fidelizi (compradores) diariamente
+Customer Match Google Ads (Casa Pellegrini) — sobe a base de compradores diariamente
+- 07/11/2026: base vem do CLUBE PELLEGRINI (/publico/pixel-base, JWT da conta de servico do Sheets
+  = segredo GOOGLE_SHEETS_CREDS). Sem esse segredo (ou FONTE_BASE=fidelizi) usa o Fidelizi como antes.
 - Cria/atualiza a user list "Fidelizi - Compradores" com email+telefone (SHA-256)
 - Replace diario (removeAll + add) via OfflineUserDataJob, com consent GRANTED
 - Auto-detecta a versao da Google Ads API (tenta v25..v22; pula versoes desativadas)
@@ -50,6 +52,22 @@ def fidelizi_clients():
         if page >= d.get("data", {}).get("last_page", 1): break
         page += 1
     return out
+
+def clube_clients():
+    import time
+    from google.auth import crypt
+    from google.auth import jwt as gjwt
+    info = json.loads(os.environ["GOOGLE_SHEETS_CREDS"])
+    signer = crypt.RSASigner.from_service_account_info(info)
+    agora = int(time.time())
+    tok = gjwt.encode(signer, {"iss": info["client_email"], "aud": "https://casapellegrini.com.br/api/clube/publicos",
+                               "iat": agora, "exp": agora + 600})
+    if isinstance(tok, bytes): tok = tok.decode()
+    url = os.environ.get("CLUBE_BASE_URL", "https://us-central1-pellegrini-app.cloudfunctions.net/api/publico/pixel-base")
+    d, code = http(url, headers={"Authorization": "Bearer " + tok})
+    if code >= 400 or not d.get("ok"):
+        raise RuntimeError(f"Clube {code}: {json.dumps(d)[:200]}")
+    return d.get("clientes", [])
 
 def gads_token():
     body = urllib.parse.urlencode({
@@ -174,7 +192,9 @@ def manage_seasonal_negatives(ver, tok):
 
 
 def main():
-    clients = fidelizi_clients()
+    usar_clube = os.environ.get("GOOGLE_SHEETS_CREDS") and os.environ.get("FONTE_BASE", "clube").lower() != "fidelizi"
+    clients = clube_clients() if usar_clube else fidelizi_clients()
+    print(f"[fonte] {'clube' if usar_clube else 'fidelizi'}")
     users = []
     for c in clients:
         if (c.get("compras", 0) or 0) <= 0: continue
