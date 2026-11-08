@@ -245,7 +245,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     </div>
 
     <!-- Cloudflare Turnstile (invisível na maioria das vezes) -->
-    <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
+    <div class="cf"><div id="tsCad"></div></div>
 
     <button type="submit" id="btn">Criar minha conta</button>
     <div style="text-align:center;margin-top:14px">
@@ -272,7 +272,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       <div class="dica">Veio do programa antigo? Use o celular — é por ele que a gente te encontra.</div>
     </div>
 
-    <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
+    <div class="cf"><div id="tsRec"></div></div>
     <button type="submit" id="btnRec">Continuar</button>
     <div style="text-align:center;margin-top:14px">
       <a href="#" onclick="verPainel('inicio');return false" style="color:var(--muted);font-size:13px">← Voltar</a>
@@ -355,7 +355,26 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
   <footer>Casa Pellegrini · Rua Treze de Maio, 184 — Centro, Petrópolis/RJ</footer>
 </div>
 
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+/* 08/11/2026 — CAPTCHA (Turnstile) com 2 widgets na mesma página (cadastro e recuperar senha).
+   Antes o código lia SEMPRE o 1º widget (o do cadastro, escondido) — no "Criar ou recuperar senha"
+   ia um token vazio/vencido/já usado e o servidor respondia "não consegui confirmar que você é uma
+   pessoa" (31 recusas em 3 dias + as de token vazio). Agora cada formulário tem o SEU widget,
+   renderizado explicitamente, e ele é renovado depois de CADA envio (o token só vale 1 vez). */
+var TS = {};
+function cpTsOnload(){
+  var o = {sitekey:'0x4AAAAAAEPBoYU8aqp1g3M9', theme:'dark', 'refresh-expired':'auto'};
+  try{ TS.cad = turnstile.render('#tsCad', o); }catch(e){}
+  try{ TS.rec = turnstile.render('#tsRec', o); }catch(e){}
+}
+function tsToken(qual){
+  try{ return (window.turnstile && TS[qual] != null) ? (turnstile.getResponse(TS[qual]) || '') : ''; }catch(e){ return ''; }
+}
+function tsReset(qual){
+  try{ if (window.turnstile && TS[qual] != null) turnstile.reset(TS[qual]); }catch(e){}
+}
+</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=cpTsOnload" async defer></script>
 <script>
 /* ============ GATE DE SENHA — REMOVER AO PUBLICAR ============
    Não é segurança real: evita só que alguém caia aqui por acaso nos testes. */
@@ -442,7 +461,8 @@ function verPainel(qual){
   document.getElementById('benef').style.display =
     (alvo==='form' || alvo==='pInicio') ? 'block' : 'none';
   document.getElementById('aviso').className='msg';
-  if (window.turnstile) window.turnstile.reset();
+  if (alvo==='form') tsReset('cad');
+  if (alvo==='pRecuperar') tsReset('rec');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -476,10 +496,7 @@ document.getElementById('codigo').addEventListener('input', e => {
   e.target.value = e.target.value.replace(/\D/g,'').slice(0,6);
 });
 
-function tokenTurnstile(){
-  const el = document.querySelector('[name="cf-turnstile-response"]');
-  return el ? el.value : '';
-}
+function tokenTurnstile(){ return tsToken('rec'); }
 
 /* ---------- pedir código ----------
    09/10/2026: padrão = código chega no WhatsApp do cadastro (template de
@@ -512,15 +529,18 @@ async function pedirCodigo(e){
   const btn=document.getElementById('btnRec');
   const c=rcpf.value.replace(/\D/g,'');
   if(!identValido(c)) return aviso('Confere: CPF com 11 dígitos ou celular com DDD.');
+  const tokRec = tokenTurnstile();
+  if(!tokRec) return aviso('Só um segundo: estamos confirmando que você é uma pessoa (quadrinho acima). Tente de novo em instantes.');
 
   btn.disabled=true; btn.textContent='Um instante...';
   try{
     const r=await fetch(API+'/recuperar',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(Object.assign({ident:c,turnstile:tokenTurnstile()},
+      body:JSON.stringify(Object.assign({ident:c,turnstile:tokRec},
         viaRec==='confirmacao' ? {via:'confirmacao'} : {}))});
     const j=await r.json();
     btn.disabled=false; btn.textContent='Continuar';
+    tsReset('rec'); // token já foi gasto — o próximo envio precisa de outro
     if(j.ok===false && j.erro) return aviso(j.erro);
     if(j.modo==='template'){
       sessionStorage.setItem('cp_cpf_rec', c);
@@ -536,6 +556,7 @@ async function pedirCodigo(e){
     abrirConfirmacao(j.codigo, j.whatsapp, j.mensagem);
   }catch(err){
     btn.disabled=false; btn.textContent='Continuar';
+    tsReset('rec');
     aviso('Sem conexão com o servidor. Tenta de novo?');
   }
 }
@@ -644,8 +665,8 @@ async function enviar(e){
   if (!document.getElementById('consentiu').checked)
     return aviso('Pra criar sua conta, precisamos do seu aceite ali embaixo.');
 
-  const tsToken = (window.turnstile && document.querySelector('[name="cf-turnstile-response"]'))
-    ? document.querySelector('[name="cf-turnstile-response"]').value : '';
+  const tokCad = tsToken('cad');
+  if (!tokCad) return aviso('Só um segundo: estamos confirmando que você é uma pessoa (quadrinho acima do botão). Tente de novo em instantes.');
 
   btn.disabled=true; btn.textContent='Criando sua conta...';
   document.getElementById('aviso').className='msg';
@@ -658,7 +679,7 @@ async function enviar(e){
         email: document.getElementById('email').value.trim(),
         nascimento: nascv,
         website: document.getElementById('website').value, /* honeypot */
-        turnstile: tsToken,
+        turnstile: tokCad,
         consentiu: true,
         /* trilha do aceite — prova de quando, onde e o que foi aceito */
         consentimento: {
@@ -675,7 +696,7 @@ async function enviar(e){
 
     if (!j.ok){
       btn.disabled=false; btn.textContent='Criar minha conta';
-      if (window.turnstile) window.turnstile.reset();
+      tsReset('cad');
       // CPF já na base (migrado do Fidelizi ou criado no caixa): manda pro
       // fluxo de recuperação, que é o único jeito seguro de definir senha.
       // ⚠️ ORDEM IMPORTA: verPainel() limpa o aviso. Antes o aviso vinha
@@ -728,7 +749,7 @@ async function enviar(e){
     window.scrollTo({top:0,behavior:'smooth'});
   }catch(err){
     btn.disabled=false; btn.textContent='Criar minha conta';
-    if (window.turnstile) window.turnstile.reset();
+    tsReset('cad');
     aviso('Sem conexão com o servidor. Confere a internet e tenta de novo.');
   }
 }
