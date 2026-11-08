@@ -61,6 +61,12 @@ def usados_em_anuncios():
         b = requests.get(f"{API}/adgroup/get/", headers=H,
                          params={"advertiser_id": ADV, "page": page, "page_size": 1000}, timeout=30).json()
         if b.get("code") != 0:
+            # 08/11/2026: o token do robo nao tem permissao de ler anuncios. Conta sem nenhuma
+            # campanha (conferido pelo Supermetrics) -> rodar com sem_campanhas=sim.
+            if os.environ.get("SEM_CAMPANHAS", "").strip().lower() == "sim":
+                print(f"[aviso] nao consegui ler os conjuntos ({b.get('message')[:80]}...) - "
+                      "seguindo porque foi confirmado que a conta NAO tem campanhas")
+                return usados
             fim(1, f"ADGROUP erro: {b.get('message')} (nao apago nada sem saber o que os anuncios usam)")
         for g in b["data"].get("list", []):
             for k in ("audience_ids", "excluded_audience_ids"):
