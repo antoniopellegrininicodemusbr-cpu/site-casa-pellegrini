@@ -197,19 +197,19 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       <input type="text" id="nome" name="name" autocomplete="name" placeholder="Seu nome" required>
     </div>
 
-    <!-- CPF é o "username": não muda nunca, mesmo trocando de telefone -->
-    <div class="campo" id="campoCpf">
-      <label for="cpf">CPF <span class="req">*</span></label>
-      <input type="text" id="cpf" name="username" inputmode="numeric"
-             autocomplete="username" placeholder="000.000.000-00" maxlength="14" required>
+    <!-- 10/11/2026 (Antonio): CPF SAIU do cadastro ("muita gente é cabreira com CPF").
+         A chave da conta é o celular. Campo fica escondido só pra não quebrar o JS. -->
+    <div class="campo" id="campoCpf" style="display:none">
+      <label for="cpf">CPF</label>
+      <input type="text" id="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14">
       <div class="dica">É com ele que você entra na sua conta — mesmo que troque de número.</div>
     </div>
 
     <div class="campo">
       <label for="telefone">Celular com WhatsApp <span class="req">*</span></label>
-      <input type="tel" id="telefone" inputmode="numeric" autocomplete="tel"
+      <input type="tel" id="telefone" name="username" inputmode="numeric" autocomplete="username tel"
              placeholder="(24) 99999-9999" required>
-      <div class="dica">É por aqui que avisamos seus pontos e prêmios.</div>
+      <div class="dica">É com ele que você entra no Clube e recebe seus pontos e prêmios.</div>
     </div>
 
     <div class="campo">
@@ -270,8 +270,8 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       código pro WhatsApp do seu cadastro.</p>
 
     <div class="campo">
-      <label for="rcpf">Seu CPF ou celular</label>
-      <input type="text" id="rcpf" inputmode="numeric" placeholder="CPF ou (24) 99999-9999" maxlength="15" required>
+      <label for="rcpf">Seu celular (ou CPF, se cadastrou com ele)</label>
+      <input type="text" id="rcpf" inputmode="numeric" placeholder="(24) 99999-9999" maxlength="15" required>
       <div class="dica">Veio do programa antigo? Use o celular — é por ele que a gente te encontra.</div>
     </div>
 
@@ -350,7 +350,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     <div class="emo">🍻</div>
     <h2>Bem-vindo ao Clube!</h2>
     <p>Sua conta está criada, <strong id="oNome"></strong>.</p>
-    <p>Na próxima visita, é só informar seu CPF na maquininha na hora de pagar — ou usar o mesmo cartão, que a gente já te reconhece.</p>
+    <p>Na próxima visita, é só informar seu celular na maquininha na hora de pagar — ou usar o mesmo cartão, que a gente já te reconhece.</p>
     <div class="pts" id="bonus" style="display:none"></div>
     <button style="margin-top:18px" onclick="location.href='/minha-conta'">Ver minha conta</button>
   </div>
@@ -695,7 +695,7 @@ async function enviar(e){
   const nascv=nasc.value.trim();
 
   if (nome.length<2)               return aviso('Escreva seu nome, por favor.');
-  if (!CONVITE && !cpfValido(cpfD)) return aviso('Confere o CPF — parece que tem algum dígito errado.');
+  if (cpfD && !cpfValido(cpfD)) return aviso('Confere o CPF — parece que tem algum dígito errado.');
   if (foneD.length<10||foneD.length>11) return aviso('Confere o celular — precisa do DDD e do número.');
   if (senha.value.length<6)        return aviso('A senha precisa ter pelo menos 6 caracteres.');
   if (nascv && !/^\d{2}\/\d{2}$/.test(nascv)) return aviso('O aniversário vai no formato DD/MM.');
@@ -744,7 +744,7 @@ async function enviar(e){
         // preenche com o dado que BATEU: conta do Fidelizi só se acha pelo celular
         rcpf.value = (j.via==='tel' ? tel.value : cpf.value).replace(/\D/g,'');
         verPainel('recuperar');
-        aviso('Este CPF já está cadastrado no Clube. Para entrar ou criar sua ' +
+        aviso((j.via==='cpf' ? 'Este CPF' : 'Este celular') + ' já está cadastrado no Clube. Para entrar ou criar sua ' +
               'senha, toque em "Continuar" abaixo e confirme pelo WhatsApp do seu ' +
               'cadastro. Já tem senha? Entre em casapellegrini.com.br/minha-conta');
         return;
