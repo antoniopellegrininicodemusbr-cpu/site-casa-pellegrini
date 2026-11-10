@@ -260,9 +260,9 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
 
       <form onsubmit="entrar(event)" autocomplete="on">
         <div class="campo">
-          <label for="login">CPF ou celular</label>
+          <label for="login">Celular (ou CPF)</label>
           <input type="tel" id="login" name="username" autocomplete="username"
-                 inputmode="numeric" placeholder="Só números" required>
+                 inputmode="numeric" placeholder="(24) 99999-9999" required>
         </div>
         <div class="campo">
           <label for="senha">Senha</label>
@@ -473,7 +473,7 @@ async function entrar(ev){
 
   const login = so($('login').value);
   const senha = $('senha').value;
-  if(login.length < 10){ aviso('Digite seu CPF ou celular com DDD.'); return; }
+  if(login.length < 10){ aviso('Digite seu celular com DDD (ou seu CPF).'); return; }
 
   trabalhando = true;
   $('btEntrar').disabled = true;
