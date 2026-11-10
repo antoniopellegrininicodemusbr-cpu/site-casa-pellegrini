@@ -1,5 +1,5 @@
 {
- "atualizado_em": "2026-11-09",
+ "atualizado_em": "2026-11-10",
  "total": 359,
  "registros": [
   {
@@ -8,18 +8,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DfXX4nEv5ur/",
    "caption": "👀  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "EM_TESTE",
+   "status": "PROMOVIDO",
    "nota_gemini": "9.0",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|tema:Apresentação bem-humorada do dono|legenda_v2:ok|entrada:novo_aprovado_fluxo_agencia(prioridade_sec3.2;triado_05/11);creative_1055868004136976;url_tags_conferido;cardapio:sem_item_identificavel_na_legenda(caption_so_emoji);nao_assisti_ao_video-limitacao_registrada",
+   "flags": "gemini_aprovou:sim|tema:Apresentação bem-humorada do dono|legenda_v2:ok|entrada:novo_aprovado_fluxo_agencia(prioridade_sec3.2;triado_05/11);creative_1055868004136976;url_tags_conferido;cardapio:sem_item_identificavel_na_legenda(caption_so_emoji);nao_assisti_ao_video-limitacao_registrada|veredito:PROMOVIDO_10/11(CPA_12.29_vs_linha2x_dia_19.68_e_noite_21.22);destino_V-Dia(conjunto_sugerido_qualquer;menos_ads_ativos_6vs8;semana_7d_mais_cara);creative_1055868004136976_reusado;11a_promocao_da_esteira;CTR_8.11%_recorde",
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-11-05",
    "data_entrada_teste": "2026-11-06",
-   "gasto_teste": "",
-   "compras_teste": "",
-   "ctr_teste": "",
-   "data_veredito": "",
-   "ad_id_promovido": "[V-teste] Dono Apresenta=120256855596560460"
+   "gasto_teste": "36.86",
+   "compras_teste": "3",
+   "ctr_teste": "8.11",
+   "data_veredito": "2026-11-10",
+   "ad_id_promovido": "[V-dia] Dono Apresenta=120256915223810460"
   },
   {
    "media_id": "18184702648439343",
@@ -5271,18 +5271,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DFxeyauuAxS/",
    "caption": "#RestaurantePetropolis #BarPetropolis #CentroHistoricoPetropolis #AlmocoExecutivo #hamburgueria",
-   "status": "APROVADO_FILA",
+   "status": "EM_TESTE",
    "nota_gemini": "8",
    "motivo_reprova": "O vídeo foca em uma solução para o calor extremo, o que é inadequado para veiculação no inverno.",
-   "flags": "gemini_aprovou:sim|sazon:calor|tema:Gelo na calçada|legenda_v2:ok",
+   "flags": "gemini_aprovou:sim|sazon:calor|tema:Gelo na calçada|legenda_v2:ok|entrada:resgate_prazo(topo_da_fila_por_data_post;vence_2anos:2027-02-07=89d);creative_novo_1793154995307605;url_tags_conferido;cardapio:sem_item_identificavel_na_legenda(caption_so_hashtags);atencao:sazon_calor_entra_no_pool_do_robo_de_clima_e_veredito_de_10/11_foi_FRIO",
    "conjunto_sugerido": "qualquer",
    "data_triagem": "2026-09-25",
-   "data_entrada_teste": "",
+   "data_entrada_teste": "2026-11-10",
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
    "data_veredito": "",
-   "ad_id_promovido": ""
+   "ad_id_promovido": "[V-teste] Gelo na Calcada=120256915230500460"
   },
   {
    "media_id": "17884077297211103",
