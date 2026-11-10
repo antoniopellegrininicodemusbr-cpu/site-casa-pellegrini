@@ -735,6 +735,11 @@ async function enviar(e){
     if (!j.ok){
       btn.disabled=false; btn.textContent= CONVITE ? 'Ativar meu prêmio' : 'Criar minha conta';
       if (CONVITE && (j.jaExiste || j.conviteFechado)) return aviso(j.erro);
+      // rede de segurança: servidor ainda na versão que exige CPF → mostra o campo
+      if (!CONVITE && /CPF invalido/i.test(j.erro||'')){
+        document.getElementById('campoCpf').style.display='block'; cpf.focus();
+        return aviso('Pra concluir, informe seu CPF.');
+      }
       tsReset('cad');
       // CPF já na base (migrado do Fidelizi ou criado no caixa): manda pro
       // fluxo de recuperação, que é o único jeito seguro de definir senha.
