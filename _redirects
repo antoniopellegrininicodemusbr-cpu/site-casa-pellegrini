@@ -117,6 +117,8 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /cadastro/convite           /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=convite                  301
 /cadastro/lembrete          /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=lembrete                 301
 /cadastro/presente          /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=presente                 301
+# 10/11/2026: ativação do convite em 1 toque — o token identifica o celular da compra (sem CPF, sem captcha)
+/c/:token                   /cadastro-clube.html?c=:token&utm_source=whatsapp&utm_medium=clube&utm_campaign=convite_ativar 301
 /minha-conta/saldo          /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=saldo                        301
 /minha-conta/visita         /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=visita                       301
 /minha-conta/vencimento     /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=vencimento                   301
