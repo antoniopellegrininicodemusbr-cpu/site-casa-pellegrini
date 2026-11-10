@@ -189,13 +189,16 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
   </div>
 
   <form id="form" onsubmit="enviar(event)" autocomplete="on" style="display:none">
+    <!-- 10/11/2026: veio pelo link do convite (casapellegrini.com.br/c/<token>) — mostra o que ganhou -->
+    <div id="convBox" style="display:none;background:linear-gradient(135deg,#2a2208,#1a1f33);border:1px solid var(--dourado);
+         border-radius:14px;padding:16px 16px 14px;margin-bottom:18px"></div>
     <div class="campo">
       <label for="nome">Nome completo <span class="req">*</span></label>
       <input type="text" id="nome" name="name" autocomplete="name" placeholder="Seu nome" required>
     </div>
 
     <!-- CPF é o "username": não muda nunca, mesmo trocando de telefone -->
-    <div class="campo">
+    <div class="campo" id="campoCpf">
       <label for="cpf">CPF <span class="req">*</span></label>
       <input type="text" id="cpf" name="username" inputmode="numeric"
              autocomplete="username" placeholder="000.000.000-00" maxlength="14" required>
@@ -245,7 +248,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     </div>
 
     <!-- Cloudflare Turnstile (invisível na maioria das vezes) -->
-    <div class="cf"><div id="tsCad"></div></div>
+    <div class="cf" id="cfCad"><div id="tsCad"></div></div>
 
     <button type="submit" id="btn">Criar minha conta</button>
     <div style="text-align:center;margin-top:14px">
@@ -442,6 +445,40 @@ function cpfValido(c){
   s=0; for(let i=0;i<10;i++) s += +c[i]*(11-i);
   let d2=(s*10)%11; if(d2===10)d2=0; return d2===+c[10];
 }
+
+/* ---------- 10/11/2026: ATIVAÇÃO PELO LINK DO CONVITE ----------
+   /c/<token> → /cadastro-clube?c=<token>. O celular já vem (é o da compra na maquininha),
+   não pede CPF e não tem captcha: o link só chegou no WhatsApp da própria pessoa. */
+let CONVITE = null;
+const escH = (t) => String(t).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function fmtCel(d){ d=String(d||''); return d.length===11 ? '('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7) : d; }
+function modoConvite(j){
+  const box = document.getElementById('convBox');
+  const itens = (j.premios||[]).map((p) => '<div style="font-size:16px;font-weight:700;color:#fff;margin-top:6px">🎁 '+escH(p)+'</div>').join('');
+  const pts = j.pontos>0 ? '<div style="margin-top:6px;color:#fff">⭐ '+j.pontos+(j.pontos===1?' ponto':' pontos')+' da sua compra</div>' : '';
+  box.innerHTML = '<div style="font-family:\'Playfair Display\',serif;color:var(--dourado);font-size:20px">Ative seu prêmio</div>' +
+    '<div style="color:var(--muted);font-size:13.5px;margin-top:4px">Está guardado esperando você:</div>' + itens + pts +
+    (j.venceEm ? '<div style="color:var(--muted);font-size:12.5px;margin-top:10px">Vale até '+escH(j.venceEm)+' · leva 30 segundos</div>' : '');
+  box.style.display = 'block';
+  document.getElementById('campoCpf').style.display = 'none';
+  cpf.required = false;
+  tel.value = fmtCel(j.telefone); tel.readOnly = true; tel.style.opacity = '.75';
+  const dicaTel = tel.parentElement.querySelector('.dica'); if (dicaTel) dicaTel.textContent = '✅ É o número da sua compra — já está certo.';
+  document.getElementById('cfCad').style.display = 'none';
+  document.getElementById('btn').textContent = 'Ativar meu prêmio';
+  verPainel('form');
+}
+(async function(){
+  const c = new URLSearchParams(location.search).get('c');
+  if (!c) return;
+  try{
+    const j = await (await fetch(API + '/convite?c=' + encodeURIComponent(c), {cache:'no-store'})).json();
+    if (!j.ok) return;                       // link estranho: segue o cadastro normal
+    if (j.jaTemConta){ aviso('Você já é do Clube 🎉 Entre em casapellegrini.com.br/minha-conta — o que você ganhou entra na sua conta sozinho.'); return; }
+    if (!j.aberto){ if (j.status==='usado') aviso('Esse convite já foi ativado. Entre em casapellegrini.com.br/minha-conta'); return; }
+    CONVITE = c; modoConvite(j);
+  }catch(e){}
+})();
 
 function aviso(txt){
   const el=document.getElementById('aviso');
@@ -658,15 +695,15 @@ async function enviar(e){
   const nascv=nasc.value.trim();
 
   if (nome.length<2)               return aviso('Escreva seu nome, por favor.');
-  if (!cpfValido(cpfD))            return aviso('Confere o CPF — parece que tem algum dígito errado.');
+  if (!CONVITE && !cpfValido(cpfD)) return aviso('Confere o CPF — parece que tem algum dígito errado.');
   if (foneD.length<10||foneD.length>11) return aviso('Confere o celular — precisa do DDD e do número.');
   if (senha.value.length<6)        return aviso('A senha precisa ter pelo menos 6 caracteres.');
   if (nascv && !/^\d{2}\/\d{2}$/.test(nascv)) return aviso('O aniversário vai no formato DD/MM.');
   if (!document.getElementById('consentiu').checked)
     return aviso('Pra criar sua conta, precisamos do seu aceite ali embaixo.');
 
-  const tokCad = tsToken('cad');
-  if (!tokCad) return aviso('Só um segundo: estamos confirmando que você é uma pessoa (quadrinho acima do botão). Tente de novo em instantes.');
+  const tokCad = CONVITE ? '' : tsToken('cad');
+  if (!CONVITE && !tokCad) return aviso('Só um segundo: estamos confirmando que você é uma pessoa (quadrinho acima do botão). Tente de novo em instantes.');
 
   btn.disabled=true; btn.textContent='Criando sua conta...';
   document.getElementById('aviso').className='msg';
@@ -680,6 +717,7 @@ async function enviar(e){
         nascimento: nascv,
         website: document.getElementById('website').value, /* honeypot */
         turnstile: tokCad,
+        convite: CONVITE || undefined,
         consentiu: true,
         /* trilha do aceite — prova de quando, onde e o que foi aceito */
         consentimento: {
@@ -695,7 +733,8 @@ async function enviar(e){
     const j = await r.json();
 
     if (!j.ok){
-      btn.disabled=false; btn.textContent='Criar minha conta';
+      btn.disabled=false; btn.textContent= CONVITE ? 'Ativar meu prêmio' : 'Criar minha conta';
+      if (CONVITE && (j.jaExiste || j.conviteFechado)) return aviso(j.erro);
       tsReset('cad');
       // CPF já na base (migrado do Fidelizi ou criado no caixa): manda pro
       // fluxo de recuperação, que é o único jeito seguro de definir senha.
