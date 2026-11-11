@@ -383,6 +383,13 @@
       <div class="row" id="anCad" style="margin-top:8px"></div>
       <div style="overflow-x:auto"><table id="anDiario"></table></div>
     </div>
+    <div class="card" id="anPessoasCard" style="border-color:rgba(127,227,154,.35);display:none">
+      <h2>🎯 Quem ganhou prêmio na roleta e entrou no Clube (por pessoa)</h2>
+      <p class="sub">Só quem <b>não era do Clube</b>. Cada celular conta <b>1 vez</b>, mesmo que tenha comprado várias vezes antes de se cadastrar. O dia é o do <b>1º prêmio</b> — o número de um dia continua subindo enquanto o pessoal daquele dia for se cadastrando. Mesmo período do quadro acima.</p>
+      <div class="segrid" id="anPessoas"></div>
+      <p class="smallnote">📌 “Em até X dias” só conta quem ganhou o prêmio há pelo menos X dias — quem ganhou ontem ainda não teve 7 dias pra se cadastrar e ficaria puxando a taxa pra baixo.</p>
+      <div style="overflow-x:auto"><table id="anPessoasDia"></table></div>
+    </div>
     <div class="card">
       <h2>🏆 Ranking de prêmios</h2>
       <p class="sub">Quantos de cada prêmio saíram na roleta, quantos o cliente <b>voltou pra resgatar</b> e a % de resgate. Prêmio com % alta é o que traz o cliente de volta. Preço e custo estimados pelo CMV (33% do preço do cardápio) — pra trocar por outro de valor parecido.</p>
@@ -686,6 +693,21 @@ function renderAnalises(){
   const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.vendasStone||0));
   $('anDiario').innerHTML='<tr><th>Dia</th><th>Máquina</th><th>Compras (membros)</th><th>Convites</th><th>Ticket</th><th>Convites → cadastro</th><th>Brindes autom.</th><th>Resgatados</th><th>Cadastros novos</th><th>Fidelizi completou</th></tr>'
     +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(50*(l.vendasStone||0)/maxV)}px"></span>${l.vendasStone||0}</div></td><td>${l.compras}</td><td>${l.convites}</td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.convitesCadastro||0}</td><td>${l.premiosAutomaticos||0}</td><td>${l.premiosResgatados}</td><td>${l.cadastros}</td><td>${l.fideliziCompletou||0}</td></tr>`).join('');
+  // 11/11/2026: conversão por PESSOA (cada celular 1 vez, coorte pelo dia do 1º prêmio)
+  const cp=AN.conversaoPessoas;
+  $('anPessoasCard').style.display=cp?'':'none';
+  if(cp){
+    const jt=(j)=> j.elegiveis? `${pct(j.taxa)}<br><span style="font-size:10px">${j.ativaram} de ${j.elegiveis}</span>` : '—<br><span style="font-size:10px">ninguém com '+j.dias+(j.dias==1?' dia':' dias')+' ainda</span>';
+    const md=cp.diasMediana==null?'—': cp.diasMediana<1? Math.max(1,Math.round(cp.diasMediana*24))+' h' : cp.diasMediana.toLocaleString('pt-BR')+' dias';
+    $('anPessoas').innerHTML=box(cp.pessoas,'Pessoas que ganharam prêmio (não membros)<br><span style="font-size:10px">'+cp.compras+' compras no total</span>')
+      +box(cp.ativaram+' · '+pct(cp.taxa),'Entraram no Clube até agora<br><span style="font-size:10px">'+cp.novos+' gente nova · '+cp.fidelizi+' antigos do Fidelizi'+(cp.umToque?' · '+cp.umToque+' pelo link de 1 toque':'')+(cp.manual?' · '+cp.manual+' creditados à mão':'')+'</span>','#7fe39a')
+      +cp.jan.map(j=>box(jt(j),'Entraram em até '+j.dias+(j.dias==1?' dia':' dias'))).join('')
+      +box(md,'Tempo típico até entrar (mediana)');
+    const pd=cp.porDia.slice().reverse();
+    $('anPessoasDia').innerHTML=pd.length? '<tr><th>Dia do 1º prêmio</th><th>Pessoas</th><th>Entraram</th><th>%</th><th>Em até 1 dia</th><th>Em até 3 dias</th><th>Em até 7 dias</th><th>Em até 20 dias</th></tr>'
+      +pd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.pessoas}</td><td>${l.ativaram}</td><td>${pct(l.taxa)}</td>${l.jan.map(j=>`<td>${j.elegiveis? j.ativaram+' ('+pct(j.taxa)+')' : '<span class="muted">aguardando</span>'}</td>`).join('')}</tr>`).join('')
+      : '<tr><td class="muted">Ninguém de fora do Clube ganhou prêmio no período.</td></tr>';
+  }
   const ord=$('anOrdem').value, rk=AN.ranking.slice();
   const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
   rk.sort(f);
