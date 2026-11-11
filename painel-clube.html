@@ -329,6 +329,24 @@
   <!-- ===================== CRM ===================== -->
   <section class="tab" id="crm">
     <p class="ctx">CRM — quem é a base do Clube e como ela está.</p>
+    <div class="card" id="cardGarcons" style="border-color:rgba(242,183,5,.35)">
+      <h2>👤 Garçons — meta de celulares</h2>
+      <p class="sub">Na maquininha (app 0.3.5), o garçom digita a <b>senha dele</b> antes de cada venda. Conta como <b>celular coletado</b> toda venda em que o cliente digitou o celular (já membro ou convite). A % é sobre as vendas em que o cartão <b>não</b> foi reconhecido sozinho — ali é que o garçom faz diferença.</p>
+      <div class="row" style="align-items:flex-end">
+        <div><label>Período</label><select id="gaDias" onchange="garconsRanking()"><option value="1">Hoje</option><option value="7" selected>Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select></div>
+        <div><button class="btn sec" onclick="garconsRanking()">🔄 Atualizar</button></div>
+      </div>
+      <div style="overflow-x:auto"><table id="gaRanking"></table></div>
+      <h2 style="margin-top:16px;font-size:15px">Cadastro dos garçons</h2>
+      <div class="row" style="align-items:flex-end">
+        <div><label>Nome</label><input id="gaNome" placeholder="Ex.: Marcelo"></div>
+        <div><label>Senha (4 a 6 números)</label><input id="gaPin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></div>
+        <div><button class="btn" style="width:auto" onclick="garcomCriar()">➕ Adicionar</button></div>
+      </div>
+      <div class="erro" id="gaMsg"></div>
+      <div id="gaLista"></div>
+      <p class="smallnote">A maquininha pega a lista nova sozinha (ao abrir o app ou na próxima vez que buscar a configuração). Sem nenhum garçom cadastrado, ela não pede senha.</p>
+    </div>
     <div class="card">
       <h2>📊 Segmentos da base</h2>
       <div class="segrid" id="crmSegmentos"></div>
@@ -930,6 +948,7 @@ async function salvarAuto(){
 function diasInativo(c){ return c.ultimaVisitaTs? Math.floor((Date.now()-c.ultimaVisitaTs)/86400000):999; }
 function segmentos(){ const s={total:0,ativos:0,i3060:0,i6090:0,i90:0}; Object.values(db.contas).forEach(c=>{ s.total++; const d=diasInativo(c); if(d<=30)s.ativos++; else if(d<=60)s.i3060++; else if(d<=90)s.i6090++; else s.i90++; }); return s; }
 function renderCRM(){
+  if(!gaCarregado) garconsCarregar();
   const s=segmentos();
   $('crmSegmentos').innerHTML=`
     <div class="segbox"><div class="n">${s.total}</div><div class="l">Total</div></div>
@@ -953,6 +972,47 @@ function renderClientes(){
     cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''} <button class="btn sec" title="Desvincular cartões (a maquininha deixa de reconhecer pelo cartão)" style="padding:6px 10px;margin:0;width:auto" onclick="desvincularCartoes('${esc(c._id)}',this)">💳</button></td></tr>`).join('')+'</table></div>'
     +(tot>MAX_LINHAS?`<p class="smallnote">Mostrando ${MAX_LINHAS} de ${tot}. Use a busca para achar alguém.</p>`:`<p class="smallnote">${tot} cliente(s).</p>`)
     :'<p class="muted">Ninguém encontrado.</p>';
+}
+
+/* ============ 👤 GARÇONS (11/11/2026) ============ */
+let GA_LISTA=[], gaCarregado=false;
+async function garconsCarregar(){
+  const r=await chamar('/admin/garcons'); if(!r.ok) return msg('gaMsg',r.erro||'Não carregou.');
+  GA_LISTA=r.lista||[]; gaCarregado=true;
+  $('gaLista').innerHTML=GA_LISTA.length? '<table><tr><th>Garçom</th><th>Situação</th><th></th></tr>'+GA_LISTA.map((g,i)=>`<tr><td>${esc(g.nome)}</td><td>${g.ativo?'✅ ativo':'<span class="muted">desativado</span>'}</td><td style="white-space:nowrap">`+
+    `<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomSenha(${i})">🔑 Trocar senha</button> `+
+    (g.ativo?`<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomAcao(${i},'desativar')">Desativar</button>`:`<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomAcao(${i},'reativar')">Reativar</button>`)+
+    `</td></tr>`).join('')+'</table>' : '<p class="muted">Nenhum garçom cadastrado — a maquininha não pede senha.</p>';
+  garconsRanking();
+}
+async function garconsRanking(){
+  const r=await chamar('/admin/garcons/ranking?dias='+$('gaDias').value);
+  if(!r.ok){ $('gaRanking').innerHTML='<tr><td class="muted">'+esc(r.erro||'Não carregou.')+'</td></tr>'; return; }
+  const l=r.lista||[];
+  $('gaRanking').innerHTML=l.length? '<tr><th>#</th><th>Garçom</th><th>Vendas</th><th>📱 Celulares</th><th>% (sem cartão reconhecido)</th><th>já membro</th><th>convite</th><th>💳 cartão</th><th>🙅 não quis</th></tr>'+
+    l.map((g,i)=>`<tr><td>${i+1}</td><td><b>${esc(g.nome)}</b></td><td>${g.vendas}</td><td><b style="color:var(--gold)">${g.celulares}</b></td><td>${pct(g.taxa)}</td><td>${g.celular_membro}</td><td>${g.celular_convite}</td><td>${g.cartao}</td><td>${g.nao_quis}</td></tr>`).join('')
+    : '<tr><td class="muted">Nenhuma venda com senha de garçom no período.</td></tr>';
+}
+async function garcomCriar(){
+  const nome=$('gaNome').value.trim(), pin=$('gaPin').value.replace(/\D/g,'');
+  if(!nome) return msg('gaMsg','Informe o nome.');
+  if(pin.length<4||pin.length>6) return msg('gaMsg','A senha precisa ter de 4 a 6 números.');
+  const r=await chamar('/admin/garcons',{acao:'criar',nome,pin});
+  if(!r.ok) return msg('gaMsg',r.erro||'Não deu.');
+  $('gaNome').value=''; $('gaPin').value=''; msg('gaMsg','✅ '+nome+' cadastrado.',true); garconsCarregar();
+}
+async function garcomSenha(i){
+  const g=GA_LISTA[i]; if(!g) return;
+  const pin=(prompt('Nova senha de '+g.nome+' (4 a 6 números):')||'').replace(/\D/g,''); if(!pin) return;
+  const r=await chamar('/admin/garcons',{acao:'senha',id:g.id,pin});
+  msg('gaMsg', r.ok? '✅ Senha de '+g.nome+' trocada.' : (r.erro||'Não deu.'), r.ok);
+}
+async function garcomAcao(i,acao){
+  const g=GA_LISTA[i]; if(!g) return;
+  if(acao==='desativar' && !confirm('Desativar '+g.nome+'? A senha dele para de funcionar na maquininha.')) return;
+  const r=await chamar('/admin/garcons',{acao,id:g.id});
+  if(!r.ok) return msg('gaMsg',r.erro||'Não deu.');
+  msg('gaMsg','',true); garconsCarregar();
 }
 
 /* ============ 💳 DESVINCULAR CARTÕES (11/11/2026) ============
