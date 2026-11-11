@@ -943,16 +943,31 @@ const MAX_LINHAS=200;
 function renderClientes(){
   if(!carregado) return;
   const q=($('crmBusca').value||'').trim().toLowerCase(), qd=q.replace(/\D/g,'');
-  let cl=Object.values(db.contas);
+  let cl=Object.entries(db.contas).map(([id,c])=>Object.assign({_id:id},c));
   if(q) cl=cl.filter(c=>String(c.nome||'').toLowerCase().includes(q) || (qd.length>=3 && String(c.telefone||c.doc||'').includes(qd)));
   const o=$('crmOrdem').value;
   const f={pontos:c=>-(+c.pontos||0),gasto:c=>-(+c.totalGasto||0),visitas:c=>-(+c.visitas||0),recente:c=>-(c.ultimaVisitaTs||0),sumido:c=>(c.ultimaVisitaTs||0)}[o];
   cl.sort((a,b)=>f(a)-f(b));
   const tot=cl.length; cl=cl.slice(0,MAX_LINHAS);
   $('crmClientes').innerHTML=tot?'<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Celular</th><th>Pontos</th><th>Visitas</th><th>Gasto</th><th>Últ. visita</th><th></th></tr>'+
-    cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''}</td></tr>`).join('')+'</table></div>'
+    cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''} <button class="btn sec" title="Desvincular cartões (a maquininha deixa de reconhecer pelo cartão)" style="padding:6px 10px;margin:0;width:auto" onclick="desvincularCartoes('${esc(c._id)}',this)">💳</button></td></tr>`).join('')+'</table></div>'
     +(tot>MAX_LINHAS?`<p class="smallnote">Mostrando ${MAX_LINHAS} de ${tot}. Use a busca para achar alguém.</p>`:`<p class="smallnote">${tot} cliente(s).</p>`)
     :'<p class="muted">Ninguém encontrado.</p>';
+}
+
+/* ============ 💳 DESVINCULAR CARTÕES (11/11/2026) ============
+   A maquininha deixa de reconhecer a pessoa pelo cartão e volta a perguntar celular/CPF.
+   Conta, pontos e prêmios ficam iguais. Serve pra teste e pra cartão que caiu na conta errada. */
+async function desvincularCartoes(id,btn){
+  const c=db.contas[id]||{}, nome=c.nome||'este cliente';
+  const s=await chamar('/admin/cartoes/remover',{conta:id});
+  if(!s.ok) return alert('Não deu: '+(s.erro||'erro'));
+  if(!s.cartoes) return alert(nome+' não tem nenhum cartão vinculado.');
+  if(!confirm('Desvincular '+s.cartoes+' cartão(ões) de '+nome+'?\n\n'+s.finais.join('  ')+'\n\nA maquininha deixa de reconhecer pelo cartão. Pontos e prêmios continuam na conta.')) return;
+  if(btn) btn.disabled=true;
+  const r=await chamar('/admin/cartoes/remover',{conta:id,simular:false,motivo:'painel: desvincular cartões'});
+  if(btn) btn.disabled=false;
+  alert(r.ok? '✅ '+r.removidos+' cartão(ões) desvinculado(s) de '+nome+'.' : 'Não deu: '+(r.erro||'erro'));
 }
 
 /* ============ 🎁 PRESENTES (05/11/2026) ============ */
