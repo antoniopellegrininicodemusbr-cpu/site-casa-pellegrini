@@ -743,7 +743,10 @@ function renderAnalises(){
   const w=AN.whatsapp;
   $('anWa').innerHTML=box(w.enviadas,'Enviadas')+box(w.entregues,'Entregues','#7fe39a')+box(w.lidas,'Lidas')+box(w.falhas,'Falharam','#ff9ba3')+box(w.descadastros,'Pediram SAIR')+box(w.recebidas,'Recebidas');
   const tpl=Object.entries(w.porTemplate||{}).sort((a,b)=>b[1]-a[1]), fal=Object.entries(w.falhasPorMotivo||{}).sort((a,b)=>b[1]-a[1]);
-  $('anWaDet').innerHTML=(tpl.length?'<table><tr><th>Mensagem (template)</th><th>Enviadas</th></tr>'+tpl.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
+  // 12/11/2026: enviadas × quem abriu o link, por tipo de mensagem
+  const fun=(w.funil||[]).filter(f=>f.enviadas||f.cliques);
+  const funHtml=fun.length?'<table><tr><th>Tipo de mensagem</th><th>Enviadas</th><th>Abriram o link (pessoas)</th><th>%</th></tr>'+fun.map(f=>`<tr><td>${esc(f.nome)}</td><td>${f.enviadas}</td><td>${f.pessoas}</td><td>${f.taxa==null?'—':String(f.taxa).replace('.',',')+'%'}</td></tr>`).join('')+'</table><p class="smallnote">Quem abriu o link é contado pelo site desde '+diaBRf(w.cliquesDesde||'2026-11-13')+' (antes disso a coluna fica zerada). Convite e lembrete usam o mesmo link, por isso aparecem juntos.</p>':'';
+  $('anWaDet').innerHTML=funHtml+(tpl.length?'<table><tr><th>Mensagem (template)</th><th>Enviadas</th></tr>'+tpl.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
     +(fal.length?'<table><tr><th>Motivo da falha</th><th>Qtde</th><th>O que é</th><th>É normal?</th></tr>'+fal.map(([k,v])=>{ const x=FALHAS_WA[String(k).split(' ')[0]]||['Código não catalogado — ver na documentação da Meta.','<span style="color:#ffd27a">Verificar</span>'];
       return `<tr><td>${esc(k)}</td><td>${v}</td><td style="white-space:normal;min-width:200px">${x[0]}</td><td style="white-space:normal;min-width:140px">${x[1]}</td></tr>`; }).join('')+'</table>':'')
     +(fal.length?'<p class="smallnote">Mensagem que falha <b>não é cobrada</b> pela Meta. As falhas das 10h–11h30 são das mensagens automáticas (pós-visita, prêmio vencendo, aniversário, inatividade); em outros horários costumam ser código de senha ou presente.</p>':'')
