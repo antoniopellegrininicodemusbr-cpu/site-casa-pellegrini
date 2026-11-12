@@ -109,7 +109,24 @@
                 font-size:15px;color:var(--dourado);font-weight:600}
   footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.6}
   .cf{margin-bottom:16px}
+  /* 12/11/2026 (Antonio): dados opcionais recolhidos — abre com um toque */
+  .mais{background:var(--navy2);border:1px solid var(--borda);border-radius:12px;margin:0 0 16px;overflow:hidden}
+  .mais summary{list-style:none;cursor:pointer;padding:14px;font-size:14.5px;font-weight:600;color:var(--creme);display:flex;align-items:center;gap:8px}
+  .mais summary::-webkit-details-marker{display:none}
+  .mais summary .op{font-weight:400;font-size:12px;color:var(--muted);margin-left:auto}
+  .mais summary::after{content:'\25BE';color:var(--dourado);font-size:17px}
+  .mais[open] summary::after{content:'\25B4'}
+  .mais .corpo{padding:0 14px 4px}
+  select{width:100%;background:var(--navy2);border:1px solid var(--borda);border-radius:10px;padding:13px 14px;
+         color:var(--creme);font-size:16px;font-family:inherit;-webkit-appearance:none;appearance:none}
+  .mais input[type=text],.mais input[type=email],.mais select{background:rgba(0,0,0,.25)}
 </style>
+<script>
+/* 12/11/2026: o token do convite (c=) sai da URL ANTES do GTM carregar — não vai pro Analytics. */
+(function(){try{var u=new URL(location.href),c=u.searchParams.get('c');
+  if(c){window.__cpConvite=c;u.searchParams.delete('c');history.replaceState(null,'',u.pathname+u.search+u.hash);}
+}catch(e){}})();
+</script>
 <!-- Google Tag Manager (03/11/2026: rastreio do cadastro do Clube) -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -221,15 +238,37 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     </div>
 
     <div class="campo">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" autocomplete="email" placeholder="voce@email.com">
-    </div>
-
-    <div class="campo">
       <label for="nascimento">Aniversário</label>
       <input type="text" id="nascimento" inputmode="numeric" placeholder="DD/MM" maxlength="5">
       <div class="dica">Só o dia e o mês — pra gente te mandar um presente.</div>
     </div>
+
+    <!-- 12/11/2026 (Antonio): e-mail e o resto do "cadastro completo" ficam recolhidos e são TODOS
+         opcionais. O e-mail é o plano B se a pessoa trocar de número; time/sexo/filhos servem pras
+         campanhas (Dia das Mães, dia de jogo…). -->
+    <details class="mais" id="maisDados">
+      <summary>✨ Quero mimos com a minha cara <span class="op">opcional</span></summary>
+      <div class="corpo">
+      <div class="dica" style="margin:0 0 12px">Nada aqui é obrigatório. Ajuda a gente a te mandar o que você curte — e a te achar se você trocar de número.</div>
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" autocomplete="email" placeholder="voce@email.com">
+      </div>
+      <div class="campo">
+        <label for="time">Time do coração</label>
+        <select id="time" onchange="document.getElementById('timeOutro').style.display = this.value==='__outro' ? 'block' : 'none'"><option value="">Escolha…</option><option>Flamengo</option><option>Fluminense</option><option>Vasco</option><option>Botafogo</option><option>Serrano</option><option>Corinthians</option><option>Palmeiras</option><option>São Paulo</option><option>Santos</option><option>Grêmio</option><option>Internacional</option><option>Atlético-MG</option><option>Cruzeiro</option><option>Bahia</option><option>Fortaleza</option><option value="__outro">Outro time</option><option value="Nenhum">Não torço</option></select>
+        <input type="text" id="timeOutro" maxlength="30" placeholder="Qual time?" style="display:none;margin-top:8px">
+      </div>
+      <div class="campo">
+        <label for="sexo">Sexo</label>
+        <select id="sexo"><option value="">Prefiro não dizer</option><option value="f">Feminino</option><option value="m">Masculino</option><option value="o">Outro</option></select>
+      </div>
+      <div class="campo">
+        <label for="filhos">Tem filhos?</label>
+        <select id="filhos"><option value="">Prefiro não dizer</option><option value="sim">Sim</option><option value="nao">Não</option></select>
+      </div>
+      </div>
+    </details>
 
     <!-- honeypot -->
     <div class="hp" aria-hidden="true">
@@ -469,7 +508,7 @@ function modoConvite(j){
   verPainel('form');
 }
 (async function(){
-  const c = new URLSearchParams(location.search).get('c');
+  const c = window.__cpConvite || new URLSearchParams(location.search).get('c');
   if (!c) return;
   try{
     const j = await (await fetch(API + '/convite?c=' + encodeURIComponent(c), {cache:'no-store'})).json();
@@ -480,6 +519,24 @@ function modoConvite(j){
   }catch(e){}
 })();
 
+/* 12/11/2026: conta quem ABRIU o link de uma mensagem do Clube (painel: enviadas × abriram) */
+(function(){ try{
+  var q = new URLSearchParams(location.search);
+  if (q.get('utm_source')==='whatsapp' && q.get('utm_medium')==='clube' && !sessionStorage.getItem('cp_clique')){
+    sessionStorage.setItem('cp_clique','1');
+    fetch(API + '/clique', {method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({camp: q.get('utm_campaign')||'', t: window.__cpConvite||''})}).catch(function(){});
+  }
+}catch(e){} })();
+/* 12/11/2026: o aparelho lembra o celular e oferece guardar a senha no Google/Chrome */
+function lembrarTel(d){ try{ if(d) localStorage.setItem('cp_tel', String(d).replace(/\D/g,'')); }catch(e){} }
+function oferecerSalvarSenha(id, senhaTxt, nomeTxt){
+  try{
+    if(window.PasswordCredential && navigator.credentials && navigator.credentials.store){
+      navigator.credentials.store(new PasswordCredential({id:String(id), password:senhaTxt, name:nomeTxt || 'Clube Pellegrini'})).catch(function(){});
+    }
+  }catch(e){}
+}
 function aviso(txt){
   const el=document.getElementById('aviso');
   el.textContent=txt; el.className='msg err';
@@ -525,6 +582,8 @@ try{
   const veio = sessionStorage.getItem('cp_ident_login');
   if (veio && !rcpf.value){ rcpf.value = veio.slice(0,11); }
   sessionStorage.removeItem('cp_ident_login');
+  /* 12/11: sem nada digitado, usa o último celular usado neste aparelho */
+  if (!rcpf.value){ const lt = localStorage.getItem('cp_tel'); if (lt) rcpf.value = lt.slice(0,11); }
 }catch(e){}
 function identValido(d){
   return (d.length===11 && cpfValido(d)) || ((d.length===10||d.length===11) && d[2]==='9');
@@ -673,6 +732,7 @@ async function definirSenha(e){
     if(!j.ok){ btn.disabled=false; btn.textContent='Salvar senha e entrar';
                return aviso(j.erro||'Não consegui salvar. Tenta de novo?'); }
     if(j.token) localStorage.setItem('cp_sessao', j.token);
+    if(/^\d{10,11}$/.test(c) && c[2]==='9'){ lembrarTel(c); oferecerSalvarSenha(c, nova, j.nome); }
     sessionStorage.removeItem('cp_cpf_rec');
     sessionStorage.removeItem('cp_cod_rec');
     sessionStorage.removeItem('cp_modo');
@@ -714,6 +774,10 @@ async function enviar(e){
       body: JSON.stringify({
         nome, cpf: cpfD, telefone: foneD, senha: senha.value,
         email: document.getElementById('email').value.trim(),
+        /* 12/11: opcionais do "cadastro completo" */
+        time: (function(){ var v=document.getElementById('time').value; return v==='__outro' ? document.getElementById('timeOutro').value.trim() : v; })(),
+        sexo: document.getElementById('sexo').value,
+        filhos: document.getElementById('filhos').value,
         nascimento: nascv,
         website: document.getElementById('website').value, /* honeypot */
         turnstile: tokCad,
@@ -758,6 +822,7 @@ async function enviar(e){
     }
 
     if (j.token) localStorage.setItem('cp_sessao', j.token);
+    lembrarTel(foneD); oferecerSalvarSenha(foneD, senha.value, nome);
 
     /* Conversao REAL do Clube (03/11/2026): so dispara quando a conta e criada.
        No GTM: Lead (Meta), CompleteRegistration (TikTok) e generate_lead (GA4/Google Ads). */
@@ -792,7 +857,7 @@ async function enviar(e){
     }
     window.scrollTo({top:0,behavior:'smooth'});
   }catch(err){
-    btn.disabled=false; btn.textContent='Criar minha conta';
+    btn.disabled=false; btn.textContent= CONVITE ? 'Ativar meu prêmio' : 'Criar minha conta';   /* 12/11: no convite o botão voltava com o texto errado */
     tsReset('cad');
     aviso('Sem conexão com o servidor. Confere a internet e tenta de novo.');
   }
