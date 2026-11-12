@@ -188,6 +188,23 @@
   footer{text-align:center;color:var(--muted);font-size:12px;margin-top:30px;line-height:1.7}
   footer a{color:var(--muted)}
   .cf{margin-bottom:16px}
+  /* 12/11/2026: "manter conectado" */
+  .lembrar{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);margin:2px 0 16px;cursor:pointer}
+  .lembrar input{width:18px;height:18px;flex:none;margin:0;accent-color:#F2B705}
+  .miudo{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px;text-align:center}
+  .miudo a{color:var(--muted)}
+  /* 12/11/2026 (Antonio): dados opcionais recolhidos — abre com um toque */
+  .mais{background:var(--navy2);border:1px solid var(--borda);border-radius:12px;margin:0 0 16px;overflow:hidden}
+  .mais summary{list-style:none;cursor:pointer;padding:14px;font-size:14.5px;font-weight:600;color:var(--creme);display:flex;align-items:center;gap:8px}
+  .mais summary::-webkit-details-marker{display:none}
+  .mais summary .op{font-weight:400;font-size:12px;color:var(--muted);margin-left:auto}
+  .mais summary::after{content:'\25BE';color:var(--dourado);font-size:17px}
+  .mais[open] summary::after{content:'\25B4'}
+  .mais .corpo{padding:0 14px 4px}
+  select{width:100%;background:var(--navy2);border:1px solid var(--borda);border-radius:10px;padding:13px 14px;
+         color:var(--creme);font-size:16px;font-family:inherit;-webkit-appearance:none;appearance:none}
+  .mais input[type=text],.mais input[type=email],.mais select{background:rgba(0,0,0,.25)}
+  .mais input[type=email]{width:100%;border:1px solid var(--borda);border-radius:10px;padding:13px 14px;color:var(--creme);font-size:16px;font-family:inherit}
   .link{background:none;border:none;color:var(--dourado);font-size:13.5px;
         padding:10px 0 0;width:auto;font-weight:500;cursor:pointer;font-family:inherit}
   .link:hover{filter:none;text-decoration:underline}
@@ -201,6 +218,13 @@
   .dicaSenha{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:7px;text-align:center}
   #carregando{text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
 </style>
+<script>
+/* 12/11/2026: o token pessoal do link do WhatsApp (m=) sai da URL ANTES do GTM carregar —
+   ele identifica a conta, não pode ir parar no Analytics nem ficar no histórico. */
+(function(){try{var u=new URL(location.href),m=u.searchParams.get('m');
+  if(m){window.__cpAtalho=m;u.searchParams.delete('m');history.replaceState(null,'',u.pathname+u.search+u.hash);}
+}catch(e){}})();
+</script>
 <!-- Google Tag Manager (03/11/2026: rastreio do cadastro do Clube) -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -274,6 +298,9 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
 
         <div class="cf"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEPBoYU8aqp1g3M9" data-theme="dark"></div></div>
 
+        <!-- 12/11/2026 (Antonio): entra uma vez e o aparelho fica lembrado -->
+        <label class="lembrar"><input type="checkbox" id="lembrar" checked> Manter conectado neste aparelho</label>
+
         <button type="submit" id="btEntrar">Entrar</button>
       </form>
 
@@ -295,6 +322,39 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     <div class="vazio">
       Ainda não é do Clube?
       <button class="link" onclick="location.href='/cadastro#cadastrar'">Criar minha conta</button>
+    </div>
+  </div>
+
+  <!-- ===================== 1º ACESSO PELO LINK DO WHATSAPP (12/11/2026) =====================
+       Quem já era do Clube (programa antigo) e ainda não tem senha: o link da mensagem já
+       sabe quem é — o celular vem preenchido e basta escolher a senha. Sem código, sem captcha. -->
+  <div id="telaAtalho" style="display:none">
+    <div class="card">
+      <h2 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px">Oi<span id="atNome"></span>! Falta só a sua senha</h2>
+      <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
+        Seus pontos e prêmios já estão guardados aqui. Escolha uma senha pra abrir sua conta —
+        é só desta vez, depois este aparelho lembra de você.
+      </p>
+      <form onsubmit="criarSenhaAtalho(event)" autocomplete="on">
+        <div class="campo">
+          <label for="atTel">Seu celular</label>
+          <input type="tel" id="atTel" name="username" autocomplete="username" readonly style="opacity:.75">
+        </div>
+        <div class="campo">
+          <label for="atSenha">Crie uma senha</label>
+          <input type="password" id="atSenha" name="new-password" autocomplete="new-password"
+                 placeholder="Mínimo de 6 caracteres" minlength="6" required>
+        </div>
+        <label class="lembrar"><input type="checkbox" id="atLembrar" checked> Manter conectado neste aparelho</label>
+        <button type="submit" id="btAtalho">Criar senha e ver meus prêmios</button>
+        <div class="miudo">Ao criar a senha você autoriza a Casa Pellegrini a guardar seus dados e a te avisar
+          pelo WhatsApp sobre o Clube. Pra parar, é só responder SAIR.
+          <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a></div>
+      </form>
+    </div>
+    <div class="vazio">
+      Já tem senha?
+      <button class="link" onclick="atalhoParaLogin()">Entrar com ela</button>
     </div>
   </div>
 
@@ -343,6 +403,36 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
       <h2 class="sec">Já utilizados</h2>
       <div class="card" id="listaVelhos"></div>
     </div>
+
+    <!-- 12/11/2026 (Antonio): quem já é do Clube também pode completar os dados opcionais -->
+    <details class="mais" id="maisDados" style="display:none;margin-top:18px">
+      <summary>✨ Quero mimos com a minha cara <span class="op">opcional</span></summary>
+      <div class="corpo">
+      <div class="vazio" style="text-align:left;font-size:12.5px;padding:0 0 12px">Nada aqui é obrigatório. Ajuda a gente a te mandar o que você curte — e a te achar se você trocar de número.</div>
+      <div class="campo" id="cxEmail">
+        <label for="pfEmail">E-mail</label>
+        <input type="email" id="pfEmail" autocomplete="email" placeholder="voce@email.com">
+      </div>
+      <div class="campo" id="cxNasc">
+        <label for="pfNasc">Aniversário (dia e mês)</label>
+        <input type="text" id="pfNasc" inputmode="numeric" placeholder="DD/MM" maxlength="5">
+      </div>
+      <div class="campo">
+        <label for="time">Time do coração</label>
+        <select id="time" onchange="document.getElementById('timeOutro').style.display = this.value==='__outro' ? 'block' : 'none'"><option value="">Escolha…</option><option>Flamengo</option><option>Fluminense</option><option>Vasco</option><option>Botafogo</option><option>Serrano</option><option>Corinthians</option><option>Palmeiras</option><option>São Paulo</option><option>Santos</option><option>Grêmio</option><option>Internacional</option><option>Atlético-MG</option><option>Cruzeiro</option><option>Bahia</option><option>Fortaleza</option><option value="__outro">Outro time</option><option value="Nenhum">Não torço</option></select>
+        <input type="text" id="timeOutro" maxlength="30" placeholder="Qual time?" style="display:none;margin-top:8px">
+      </div>
+      <div class="campo">
+        <label for="sexo">Sexo</label>
+        <select id="sexo"><option value="">Prefiro não dizer</option><option value="f">Feminino</option><option value="m">Masculino</option><option value="o">Outro</option></select>
+      </div>
+      <div class="campo">
+        <label for="filhos">Tem filhos?</label>
+        <select id="filhos"><option value="">Prefiro não dizer</option><option value="sim">Sim</option><option value="nao">Não</option></select>
+      </div>
+      <button type="button" id="btPerfil" onclick="salvarPerfil()">Salvar</button>
+      </div>
+    </details>
 
     <h2 class="sec">Meus dados</h2>
     <div class="card">
@@ -406,7 +496,34 @@ const so = v => String(v||'').replace(/\D/g,'');
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function token(){ return localStorage.getItem('cp_sessao') || ''; }
+/* 12/11/2026 — "lembrar de mim": marcado, a sessão fica guardada no aparelho (vale 1 ano e
+   se renova a cada visita); desmarcado, vale só enquanto a aba estiver aberta. */
+function token(){
+  try{ return sessionStorage.getItem('cp_sessao') || localStorage.getItem('cp_sessao') || ''; }catch(e){ return ''; }
+}
+function guardarSessao(tok, lembrar){
+  try{
+    if(lembrar){ localStorage.setItem('cp_sessao', tok); sessionStorage.removeItem('cp_sessao'); }
+    else { sessionStorage.setItem('cp_sessao', tok); localStorage.removeItem('cp_sessao'); }
+  }catch(e){}
+}
+/* último celular usado neste aparelho — já vem preenchido na próxima vez */
+function lembrarTel(d){ try{ if(d) localStorage.setItem('cp_tel', String(d).replace(/\D/g,'')); }catch(e){} }
+function telLembrado(){ try{ return localStorage.getItem('cp_tel') || ''; }catch(e){ return ''; } }
+function fmtTel(d){
+  d = String(d||'').replace(/\D/g,'');
+  if(d.length === 11 && d[2] === '9') return '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+  return d;
+}
+/* oferece guardar a senha no gerenciador do Google/Chrome (onde existir) */
+function oferecerSalvarSenha(id, senha, nome){
+  try{
+    if(window.PasswordCredential && navigator.credentials && navigator.credentials.store){
+      navigator.credentials.store(new PasswordCredential({id:String(id), password:senha, name:nome || 'Clube Pellegrini'})).catch(function(){});
+    }
+  }catch(e){}
+}
+let atalho = null;     // {t, nome} quando a pessoa chegou pelo link pessoal do WhatsApp
 
 function aviso(txt, tipo){
   const a = $('aviso');
@@ -456,7 +573,9 @@ async function chamar(rota, corpo){
 }
 
 function deslogar(msg){
-  localStorage.removeItem('cp_sessao');
+  try{ localStorage.removeItem('cp_sessao'); sessionStorage.removeItem('cp_sessao'); }catch(e){}
+  $('telaAtalho').style.display = 'none';
+  if(!$('login').value && telLembrado()) $('login').value = fmtTel(telLembrado());
   dados = null;
   $('telaConta').style.display = 'none';
   $('carregando').style.display = 'none';
@@ -481,7 +600,7 @@ async function entrar(ev){
   try{
     const r = await fetch(API + '/login', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({login, senha, turnstile: tokenTurnstile()}),
+      body: JSON.stringify({login, senha, turnstile: tokenTurnstile(), lembrar: $('lembrar').checked}),
     });
     const j = await r.json();
     if(!j.ok){
@@ -490,7 +609,9 @@ async function entrar(ev){
       if(window.turnstile) window.turnstile.reset();
       return;
     }
-    localStorage.setItem('cp_sessao', j.token);
+    guardarSessao(j.token, $('lembrar').checked);
+    lembrarTel(login);
+    oferecerSalvarSenha(login, senha, j.nome);
     $('senha').value = '';
     aviso('');
     await abrirConta();
@@ -504,7 +625,7 @@ async function entrar(ev){
 }
 
 async function sair(){
-  await chamar('/sair', {});          // mata a sessão no servidor também
+  try{ await chamar('/sair', {}); }catch(e){}   /* 12/11: sem internet também tem que conseguir sair */          // mata a sessão no servidor também
   deslogar('Você saiu da sua conta.');
 }
 
@@ -513,7 +634,15 @@ async function abrirConta(){
   $('telaLogin').style.display = 'none';
   $('carregando').style.display = 'block';
 
-  const j = await chamar('/conta');
+  let j;
+  try{ j = await chamar('/conta'); }
+  catch(e){
+    /* 12/11/2026: sem internet a tela ficava presa no "carregando" pra sempre */
+    $('carregando').style.display = 'none';
+    $('telaLogin').style.display = 'block';
+    aviso('Sem conexão agora. Quando a internet voltar, recarregue a página — sua conta continua aberta neste aparelho.');
+    return;
+  }
   if(!j) return;                       // 401 já tratado
   if(!j.ok){ deslogar(j.erro || 'Não consegui abrir sua conta.'); return; }
 
@@ -552,6 +681,7 @@ function desenhar(){
   desenharCatalogo(j.catalogo || [], j.pontos || 0);
   desenharVelhos(premios.filter(p => !vale(p)));
   desenharDados(j.dados || {}, j.nome || '', j.visitas || 0);
+  prepararPerfil(j.dados || {});
   prepararAtalho();
 }
 
@@ -649,7 +779,9 @@ function desenharPremios(lista){
               ? 'Este prêmio tem opções — escolha uma para continuar.'
               : 'Clique só quando estiver na Casa — o código vale por 24 horas.') + '</div>') +
     '</div>';
-  }).join('');
+  }).join('') +
+    /* 12/11/2026: as mensagens curtas do WhatsApp não trazem mais as regras — elas ficam aqui */
+    '<div class="vazio" style="font-size:12px;padding:6px 0 0">Regras para resgate: mediante compra pontuada (mínimo R$ 25) · somente consumo no local.</div>';
 }
 
 // De onde veio o prêmio. Antes era só "roleta" ou "pontos" — brinde de
@@ -908,9 +1040,129 @@ async function instalarAtalho(){
 function dispensarAtalho(){ lembrarAtalho('depois'); $('atalho').style.display = 'none'; }
 
 /* ---------------- início ---------------- */
-(function(){
-  if(token()) abrirConta();
-  else { $('carregando').style.display = 'none'; $('telaLogin').style.display = 'block'; }
+/* ---------- 12/11/2026: dados opcionais ("mimos com a minha cara") ----------
+   Aparece só enquanto faltar alguma coisa; some quando estiver tudo preenchido. */
+function prepararPerfil(d){
+  const falta = !d.temEmail || !d.nascimento || !d.time || !d.sexo || !d.filhos;
+  $('maisDados').style.display = falta ? 'block' : 'none';
+  $('cxEmail').style.display = d.temEmail ? 'none' : 'block';
+  $('cxNasc').style.display = d.nascimento ? 'none' : 'block';
+  const t = $('time');
+  if(d.time){
+    if([...t.options].some(o => o.value === d.time || o.text === d.time)) t.value = d.time;
+    else { t.value = '__outro'; $('timeOutro').value = d.time; $('timeOutro').style.display = 'block'; }
+  }
+  $('sexo').value = d.sexo || '';
+  $('filhos').value = d.filhos || '';
+}
+$('pfNasc').addEventListener('input', () => {
+  const d = $('pfNasc').value.replace(/\D/g,'').slice(0,4);
+  $('pfNasc').value = d.length > 2 ? d.slice(0,2) + '/' + d.slice(2) : d;
+});
+async function salvarPerfil(){
+  if(trabalhando) return;
+  const corpo = {
+    email: $('pfEmail').value.trim(), nascimento: $('pfNasc').value.trim(),
+    time: $('time').value === '__outro' ? $('timeOutro').value.trim() : $('time').value,
+    sexo: $('sexo').value, filhos: $('filhos').value,
+  };
+  if(!corpo.email && !corpo.nascimento && !corpo.time && !corpo.sexo && !corpo.filhos){ aviso('Preencha pelo menos um campo.'); return; }
+  trabalhando = true; $('btPerfil').disabled = true; $('btPerfil').textContent = 'Salvando…'; aviso('');
+  try{
+    const j = await chamar('/perfil', corpo);
+    if(!j) return;
+    if(!j.ok){ aviso(j.erro || 'Não consegui salvar.'); return; }
+    aviso('Pronto, anotado! Obrigado 🍻', 'ok');
+    $('maisDados').open = false;
+    await abrirConta();
+  }catch(e){ aviso('Sem conexão. Tente de novo em instantes.'); }
+  finally{ trabalhando = false; $('btPerfil').disabled = false; $('btPerfil').textContent = 'Salvar'; }
+}
+
+function atalhoParaLogin(){
+  $('telaAtalho').style.display = 'none';
+  $('telaLogin').style.display = 'block';
+  aviso('');
+  $('senha').focus();
+}
+async function criarSenhaAtalho(ev){
+  ev.preventDefault();
+  if(trabalhando || !atalho) return;
+  const senha = $('atSenha').value;
+  if(senha.length < 6){ aviso('A senha precisa ter pelo menos 6 caracteres.'); return; }
+  trabalhando = true;
+  $('btAtalho').disabled = true; $('btAtalho').textContent = 'Abrindo sua conta…';
+  aviso('');
+  try{
+    const lembrar = $('atLembrar').checked;
+    const r = await fetch(API + '/atalho/senha', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({t: atalho.t, senha, lembrar, origemVisita:(window.cpOrigem?window.cpOrigem():{})})});
+    const j = await r.json();
+    if(!j.ok){
+      if(j.jaTemSenha){ atalhoParaLogin(); aviso('Essa conta já tem senha — entre com ela.'); }
+      else aviso(j.erro || 'Não consegui criar sua senha. Tente de novo.');
+      return;
+    }
+    guardarSessao(j.token, lembrar);
+    const d = so($('atTel').value);
+    lembrarTel(d);
+    oferecerSalvarSenha(d, senha, j.nome);
+    try{ window.dataLayer=window.dataLayer||[]; window.dataLayer.push({event:'clube_primeiro_acesso', via:'link_whatsapp'}); }catch(e){}
+    $('atSenha').value = '';
+    $('telaAtalho').style.display = 'none';
+    await abrirConta();
+  }catch(e){
+    aviso('Sem conexão. Tente de novo em instantes.');
+  }finally{
+    trabalhando = false;
+    $('btAtalho').disabled = false; $('btAtalho').textContent = 'Criar senha e ver meus prêmios';
+  }
+}
+
+/* ---------- entrada ----------
+   1. Aparelho lembrado (sessão guardada) → abre a conta direto.
+   2. Chegou pelo link pessoal do WhatsApp → celular já preenchido; quem ainda não tem
+      senha cai direto no "crie sua senha".
+   3. Senão → login, com o último celular usado neste aparelho já escrito. */
+/* 12/11/2026: conta quem ABRIU o link de uma mensagem do Clube (painel: enviadas × abriram) */
+function enviarClique(t){
+  try{
+    const q = new URLSearchParams(location.search);
+    if(q.get('utm_source') !== 'whatsapp' || q.get('utm_medium') !== 'clube' || sessionStorage.getItem('cp_clique')) return;
+    sessionStorage.setItem('cp_clique', '1');
+    fetch(API + '/clique', {method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({camp: q.get('utm_campaign') || '', t: t || ''})}).catch(function(){});
+  }catch(e){}
+}
+(async function(){
+  if(token()){
+    enviarClique(window.__cpAtalho || '');
+    await abrirConta();
+    if(dados) return;
+  } else { $('carregando').style.display = 'none'; $('telaLogin').style.display = 'block'; }
+  let tel = telLembrado();
+  const t = window.__cpAtalho || '';
+  enviarClique(t);
+  if(t){
+    try{
+      const j = await (await fetch(API + '/atalho?t=' + encodeURIComponent(t), {cache:'no-store'})).json();
+      if(j && j.ok){
+        tel = j.login || tel;
+        atalho = {t: t, nome: j.nome || ''};
+        if(!j.temSenha && !dados){
+          $('atNome').textContent = j.nome ? ', ' + j.nome : '';
+          $('atTel').value = fmtTel(tel);
+          $('telaLogin').style.display = 'none';
+          $('telaAtalho').style.display = 'block';
+          return;
+        }
+      }
+    }catch(e){ /* sem rede: segue no login normal */ }
+  }
+  if(tel && !$('login').value){
+    $('login').value = fmtTel(tel);
+    try{ $('senha').focus({preventScroll:true}); }catch(e){}
+  }
 })();
 </script>
 <script>
