@@ -126,6 +126,13 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /minha-conta/volta          /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=volta                        301
 /minha-conta/migracao       /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=migracao                     301
 /minha-conta/presente       /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=presente                     301
+# 12/11/2026: LINK PESSOAL das mensagens de quem já é do Clube (token da conta → a Minha Conta abre com o
+# celular preenchido; quem ainda não tem senha cria na hora). ms=saldo/pós-visita, mv=prêmio vencendo,
+# ma=aniversário, mr=volta. O token sai da URL antes do GTM (ver <head> da area-clube.html).
+/ms/:token                  /area-clube.html?m=:token&utm_source=whatsapp&utm_medium=clube&utm_campaign=saldo               301
+/mv/:token                  /area-clube.html?m=:token&utm_source=whatsapp&utm_medium=clube&utm_campaign=vencimento          301
+/ma/:token                  /area-clube.html?m=:token&utm_source=whatsapp&utm_medium=clube&utm_campaign=aniversario         301
+/mr/:token                  /area-clube.html?m=:token&utm_source=whatsapp&utm_medium=clube&utm_campaign=volta               301
 
 # REMOVIDOS em 10/08/2026: /inscrever, /cadastrar e /fidelizi.
 # Eram atalhos criados esperando a URL do formulário do Fidelizi, que nunca
