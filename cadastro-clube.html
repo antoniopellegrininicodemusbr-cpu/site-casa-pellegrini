@@ -17,9 +17,11 @@
 <link rel="icon" href="/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
+  @font-face{font-family:'Pellegrini Display';src:url('/fonts/bebas-neue.woff2') format('woff2');font-weight:400 900;font-style:normal;font-display:swap;size-adjust:118%}
   :root{
     --navy0:#14172E; --navy1:#1B1F3C; --navy2:#1D2740; --borda:#2B3654;
     --vermelho:#BD1823; --dourado:#FF9E21; --creme:#F5EFE6;
@@ -37,15 +39,15 @@
   #gate{position:fixed;inset:0;background:var(--navy0);z-index:99;
         display:flex;align-items:center;justify-content:center;padding:24px}
   #gate .box{max-width:340px;width:100%;text-align:center}
-  #gate h2{font-family:'Playfair Display',serif;color:var(--dourado);font-size:22px;margin-bottom:6px}
+  #gate h2{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--dourado);font-size:22px;margin-bottom:6px}
   #gate p{color:var(--muted);font-size:13px;margin-bottom:18px}
 
   /* ---------- topo ---------- */
   header{text-align:center;padding:8px 0 22px}
-  header .marca{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;
+  header .marca{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:26px;font-weight:700;
                 color:var(--dourado);letter-spacing:.5px}
   header .linha{width:64px;height:3px;background:var(--vermelho);margin:10px auto 16px;border-radius:2px}
-  header h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;margin-bottom:8px}
+  header h1{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:22px;font-weight:600;margin-bottom:8px}
   header p{color:var(--muted);font-size:14px;line-height:1.55}
 
   /* ---------- benefícios (grid, não flex — o flex quebrava as linhas) ---------- */
@@ -89,7 +91,7 @@
 
   /* ---------- tela inicial: entrar OU cadastrar ---------- */
   #pInicio{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;padding:22px 18px;text-align:center}
-  #pInicio h2{font-family:'Playfair Display',serif;color:var(--creme);font-size:19px;margin-bottom:18px}
+  #pInicio h2{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--creme);font-size:19px;margin-bottom:18px}
   .btSec{background:transparent;color:var(--dourado);border:1.5px solid var(--dourado);margin-top:12px}
   .btSec:hover{background:rgba(255,158,33,.08);filter:none}
   .sub{display:block;color:var(--muted);font-size:12.5px;margin-top:6px;font-weight:400}
@@ -103,7 +105,7 @@
   #sucesso{display:none;text-align:center;padding:34px 18px;background:var(--navy1);
            border:1px solid var(--navy2);border-radius:14px}
   #sucesso .emo{font-size:52px;margin-bottom:14px}
-  #sucesso h2{font-family:'Playfair Display',serif;color:var(--dourado);font-size:24px;margin-bottom:12px}
+  #sucesso h2{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--dourado);font-size:24px;margin-bottom:12px}
   #sucesso p{color:#C9D0E0;font-size:15px;line-height:1.6;margin-bottom:10px}
   #sucesso .pts{background:var(--navy2);border-radius:10px;padding:14px;margin:18px 0 4px;
                 font-size:15px;color:var(--dourado);font-weight:600}
@@ -302,7 +304,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
        se não achar o cadastro a tela diz (e sugere o celular / fazer cadastro);
        se achar, mostra o final do número pra onde o código foi. -->
   <form id="pRecuperar" style="display:none" onsubmit="pedirCodigo(event)">
-    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
+    <h2 style="font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
       Criar ou recuperar senha</h2>
     <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px" id="txtRec">
       Já é do Clube mas ainda não tem senha? É por aqui também. Vamos mandar um
@@ -329,7 +331,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     <!-- SIMPLIFICADO 25/09/2026 (Antonio achou o "CLUBE 123456" complicado):
          some o código da tela — ele vai escondido dentro da mensagem pronta.
          Pro cliente é só: tocar no botão verde → tocar em enviar. -->
-    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:21px;margin-bottom:6px">
+    <h2 style="font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--dourado);font-size:21px;margin-bottom:6px">
       Falta só um toque 👇</h2>
     <p style="color:#C9D0E0;font-size:14.5px;line-height:1.6;margin-bottom:18px">
       Pra sua segurança, confirmamos pelo seu WhatsApp.</p>
@@ -351,7 +353,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
 
   <!-- ============ DIGITAR CÓDIGO + NOVA SENHA ============ -->
   <form id="pDefinir" style="display:none" onsubmit="definirSenha(event)">
-    <h2 style="font-family:'Playfair Display',serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
+    <h2 style="font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--dourado);font-size:19px;margin-bottom:8px">
       Sua nova senha</h2>
     <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px" id="txtEnviado">
       Confirmado ✅ Agora é só escolher sua senha.</p>
@@ -495,7 +497,7 @@ function modoConvite(j){
   const box = document.getElementById('convBox');
   const itens = (j.premios||[]).map((p) => '<div style="font-size:16px;font-weight:700;color:#fff;margin-top:6px">🎁 '+escH(p)+'</div>').join('');
   const pts = j.pontos>0 ? '<div style="margin-top:6px;color:#fff">⭐ '+j.pontos+(j.pontos===1?' ponto':' pontos')+' da sua compra</div>' : '';
-  box.innerHTML = '<div style="font-family:\'Playfair Display\',serif;color:var(--dourado);font-size:20px">Ative seu prêmio</div>' +
+  box.innerHTML = '<div style="font-family:\'Pellegrini Display\',Impact,sans-serif;color:var(--dourado);font-size:20px">Ative seu prêmio</div>' +
     '<div style="color:var(--muted);font-size:13.5px;margin-top:4px">Está guardado esperando você:</div>' + itens + pts +
     (j.venceEm ? '<div style="color:var(--muted);font-size:12.5px;margin-top:10px">Vale até '+escH(j.venceEm)+' · leva 30 segundos</div>' : '');
   box.style.display = 'block';

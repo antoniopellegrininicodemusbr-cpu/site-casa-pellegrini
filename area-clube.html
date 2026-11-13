@@ -22,7 +22,7 @@
   connect-src 'self' https://casapellegrini.com.br;
   script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src https://fonts.gstatic.com;
+  font-src 'self' https://fonts.gstatic.com;
   img-src 'self' data:;
   manifest-src 'self';
   frame-src https://challenges.cloudflare.com;
@@ -42,9 +42,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
+  @font-face{font-family:'Pellegrini Display';src:url('/fonts/bebas-neue.woff2') format('woff2');font-weight:400 900;font-style:normal;font-display:swap;size-adjust:118%}
   :root{
     --navy0:#14172E; --navy1:#1B1F3C; --navy2:#1D2740; --borda:#2B3654;
     --vermelho:#BD1823; --dourado:#FF9E21; --creme:#F5EFE6;
@@ -62,11 +64,11 @@
   #gate{position:fixed;inset:0;background:var(--navy0);z-index:99;
         display:flex;align-items:center;justify-content:center;padding:24px}
   #gate .box{max-width:340px;width:100%;text-align:center}
-  #gate h2{font-family:'Playfair Display',serif;color:var(--dourado);font-size:22px;margin-bottom:6px}
+  #gate h2{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;color:var(--dourado);font-size:22px;margin-bottom:6px}
   #gate p{color:var(--muted);font-size:13px;margin-bottom:18px}
 
   header{text-align:center;padding:8px 0 20px}
-  header .marca{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;
+  header .marca{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:24px;font-weight:700;
                 color:var(--dourado);letter-spacing:.5px}
   header .linha{width:64px;height:3px;background:var(--vermelho);margin:10px auto 0;border-radius:2px}
 
@@ -102,13 +104,13 @@
          text-align:center;margin-bottom:18px}
   .saldo .ola{font-size:14px;color:var(--muted);margin-bottom:10px}
   .saldo .ola b{color:var(--creme);font-weight:600}
-  .saldo .num{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;
+  .saldo .num{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:52px;font-weight:700;
               color:var(--dourado);line-height:1}
   .saldo .un{font-size:14px;color:var(--muted);margin-top:4px}
   .saldo .regra{font-size:12.5px;color:var(--muted);margin-top:14px;
                 border-top:1px solid var(--navy2);padding-top:12px;line-height:1.5}
 
-  h2.sec{font-family:'Playfair Display',serif;font-size:19px;color:var(--creme);
+  h2.sec{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:19px;color:var(--creme);
          margin:26px 0 12px;display:flex;align-items:center;gap:8px}
   h2.sec .qtd{font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#20180A;
               background:var(--dourado);border-radius:20px;padding:2px 9px}
@@ -157,7 +159,7 @@
   /* ---------- código ---------- */
   .codigo{background:var(--navy2);border:1px dashed var(--dourado);border-radius:12px;
           padding:18px 14px;text-align:center;margin-top:6px}
-  .codigo .cod{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;
+  .codigo .cod{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:34px;font-weight:700;
                color:var(--dourado);letter-spacing:3px;line-height:1.1}
   .codigo .inst{font-size:12.5px;color:#C9D0E0;margin-top:10px;line-height:1.5}
   .codigo .val{font-size:12px;color:var(--muted);margin-top:8px}
@@ -174,7 +176,7 @@
   .total{display:flex;justify-content:space-between;align-items:center;
          margin-bottom:6px;padding-bottom:12px;border-bottom:1px solid var(--borda);
          font-size:14px;color:var(--muted)}
-  .total .v{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;
+  .total .v{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:20px;font-weight:700;
             color:var(--dourado)}
 
   .vazio{color:var(--muted);font-size:14px;line-height:1.6;text-align:center;padding:8px 4px}
@@ -277,7 +279,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
   <!-- ===================== LOGIN ===================== -->
   <div id="telaLogin" style="display:none">
     <div class="card">
-      <h2 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px">Minha conta</h2>
+      <h2 style="font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:20px;margin-bottom:4px">Minha conta</h2>
       <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
         Entre para ver seus pontos e usar seus prêmios.
       </p>
@@ -330,7 +332,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
        sabe quem é — o celular vem preenchido e basta escolher a senha. Sem código, sem captcha. -->
   <div id="telaAtalho" style="display:none">
     <div class="card">
-      <h2 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px">Oi<span id="atNome"></span>! Falta só a sua senha</h2>
+      <h2 style="font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:20px;margin-bottom:4px">Oi<span id="atNome"></span>! Falta só a sua senha</h2>
       <p style="color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:18px">
         Seus pontos e prêmios já estão guardados aqui. Escolha uma senha pra abrir sua conta —
         é só desta vez, depois este aparelho lembra de você.

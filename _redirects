@@ -80,9 +80,10 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /sobre         /historia                                                         301
 
 # === LINKS EXTERNOS ÚTEIS ===
-/mapa          https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis  301!
-/rota          https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis  301!
-/ifood         https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f  301!
+# 13/11/2026: /mapa, /rota e /ifood viraram PAGINAS-PONTE (mapa.html e ifood.html), como a /clube:
+# contam o clique no GA4 + Meta + TikTok (eventos get_directions / click_ifood do GTM) e so entao levam pro destino.
+# Antes eram 301 direto pro Google Maps / iFood e o clique nao era medido. NAO voltar pra redirect.
+/rota          /mapa.html                                                            200
 /instabio      https://instagram.com/casapellegrini                                   301!
 
 # === CLUBE PELLEGRINI — programa de fidelidade (Fidelizi como provedor técnico) ===

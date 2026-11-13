@@ -1,0 +1,44 @@
+# Atualiza a nota e o numero de avaliacoes do Google no site (Schema + texto) - toda segunda.
+# Secrets: GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN (os mesmos do gbp-review-reply).
+name: Avaliacoes do Google no site
+
+on:
+  schedule:
+    - cron: "17 9 * * 1"   # segunda ~06h17 BRT (o GitHub costuma atrasar; nao tem hora critica)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra os numeros, sem gravar"
+        default: "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: review-count
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Buscar numeros no Google e atualizar as paginas
+        env:
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/update_review_count.py
+      - name: Publicar (o Netlify sobe sozinho)
+        run: |
+          git config user.name "review-count-bot"
+          git config user.email "actions@github.com"
+          git add index.html cardapio.html historia.html clube-pellegrini.html
+          git diff --cached --quiet && echo "sem mudanca" && exit 0
+          git commit -m "Avaliacoes do Google no site: numero atualizado $(date -u +%F)"
+          for i in 1 2 3; do git push && break; git pull --rebase && sleep 5; done
