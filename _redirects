@@ -141,9 +141,12 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 # Quem quiser cadastro usa /cadastro (rota fixa do template do WhatsApp).
 
 # Atalhos por origem do anúncio (campanhas pagas — cruzar atribuição no GA4 e Conversões offline)
-/clube-meta         /clube-pellegrini?utm_source=meta&utm_medium=paid&utm_campaign=clube&utm_content=ad        301
-/clube-tiktok       /clube-pellegrini?utm_source=tiktok&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
-/clube-google       /clube-pellegrini?utm_source=google&utm_medium=paid&utm_campaign=clube&utm_content=ad     301
+# 13/11/2026: os 3 atalhos de ANUNCIO deixaram de ser 301 (o redirect jogava fora o fbclid/gclid/ttclid e as UTMs
+# do proprio anuncio). Agora o Netlify serve a pagina do Clube direto (200) e um script no topo do
+# clube-pellegrini.html completa as UTMs que faltarem. NAO voltar pra 301 com UTM fixa.
+/clube-meta         /clube-pellegrini.html        200
+/clube-tiktok       /clube-pellegrini.html        200
+/clube-google       /clube-pellegrini.html        200
 /clube-insta        /clube-pellegrini?utm_source=instagram&utm_medium=social&utm_campaign=clube&utm_content=bio 301
 
 # Atalhos OFFLINE (QR codes em flyer, mesa, balcão, banner de rua etc.)

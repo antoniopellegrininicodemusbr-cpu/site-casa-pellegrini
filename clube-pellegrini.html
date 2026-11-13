@@ -2,6 +2,19 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Atalhos de anuncio (/clube-meta, /clube-tiktok, /clube-google) - 13/11/2026.
+   O Netlify serve esta pagina direto nesses enderecos (sem redirect) pra NAO perder o fbclid / gclid / ttclid
+   nem as UTMs que o proprio anuncio manda. Aqui so completamos as UTMs que faltarem e deixamos o endereco
+   limpo (/clube-pellegrini) ANTES do GTM carregar. Antes era um 301 que jogava fora tudo isso. */
+(function(){try{
+  var A={'/clube-meta':'meta','/clube-tiktok':'tiktok','/clube-google':'google'};
+  var src=A[location.pathname.replace(/\/$/,'')]; if(!src) return;
+  var p=new URLSearchParams(location.search), d={utm_source:src,utm_medium:'paid',utm_campaign:'clube',utm_content:'ad'};
+  for(var k in d){ if(!p.get(k)) p.set(k,d[k]); }
+  history.replaceState(null,'','/clube-pellegrini?'+p.toString()+location.hash);
+}catch(e){}})();
+</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
