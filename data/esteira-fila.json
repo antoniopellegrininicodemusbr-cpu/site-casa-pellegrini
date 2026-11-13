@@ -27,18 +27,18 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DfiKkAKsELB/",
    "caption": "El caldo 🌊❄️  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
-   "status": "APROVADO_FILA",
+   "status": "EM_TESTE",
    "nota_gemini": "9",
    "motivo_reprova": "",
-   "flags": "gemini_aprovou:sim|sazon:frio|tema:caldo caldo quente frio|legenda_v2:ok",
+   "flags": "gemini_aprovou:sim|sazon:frio|tema:caldo caldo quente frio|legenda_v2:ok|entrada:novo_aprovado_fluxo_agencia(prioridade_sec3.2;nota9_sobre_Feliz_e_quem_pontua_nota8_com_duvida_FILLER);creative_novo_1125465806906988;url_tags_conferido;autorizado_antonio_13/11_11h55(classificador_barrou_a_1a_tentativa)",
    "conjunto_sugerido": "dia",
    "data_triagem": "2026-11-10",
-   "data_entrada_teste": "",
+   "data_entrada_teste": "2026-11-13",
    "gasto_teste": "",
    "compras_teste": "",
    "ctr_teste": "",
    "data_veredito": "",
-   "ad_id_promovido": ""
+   "ad_id_promovido": "[V-teste] El Caldo=120256960350490460"
   },
   {
    "media_id": "18107667275211091",
