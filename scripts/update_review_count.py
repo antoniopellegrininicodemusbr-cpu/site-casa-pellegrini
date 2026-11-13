@@ -64,6 +64,13 @@ def main():
         t = aplicar(s, old_n, new_n, old_r, new_r)
         if not valido(t): sys.exit(f"ERRO: {p} ficaria invalido - nao gravei nada.")
         if t != s: novos[f] = t
+    # llms.txt (resumo pra buscadores de IA): so a frase "mais de X avaliacoes"
+    f = os.path.join(ROOT, "llms.txt")
+    if os.path.exists(f):
+        s = open(f, encoding="utf-8").read()
+        t = s.replace("mais de " + br(old_n // 100 * 100), "mais de " + br(new_n // 100 * 100))
+        if new_r != old_r: t = t.replace(old_r.replace(".", ",") + " estrelas", new_r.replace(".", ",") + " estrelas")
+        if t != s: novos[f] = t
     print("Paginas alteradas:", [os.path.basename(f) for f in novos])
     if DRY:
         print("DRY_RUN: nao gravei."); return
