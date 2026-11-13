@@ -36,7 +36,7 @@
      Clube — o site.webmanifest é do site. SEM service worker de propósito: um
      SW mal posicionado sequestraria o site inteiro; o atalho não precisa dele. -->
 <link rel="manifest" href="/clube.webmanifest">
-<meta name="theme-color" content="#0C1120">
+<meta name="theme-color" content="#14172E">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Clube Pellegrini">
 <meta name="mobile-web-app-capable" content="yes">
@@ -46,8 +46,8 @@
 
 <style>
   :root{
-    --navy0:#0C1120; --navy1:#141B2E; --navy2:#1D2740; --borda:#2B3654;
-    --vermelho:#C8102E; --dourado:#F2B705; --creme:#F5EFE6;
+    --navy0:#14172E; --navy1:#1B1F3C; --navy2:#1D2740; --borda:#2B3654;
+    --vermelho:#BD1823; --dourado:#FF9E21; --creme:#F5EFE6;
     --muted:#8B93A7; --verde:#1DB954;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -97,7 +97,7 @@
   .msg.ok{display:block;background:rgba(29,185,84,.12);border:1px solid rgba(29,185,84,.35);color:#8FE7AE}
 
   /* ---------- saldo ---------- */
-  .saldo{background:linear-gradient(160deg,#1D2740,#141B2E);
+  .saldo{background:linear-gradient(160deg,#1D2740,#1B1F3C);
          border:1px solid var(--borda);border-radius:16px;padding:22px 18px;
          text-align:center;margin-bottom:18px}
   .saldo .ola{font-size:14px;color:var(--muted);margin-bottom:10px}
@@ -146,7 +146,7 @@
   button.opcao:hover:not(:disabled){filter:none;border-color:var(--muted)}
   button.opcao .bola{flex:0 0 18px;width:18px;height:18px;border-radius:50%;
                      border:2px solid var(--muted);box-sizing:border-box}
-  button.opcao.sel{border-color:var(--dourado);background:rgba(242,183,5,.10)}
+  button.opcao.sel{border-color:var(--dourado);background:rgba(255,158,33,.10)}
   button.opcao.sel .bola{border:5px solid var(--dourado);background:var(--navy0)}
   .escolhido{font-size:14px;color:var(--creme);margin:0 0 12px;line-height:1.45}
   .escolhido b{color:var(--dourado)}
@@ -190,7 +190,7 @@
   .cf{margin-bottom:16px}
   /* 12/11/2026: "manter conectado" */
   .lembrar{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);margin:2px 0 16px;cursor:pointer}
-  .lembrar input{width:18px;height:18px;flex:none;margin:0;accent-color:#F2B705}
+  .lembrar input{width:18px;height:18px;flex:none;margin:0;accent-color:#FF9E21}
   .miudo{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px;text-align:center}
   .miudo a{color:var(--muted)}
   /* 12/11/2026 (Antonio): dados opcionais recolhidos — abre com um toque */
@@ -214,7 +214,7 @@
   .btSenha{width:100%;background:transparent;color:var(--dourado);
            border:1.5px solid var(--dourado);border-radius:10px;padding:12px;
            font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px}
-  .btSenha:hover{background:rgba(242,183,5,.08);filter:none}
+  .btSenha:hover{background:rgba(255,158,33,.08);filter:none}
   .dicaSenha{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:7px;text-align:center}
   #carregando{text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
 </style>
@@ -309,7 +309,7 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
            aparece em destaque. Aparece em QUALQUER erro de login (não diz se o
            CPF existe nem se tem senha — sem oráculo de quem é cliente). -->
       <div id="semSenhaBox" style="display:none;margin-top:14px;padding:14px;border-radius:12px;
-           border:1.5px solid var(--dourado);background:rgba(242,183,5,.08);text-align:center">
+           border:1.5px solid var(--dourado);background:rgba(255,158,33,.08);text-align:center">
         <div style="font-weight:600;font-size:15px;margin-bottom:4px">Ainda não criou sua senha?</div>
         <div style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:10px">
           Se você já era do Clube, seus pontos e prêmios estão guardados.
