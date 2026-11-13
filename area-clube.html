@@ -1098,7 +1098,7 @@ async function criarSenhaAtalho(ev){
   try{
     const lembrar = $('atLembrar').checked;
     const r = await fetch(API + '/atalho/senha', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({t: atalho.t, senha, lembrar, origemVisita:(window.cpOrigem?window.cpOrigem():{})})});
+      body: JSON.stringify({t: atalho.t, senha, lembrar, origemVisita:(window.cpOrigem?window.cpOrigem():{}), nav: navIds()})});
     const j = await r.json();
     if(!j.ok){
       if(j.jaTemSenha){ atalhoParaLogin(); aviso('Essa conta já tem senha — entre com ela.'); }
@@ -1127,13 +1127,37 @@ async function criarSenhaAtalho(ev){
       senha cai direto no "crie sua senha".
    3. Senão → login, com o último celular usado neste aparelho já escrito. */
 /* 12/11/2026: conta quem ABRIU o link de uma mensagem do Clube (painel: enviadas × abriram) */
+/* 13/11/2026: esta página tem a trava de CSP (pixel nenhum roda aqui), então quem avisa os
+   anúncios é o NOSSO servidor. Mandamos junto os marcadores que os pixels do site já gravaram
+   neste navegador em outras páginas (cookies próprios do domínio) — isso é o que deixa Meta,
+   TikTok e Analytics reconhecerem a pessoa. Nada sai daqui pra terceiros: só pro /api/clube. */
+function navIds(){
+  const o = {};
+  try{
+    const ck = {};
+    document.cookie.split(';').forEach(function(p){ const i = p.indexOf('='); if(i > 0) ck[p.slice(0,i).trim()] = p.slice(i+1).trim(); });
+    const or = (window.cpOrigem ? window.cpOrigem() : {}) || {};
+    if(ck._fbp) o.fbp = ck._fbp;
+    if(ck._fbc) o.fbc = ck._fbc; else if(or.fbclid) o.fbc = 'fb.1.' + (or.ts || Date.now()) + '.' + or.fbclid;
+    if(ck._ttp) o.ttp = ck._ttp;
+    if(or.ttclid) o.ttclid = or.ttclid;
+    if(ck._ga) o.ga = ck._ga;
+    const gs = ck._ga_X0PMSJGFQ5 || '';
+    const m = gs.match(/^GS1\.\d\.(\d{9,11})\./) || gs.match(/^GS2\.\d\.s(\d{9,11})/);
+    if(m) o.gaSid = m[1];
+    o.url = location.origin + location.pathname + location.search;
+  }catch(e){}
+  return o;
+}
 function enviarClique(t){
   try{
     const q = new URLSearchParams(location.search);
     if(q.get('utm_source') !== 'whatsapp' || q.get('utm_medium') !== 'clube' || sessionStorage.getItem('cp_clique')) return;
     sessionStorage.setItem('cp_clique', '1');
-    fetch(API + '/clique', {method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({camp: q.get('utm_campaign') || '', t: t || ''})}).catch(function(){});
+    const h = {'Content-Type':'application/json'};
+    const ses = token(); if(ses) h['X-Clube-Sessao'] = ses;
+    fetch(API + '/clique', {method:'POST', keepalive:true, headers:h,
+      body: JSON.stringify({camp: q.get('utm_campaign') || '', t: t || '', sinal: 1, nav: navIds()})}).catch(function(){});
   }catch(e){}
 }
 (async function(){
