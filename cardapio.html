@@ -518,6 +518,19 @@
             font-family: 'Pellegrini Display','Bebas Neue',Impact,'Arial Narrow',sans-serif;
             letter-spacing: .02em;
         }
+        /* 13/11/2026: botões Como Chegar + iFood no topo do cardápio */
+        .cd-hdr-esq{gap:8px;min-width:0}
+        .cd-hdr-ctas{gap:6px;flex-shrink:0}
+        .cd-cta{display:inline-flex;align-items:center;gap:5px;min-height:36px;border-radius:9999px;font-weight:700;white-space:nowrap;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:filter .15s}
+        .cd-cta:hover{filter:brightness(1.1)}
+        .cd-cta-rota{background:#BD1823;color:#fff;font-size:13px;padding:0 12px}
+        .cd-cta-ifood{background:#fff;padding:0 12px}
+        .cd-cta-ifood img{height:18px;width:auto;display:block}
+        .cd-hdr{gap:8px}
+        @media (min-width:768px){.cd-hdr-esq img{width:auto}}
+        @media (max-width:419px){.cd-hdr-esq img{max-width:100px}}
+        @media (max-width:374px){.cd-hdr-esq img{max-width:90px}}
+        @media (max-width:359px){.cd-hdr{padding-left:10px;padding-right:10px}.cd-hdr-esq{gap:6px}.cd-hdr-esq img{max-width:84px}.cd-cta-rota{font-size:12px;padding:0 9px}.cd-cta-ifood{padding:0 9px}.cd-cta-ifood img{height:16px}}
     </style>
 
 <link rel="preload" href="/fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
@@ -554,17 +567,28 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
 
     <!-- Header Fixo -->
     <header class="bg-pellegrini-navy text-white shadow-md fixed top-0 w-full z-50 border-b border-white/10">
-        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" aria-label="Voltar para a Home" class="flex items-center space-x-2 text-white hover:text-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </a>
-            <picture>
-                <source srcset="logo.webp" type="image/webp">
-                <img src="logo.png" alt="Casa Pellegrini" class="h-9 md:h-16 max-w-[110px] md:max-w-none object-contain bg-white rounded-lg px-1.5 md:px-3 py-0.5 md:py-1.5" width="180" height="64">
-            </picture>
-            <div class="w-7"></div> <!-- Spacer pra centralizar a logo -->
+        <div class="cd-hdr max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="cd-hdr-esq flex items-center">
+                <a href="/" aria-label="Voltar para a Home" class="flex items-center text-white hover:text-gray-200 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <picture>
+                    <source srcset="logo-sm.webp" type="image/webp">
+                    <img src="logo-sm.png" alt="Casa Pellegrini" class="h-9 md:h-12 max-w-[110px] md:max-w-none object-contain bg-white rounded-lg px-1.5 md:px-3 py-0.5 md:py-1.5" width="400" height="156">
+                </picture>
+            </div>
+            <!-- 13/11/2026: Como Chegar + iFood no cardápio (mesmos eventos da home: get_directions / click_ifood) -->
+            <div class="cd-hdr-ctas flex items-center">
+                <a href="https://maps.google.com/maps?daddr=Casa+Pellegrini+-+Rua+Treze+de+Maio,+184+-+Centro,+Petr%C3%B3polis" target="_blank" rel="noopener" onclick="dataLayer.push({event:'get_directions'})" class="cd-cta cd-cta-rota">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Como Chegar
+                </a>
+                <a href="https://www.ifood.com.br/delivery/petropolis-rj/casa-pellegrini-centro/953fe926-cd9d-4ee5-af17-dff66951839f" target="_blank" rel="noopener" aria-label="Pedir no iFood" onclick="dataLayer.push({event:'click_ifood'})" class="cd-cta cd-cta-ifood">
+                    <img src="ifood-logo.svg" alt="iFood" width="85" height="48">
+                </a>
+            </div>
         </div>
         <!-- Badge de Avaliações (estrelas amarelas — gera prova social no cardápio) -->
         <a href="https://g.page/casapellegrini" target="_blank" rel="noopener" class="block bg-pellegrini-navy2 text-white text-center py-1.5 hover:brightness-110 transition">
