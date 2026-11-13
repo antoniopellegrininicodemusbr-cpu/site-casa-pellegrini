@@ -101,6 +101,11 @@ REPROVE SEMPRE (criterio rigido — "na duvida, reprova, temos conteudo bom de s
   de clima liga/desliga o anuncio conforme o tempo REAL do dia em Petropolis. 'calor' = tema/visual
   EXPLICITO de calor: sol forte, piscina, suor, "refrescar", vibe de verao. 'frio' = caldos, fondue,
   "friozinho", se aquecer. Chopp/cerveja/happy hour GENERICO sem vibe de verao explicita = 'nenhuma'.
+  GRAU ESTRITO (prompt v6 — Antonio 13/11/2026): use 'calor_estrito' quando o criativo SO faz sentido
+  num dia quente de verdade e fica estranho ou irrelevante num dia ameno — ex.: gelo derretendo na
+  calcada, alguem se refrescando de um sol forte, "ta insuportavel esse calor". Se o tema e de calor mas
+  o video ainda funciona num dia ameno, e 'calor' (normal). Mesma logica para 'frio_estrito' (so faz
+  sentido num dia frio/chuvoso de verdade) versus 'frio'. Na duvida entre os dois, use o NORMAL.
   Sazonalidade de DATA — Natal, Bauernfest, Copa, festas — continua REPROVANDO via momento_datado.)
 - Qualidade ruim: audio inaudivel, imagem tremida, video cortado no meio.
 
@@ -118,7 +123,7 @@ Responda SOMENTE com JSON valido, sem markdown, neste formato exato:
  "motivo": "uma frase curta em portugues",
  "conjunto_sugerido": "dia"|"noite"|"qualquer",
  "momento_datado": "nenhum"|"aniversario"|"mesversario"|"promocao_com_prazo"|"evento_unico"|"cafe_da_manha"|"promessa_vencida"|"item_fora_do_cardapio",
- "sazonalidade": "nenhuma"|"calor"|"frio"|"data_especifica",
+ "sazonalidade": "nenhuma"|"calor"|"calor_estrito"|"frio"|"frio_estrito"|"data_especifica",
  "conteudo_ia_celebridade": true|false,
  "tema": "2-4 palavras descrevendo o video"}}"""
 

@@ -13,6 +13,9 @@ Veredito do dia:
   CALOR = tmax >= 24C  E   sem chuva forte
   AMENO = resto -> tudo ativo
 Acao: FRIO -> ativa sazon:frio, pausa sazon:calor. CALOR -> o inverso. AMENO -> ativa os dois.
+Nivel ESTRITO (Antonio 13/11/2026): flags sazon:calor_estrito / sazon:frio_estrito valem para
+criativo MUITO especifico de uma condicao -- so roda no veredito correspondente. calor_estrito
+fica PAUSADO em AMENO e em FRIO; frio_estrito fica PAUSADO em AMENO e em CALOR.
 
 Seguranca: o robo SO reativa anuncio que ele mesmo pausou (data/clima-state.json).
 Nunca mexe em anuncio pausado por regua/humano. So toca ads listados na fila
@@ -99,14 +102,15 @@ def veredito(alvo):
 def ads_por_sazon():
     regs = json.load(open(FILA))
     if not isinstance(regs, list): regs = regs.get("registros", regs)
-    pool = {"frio": [], "calor": []}
+    pool = {"frio": [], "calor": [], "frio_estrito": [], "calor_estrito": []}
     for r in regs:
         if r.get("status") not in ("PROMOVIDO", "EM_TESTE"): continue
         f = str(r.get("flags") or "")
-        m = re.search(r"sazon:(frio|calor)", f)
+        m = re.search(r"sazon:(frio|calor)(_estrito)?", f)
         if not m: continue
+        chave = m.group(1) + (m.group(2) or "")
         for aid in re.findall(r"(\d{15,})", str(r.get("ad_id_promovido") or "")):
-            pool[m.group(1)].append(aid)
+            pool[chave].append(aid)
     return pool
 
 def fb_status(aid):
@@ -126,14 +130,21 @@ def main():
     print(f"agora {agora_brt} BRT -> decidindo para o dia {alvo_s}")
     v, tmax, prob, mm, fonte = veredito(alvo)
     pool = ads_por_sazon()
-    print(f"pool frio={pool['frio']} calor={pool['calor']}")
+    print(f"pool frio={pool['frio']} calor={pool['calor']} frio_estrito={pool['frio_estrito']} calor_estrito={pool['calor_estrito']}")
     state = {"pausados_por_clima": []}
     if os.path.exists(STATE):
         try: state = json.load(open(STATE))
         except Exception: pass
     meus = set(state.get("pausados_por_clima", []))
-    pausar = pool["calor"] if v == "FRIO" else pool["frio"] if v == "CALOR" else []
-    ativar = pool["frio"] if v == "FRIO" else pool["calor"] if v == "CALOR" else pool["frio"] + pool["calor"]
+    if v == "FRIO":
+        pausar = pool["calor"] + pool["calor_estrito"]
+        ativar = pool["frio"] + pool["frio_estrito"]
+    elif v == "CALOR":
+        pausar = pool["frio"] + pool["frio_estrito"]
+        ativar = pool["calor"] + pool["calor_estrito"]
+    else:  # AMENO: os estritos ficam de fora, os normais rodam
+        pausar = pool["calor_estrito"] + pool["frio_estrito"]
+        ativar = pool["frio"] + pool["calor"]
     acoes = []
     for aid in pausar:
         st = fb_status(aid)
