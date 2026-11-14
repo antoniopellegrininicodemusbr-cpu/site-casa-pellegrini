@@ -203,6 +203,7 @@
   <nav>
     <button data-tab="admin" class="active">⚙️ Admin</button>
     <button data-tab="crm">📣 CRM</button>
+    <button data-tab="garcons">👤 Garçons</button>
     <button data-tab="saude">📈 Saúde do Clube</button>
   </nav>
   <div class="usuario"><span id="quem"></span><button class="conv" onclick="abrirAcessos()">👥 Convidar</button><button onclick="sair()">Sair</button></div>
@@ -329,6 +330,26 @@
   <!-- ===================== CRM ===================== -->
   <section class="tab" id="crm">
     <p class="ctx">CRM — quem é a base do Clube e como ela está.</p>
+    <div class="card">
+      <h2>📊 Segmentos da base</h2>
+      <div class="segrid" id="crmSegmentos"></div>
+    </div>
+    <div class="card">
+      <h2>👥 Clientes &amp; pontos</h2>
+      <input class="busca" id="crmBusca" placeholder="Buscar por nome ou celular" oninput="renderClientes()">
+      <div class="row" style="align-items:center">
+        <div><select id="crmOrdem" onchange="renderClientes()">
+          <option value="pontos">Mais pontos</option><option value="gasto">Mais gasto</option>
+          <option value="visitas">Mais visitas</option><option value="recente">Visita mais recente</option><option value="sumido">Há mais tempo sem vir</option>
+        </select></div>
+      </div>
+      <div id="crmClientes"></div>
+    </div>
+  </section>
+
+  <!-- ===================== GARÇONS (14/11/2026: saiu do CRM) ===================== -->
+  <section class="tab" id="garcons">
+    <p class="ctx">Garçons — senha na maquininha e meta de celulares coletados.</p>
     <div class="card" id="cardGarcons" style="border-color:rgba(242,183,5,.35)">
       <h2>👤 Garçons — meta de celulares</h2>
       <p class="sub">Na maquininha (app 0.3.5), o garçom digita a <b>senha dele</b> antes de cada venda. Conta como <b>celular coletado</b> toda venda em que o cliente digitou o celular (já membro ou convite). A % é sobre as vendas em que o cartão <b>não</b> foi reconhecido sozinho — ali é que o garçom faz diferença.</p>
@@ -346,21 +367,6 @@
       <div class="erro" id="gaMsg"></div>
       <div id="gaLista"></div>
       <p class="smallnote">A maquininha pega a lista nova sozinha (ao abrir o app ou na próxima vez que buscar a configuração). Sem nenhum garçom cadastrado, ela não pede senha.</p>
-    </div>
-    <div class="card">
-      <h2>📊 Segmentos da base</h2>
-      <div class="segrid" id="crmSegmentos"></div>
-    </div>
-    <div class="card">
-      <h2>👥 Clientes &amp; pontos</h2>
-      <input class="busca" id="crmBusca" placeholder="Buscar por nome ou celular" oninput="renderClientes()">
-      <div class="row" style="align-items:center">
-        <div><select id="crmOrdem" onchange="renderClientes()">
-          <option value="pontos">Mais pontos</option><option value="gasto">Mais gasto</option>
-          <option value="visitas">Mais visitas</option><option value="recente">Visita mais recente</option><option value="sumido">Há mais tempo sem vir</option>
-        </select></div>
-      </div>
-      <div id="crmClientes"></div>
     </div>
   </section>
 
@@ -773,7 +779,7 @@ async function vencidoCreditar(id,btn){
   msg('cvMsg',(r.nome||'Cliente')+': creditado. Saldo agora '+r.saldo+' pontos.',true);
 }
 
-function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='saude'){ renderSaude(); carregarAnalises(false); } if(abaAtual==='admin') exportCarregarCfg(); }
+function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='garcons') garconsCarregar(); if(abaAtual==='saude'){ renderSaude(); carregarAnalises(false); } if(abaAtual==='admin') exportCarregarCfg(); }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -956,7 +962,6 @@ function diasInativo(c){ return c.ultimaVisitaTs? Math.floor((Date.now()-c.ultim
 // 14/11/2026 (Antonio): "nunca compraram" (0 visitas) separado dos inativos — ativos/inativos só entre quem já comprou.
 function segmentos(){ const s={total:0,compraram:0,nunca:0,ativos:0,i3060:0,i6090:0,i90:0}; Object.values(db.contas).forEach(c=>{ s.total++; if(!(+c.visitas>0)){ s.nunca++; return; } s.compraram++; const d=diasInativo(c); if(d<=30)s.ativos++; else if(d<=60)s.i3060++; else if(d<=90)s.i6090++; else s.i90++; }); return s; }
 function renderCRM(){
-  if(!gaCarregado) garconsCarregar();
   const s=segmentos();
   $('crmSegmentos').innerHTML=`
     <div class="segbox"><div class="n">${s.total}</div><div class="l">Total de cadastrados</div></div>
