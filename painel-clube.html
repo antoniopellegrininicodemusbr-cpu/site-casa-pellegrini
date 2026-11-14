@@ -374,6 +374,7 @@
     <div class="card">
       <h2>💰 Quanto vale um cliente (LTV) e quanto pagar por um (Ads)</h2>
       <p class="sub">O teto do que vale pagar por um cliente novo (CAC) sai do valor que ele gera ao longo do tempo (LTV).</p>
+      <p class="sub" id="saudeLtvExpl" style="background:rgba(255,255,255,.04);border-left:3px solid var(--gold);padding:8px 10px;border-radius:6px"></p>
       <div class="segrid" id="saudeLtv"></div>
       <label style="margin-top:12px">Margem de contribuição (%) — quanto sobra de cada R$ vendido depois do custo do produto</label>
       <input type="number" id="cfgMargem" min="1" max="100" onchange="db.config.margemPct=Math.max(1,Math.min(100,+this.value||65));salvar();renderSaude()">
@@ -1110,21 +1111,21 @@ function renderSaude(){
   let somaGap=0, qGap=0;
   cs.forEach(c=>{ if((c.visitas||0)>=2 && c.primeiraVisitaTs && c.ultimaVisitaTs){ const g=(c.ultimaVisitaTs-c.primeiraVisitaTs)/86400000/(c.visitas-1); if(g>0){somaGap+=g;qGap++;} } });
   const retornoDias = qGap? Math.round(somaGap/qGap) : 0;
-  const custoPremios = (db.resgates||[]).reduce((a,r)=>a+(+r.custo||0),0);
-  const roi = custoPremios? (totGasto/custoPremios) : 0;
   $('saudeKpis').innerHTML=`
     <div class="segbox"><div class="n">${n}</div><div class="l">Clientes cadastrados</div></div>
     <div class="segbox"><div class="n" style="color:#7fe39a">${s.ativos}</div><div class="l">Ativos ≤30d</div></div>
     <div class="segbox"><div class="n" style="color:#ff9ba3">${inativos}</div><div class="l">Inativos +30d</div></div>
     <div class="segbox"><div class="n">${retornoDias}<span style="font-size:13px;color:var(--muted)">d</span></div><div class="l">Tempo médio de retorno</div></div>
-    <div class="segbox"><div class="n">${brl(Math.round(ticket))}</div><div class="l">Ticket médio</div></div>
-    <div class="segbox"><div class="n">${brl(Math.round(totGasto))}</div><div class="l">Faturamento do clube</div></div>
-    <div class="segbox"><div class="n">${roi?roi.toFixed(1):'—'}x</div><div class="l">ROI dos prêmios (R$/R$1)</div></div>`;
+    <div class="segbox"><div class="n">${brl(Math.round(ticket))}</div><div class="l">Ticket médio</div></div>`;
   const margemPct=db.config.margemPct||65, margem=margemPct/100;
   $('cfgMargem').value=margemPct;
   const gastoMedioCliente = n? totGasto/n : 0;
   const ltv = gastoMedioCliente*margem;
   const cacMax = ltv/3;
+  const compradores = cs.filter(c=>(+c.visitas||0)>0).length;
+  $('saudeLtvExpl').innerHTML=`<b>Quem entra na conta:</b> todos os <b>${n}</b> cadastrados no Clube — inclusive os <b>${n-compradores}</b> que ainda não compraram. Ou seja, é por <b>cliente que entrou no Clube</b>, não só por quem já comprou.<br>`+
+    `<b>Receita:</b> tudo o que essas contas já gastaram com a gente, incluindo o histórico trazido do Fidelizi.<br>`+
+    `Então o CAC abaixo é o máximo pra pagar por <b>um cadastro novo</b> vindo de anúncio. Só entre quem já comprou (${compradores}), a receita média é <b>${brl(Math.round(compradores?totGasto/compradores:0))}</b>.`;
   $('saudeLtv').innerHTML=`
     <div class="segbox"><div class="n">${brl(Math.round(gastoMedioCliente))}</div><div class="l">Receita média / cliente</div></div>
     <div class="segbox"><div class="n" style="color:var(--gold)">${brl(Math.round(ltv))}</div><div class="l">LTV (com margem ${margemPct}%)</div></div>
@@ -1142,7 +1143,6 @@ function renderSaude(){
   $('saudeFunil').innerHTML=funil+'</table>';
   const recompra = cont[0]?Math.round(cont[1]/cont[0]*100):0;
   const linhas=[];
-  linhas.push(roi>=3?`✅ Cada R$1 em prêmio devolveu <b>R$ ${roi.toFixed(1).replace('.',',')}</b> em consumo — o programa se paga.`:`⚠️ ROI dos prêmios baixo (${roi.toFixed(1)}x) — revisar prêmios/custos.`);
   linhas.push(recompra>=20?`✅ <b>${recompra}%</b> dos clientes voltaram pra 2ª compra — boa retenção.`:`⚠️ Só <b>${recompra}%</b> voltaram pra 2ª compra — focar em reativação.`);
   linhas.push(inativos>s.ativos?`⚠️ Mais inativos (${inativos}) que ativos (${s.ativos}) — caprichar nos brindes de inatividade.`:`✅ Base mais ativa (${s.ativos}) que inativa (${inativos}).`);
   linhas.push(`💡 Pelo LTV, vale pagar até <b>${brl(Math.round(cacMax))}</b> por cliente novo no Meta/TikTok (proporção 3:1).`);
