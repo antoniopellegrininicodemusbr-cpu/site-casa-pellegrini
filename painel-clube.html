@@ -403,9 +403,10 @@
       <div style="overflow-x:auto"><table id="anDiario"></table></div>
     </div>
     <div class="card" id="anPessoasCard" style="border-color:rgba(127,227,154,.35);display:none">
-      <h2>🎯 Quem ganhou prêmio na roleta e entrou no Clube (por pessoa)</h2>
-      <p class="sub">Só quem <b>não tinha cadastro ativo no Clube</b> na hora da compra: gente nova <b>e</b> clientes antigos do Fidelizi que ainda não tinham criado a senha aqui (a conta veio na importação, mas nunca entraram). Quem já era membro e só digitou o celular fica de fora. Cada celular conta <b>1 vez</b>, mesmo que tenha comprado várias vezes antes de se cadastrar. O dia é o do <b>1º prêmio</b> — o número de um dia continua subindo enquanto o pessoal daquele dia for se cadastrando. Mesmo período do quadro acima.</p>
+      <h2>🎯 Gente nova: ganhou prêmio na roleta e entrou no Clube (por pessoa)</h2>
+      <p class="sub">Só <b>gente nova</b>: quem rodou a roleta, deu o celular e <b>não fazia parte do Clube nem do Fidelizi</b> — é a conversão pro Clube novo. Clientes antigos do Fidelizi (mesmo os que ainda não tinham senha) e quem já era membro ficam de fora. Cada celular conta <b>1 vez</b>, mesmo que tenha comprado várias vezes antes de se cadastrar. O dia é o do <b>1º prêmio</b> — o número de um dia continua subindo enquanto o pessoal daquele dia for se cadastrando. Mesmo período do quadro acima.</p>
       <div class="segrid" id="anPessoas"></div>
+      <p class="smallnote" id="anPessoasFora"></p>
       <p class="smallnote">📌 “Em até X dias” só conta quem ganhou o prêmio há pelo menos X dias — quem ganhou ontem ainda não teve 7 dias pra se cadastrar e ficaria puxando a taxa pra baixo.</p>
       <div style="overflow-x:auto"><table id="anPessoasDia"></table></div>
     </div>
@@ -718,20 +719,16 @@ function renderAnalises(){
   if(cp){
     const jt=(j)=> j.elegiveis? `${pct(j.taxa)}<br><span style="font-size:10px">${j.ativaram} de ${j.elegiveis}</span>` : '—<br><span style="font-size:10px">ninguém com '+j.dias+(j.dias==1?' dia':' dias')+' ainda</span>';
     const md=cp.diasMediana==null?'—': cp.diasMediana<1? Math.max(1,Math.round(cp.diasMediana*24))+' h' : cp.diasMediana.toLocaleString('pt-BR')+' dias';
-    const temGrupo=cp.pessoasNovas!=null;
-    const grp=(a,de)=> temGrupo? a+' de '+de+(de?' ('+pct(Math.round(100*a/de))+')':'') : a;
     const como=[cp.umToque?cp.umToque+' pelo link de 1 toque':'',cp.manual?cp.manual+' creditados à mão':''].filter(Boolean).join(' · ');
-    $('anPessoas').innerHTML=box(cp.pessoas,'Pessoas que ganharam prêmio sem cadastro ativo<br><span style="font-size:10px">'
-        +(temGrupo? cp.pessoasNovas+' gente nova · '+cp.pessoasFidelizi+' do Fidelizi sem senha aqui<br>' : '')+cp.compras+' compras no total</span>')
-      +box(cp.ativaram+' · '+pct(cp.taxa),'Entraram no Clube até agora<br><span style="font-size:10px">'
-        +grp(cp.novos,cp.pessoasNovas)+' gente nova · '+grp(cp.fidelizi,cp.pessoasFidelizi)+' do Fidelizi (criaram a senha)'
-        +(como?'<br>como: '+como:'')+'</span>','#7fe39a')
+    $('anPessoas').innerHTML=box(cp.pessoas,'Gente nova que ganhou prêmio<br><span style="font-size:10px">'+cp.compras+' compras no total</span>')
+      +box(cp.ativaram+' · '+pct(cp.taxa),'Entraram no Clube até agora'+(como?'<br><span style="font-size:10px">'+como+'</span>':''),'#7fe39a')
       +cp.jan.map(j=>box(jt(j),'Entraram em até '+j.dias+(j.dias==1?' dia':' dias'))).join('')
       +box(md,'Tempo típico até entrar (mediana)');
+    $('anPessoasFora').innerHTML=cp.foraFidelizi!=null? 'Fora deste quadro: '+cp.foraFidelizi+' clientes antigos do Fidelizi que ganharam prêmio na roleta no período.' : '';
     const pd=cp.porDia.slice().reverse();
     $('anPessoasDia').innerHTML=pd.length? '<tr><th>Dia do 1º prêmio</th><th>Pessoas</th><th>Entraram</th><th>%</th><th>Em até 1 dia</th><th>Em até 3 dias</th><th>Em até 7 dias</th><th>Em até 20 dias</th></tr>'
       +pd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.pessoas}</td><td>${l.ativaram}</td><td>${pct(l.taxa)}</td>${l.jan.map(j=>`<td>${j.elegiveis? j.ativaram+' ('+pct(j.taxa)+')' : '<span class="muted">aguardando</span>'}</td>`).join('')}</tr>`).join('')
-      : '<tr><td class="muted">Ninguém de fora do Clube ganhou prêmio no período.</td></tr>';
+      : '<tr><td class="muted">Nenhuma pessoa nova ganhou prêmio no período.</td></tr>';
   }
   const ord=$('anOrdem').value, rk=AN.ranking.slice();
   const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
@@ -956,16 +953,19 @@ async function salvarAuto(){
 
 /* ============ CRM ============ */
 function diasInativo(c){ return c.ultimaVisitaTs? Math.floor((Date.now()-c.ultimaVisitaTs)/86400000):999; }
-function segmentos(){ const s={total:0,ativos:0,i3060:0,i6090:0,i90:0}; Object.values(db.contas).forEach(c=>{ s.total++; const d=diasInativo(c); if(d<=30)s.ativos++; else if(d<=60)s.i3060++; else if(d<=90)s.i6090++; else s.i90++; }); return s; }
+// 14/11/2026 (Antonio): "nunca compraram" (0 visitas) separado dos inativos — ativos/inativos só entre quem já comprou.
+function segmentos(){ const s={total:0,compraram:0,nunca:0,ativos:0,i3060:0,i6090:0,i90:0}; Object.values(db.contas).forEach(c=>{ s.total++; if(!(+c.visitas>0)){ s.nunca++; return; } s.compraram++; const d=diasInativo(c); if(d<=30)s.ativos++; else if(d<=60)s.i3060++; else if(d<=90)s.i6090++; else s.i90++; }); return s; }
 function renderCRM(){
   if(!gaCarregado) garconsCarregar();
   const s=segmentos();
   $('crmSegmentos').innerHTML=`
-    <div class="segbox"><div class="n">${s.total}</div><div class="l">Total</div></div>
+    <div class="segbox"><div class="n">${s.total}</div><div class="l">Total de cadastrados</div></div>
+    <div class="segbox"><div class="n">${s.compraram}</div><div class="l">Já compraram</div></div>
     <div class="segbox"><div class="n" style="color:#7fe39a">${s.ativos}</div><div class="l">Ativos ≤30d</div></div>
     <div class="segbox"><div class="n">${s.i3060}</div><div class="l">31–60d</div></div>
     <div class="segbox"><div class="n">${s.i6090}</div><div class="l">61–90d</div></div>
-    <div class="segbox"><div class="n" style="color:#ff7a85">${s.i90}</div><div class="l">+90d</div></div>`;
+    <div class="segbox"><div class="n" style="color:#ff7a85">${s.i90}</div><div class="l">+90d</div></div>
+    <div class="segbox"><div class="n" style="color:var(--muted)">${s.nunca}</div><div class="l">Nunca compraram</div></div>`;
   renderClientes();
 }
 const MAX_LINHAS=200;
@@ -1120,7 +1120,8 @@ function renderSaude(){
   $('saudeKpis').innerHTML=`
     <div class="segbox"><div class="n">${n}</div><div class="l">Clientes cadastrados</div></div>
     <div class="segbox"><div class="n" style="color:#7fe39a">${s.ativos}</div><div class="l">Ativos ≤30d</div></div>
-    <div class="segbox"><div class="n" style="color:#ff9ba3">${inativos}</div><div class="l">Inativos +30d</div></div>
+    <div class="segbox"><div class="n" style="color:#ff9ba3">${inativos}</div><div class="l">Inativos +30d<br><span style="font-size:10px">já compraram</span></div></div>
+    <div class="segbox"><div class="n" style="color:var(--muted)">${s.nunca}</div><div class="l">Nunca compraram</div></div>
     <div class="segbox"><div class="n">${retornoDias}<span style="font-size:13px;color:var(--muted)">d</span></div><div class="l">Tempo médio de retorno</div></div>
     <div class="segbox"><div class="n">${brl(Math.round(ticket))}</div><div class="l">Ticket médio</div></div>`;
   const margemPct=db.config.margemPct||65, margem=margemPct/100;
