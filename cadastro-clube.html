@@ -49,6 +49,7 @@
   header .linha{width:64px;height:3px;background:var(--vermelho);margin:10px auto 16px;border-radius:2px}
   header h1{font-family:'Pellegrini Display',Impact,'Arial Narrow',sans-serif;font-size:22px;font-weight:600;margin-bottom:8px}
   header p{color:var(--muted);font-size:14px;line-height:1.55}
+  header p.mini{font-size:12px;margin-top:4px;opacity:.9}
 
   /* ---------- benefícios (grid, não flex — o flex quebrava as linhas) ---------- */
   .benef{background:var(--navy1);border:1px solid var(--navy2);border-radius:14px;
@@ -176,13 +177,10 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
     <div class="linha"></div>
     <h1>Clube Pellegrini</h1>
     <p>Cada visita vira ponto. Ponto vira chopp, porção e prêmio.</p>
+    <p class="mini">🎡 Toda compra a partir de R$&nbsp;25 gira a roleta — e todo giro ganha prêmio.</p>
   </header>
 
-  <div class="benef" id="benef">
-    <div class="item"><span class="ic">⭐</span><span>A cada <strong>R$&nbsp;25</strong> em consumo você ganha <strong>1 ponto</strong></span></div>
-    <div class="item"><span class="ic">🎡</span><span>Toda compra libera a <strong>Roleta</strong> — e todo giro ganha prêmio</span></div>
-    <div class="item"><span class="ic">🎂</span><span>Um <strong>mimo no seu aniversário</strong>, por nossa conta</span></div>
-  </div>
+  <!-- 14/11/2026 (Antonio): quadro de benefícios tirado de todos os fluxos — o formulário sobe pra 1ª tela -->
 
   <div class="msg" id="aviso"></div>
 
@@ -560,9 +558,6 @@ function verPainel(qual){
   Object.values(PAINEIS).forEach(id=>{
     document.getElementById(id).style.display = (id===alvo) ? 'block' : 'none';
   });
-  // benefícios aparecem na escolha e no cadastro — é onde a pessoa decide
-  document.getElementById('benef').style.display =
-    (alvo==='form' || alvo==='pInicio') ? 'block' : 'none';
   document.getElementById('aviso').className='msg';
   if (alvo==='form') tsReset('cad');
   if (alvo==='pRecuperar') tsReset('rec');
@@ -842,7 +837,6 @@ async function enviar(e){
     }catch(e){}
 
     document.getElementById('form').style.display='none';
-    document.getElementById('benef').style.display='none';
     document.getElementById('aviso').className='msg';
     document.getElementById('oNome').textContent=nome.split(' ')[0];
     document.getElementById('sucesso').style.display='block';
