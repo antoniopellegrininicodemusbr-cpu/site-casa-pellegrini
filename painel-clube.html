@@ -268,14 +268,6 @@
       <button class="btn sec" onclick="addCatalogoPremio()">+ Adicionar prêmio de resgate</button>
     </div>
     <div class="card">
-      <h2>🖨️ Brindes: impressora e opções</h2>
-      <p class="sub">Em qual impressora cada brinde sai quando o garçom valida o código. Brinde que <b>não estiver nesta lista</b> sai na <b>cozinha</b>. Brinde com 2 ou 3 opções: o cliente escolhe (ex.: chopp ou refrigerante).</p>
-      <datalist id="nomesBrindes"></datalist>
-      <div id="adminBrindes"></div>
-      <button class="btn sec" onclick="addBrinde()">+ Adicionar brinde</button>
-      <button class="btn" onclick="salvarBrindes()">Salvar brindes</button>
-    </div>
-    <div class="card">
       <h2>🛟 Espelho de segurança no Fidelizi</h2>
       <p class="sub">Reserva pra emergência: com o espelho <b>ligado</b>, cada pontuação feita no Clube é repetida no Fidelizi (em até 5 minutos).</p>
       <div class="feedback" id="espelhoStatus" style="display:block;white-space:pre-line">Toque em "Ver situação".</div>
@@ -287,6 +279,14 @@
       <p class="sub">Saem sozinhos todo dia às 11h30: o brinde entra na Minha Conta do cliente e ele recebe o aviso no WhatsApp. <b>Aniversário</b>: no dia, 1x por ano. <b>Inatividade</b>: quando o cliente completa os dias sem vir.</p>
       <div id="adminAuto"></div>
       <button class="btn" onclick="salvarAuto()">Salvar brindes automáticos</button>
+    </div>
+    <div class="card">
+      <h2>🖨️ Brindes: impressora e opções</h2>
+      <p class="sub">Em qual impressora cada brinde sai quando o garçom valida o código. Brinde que <b>não estiver nesta lista</b> sai na <b>cozinha</b>. Brinde com 2 ou 3 opções: o cliente escolhe (ex.: chopp ou refrigerante).</p>
+      <datalist id="nomesBrindes"></datalist>
+      <div id="adminBrindes"></div>
+      <button class="btn sec" onclick="addBrinde()">+ Adicionar brinde</button>
+      <button class="btn" onclick="salvarBrindes()">Salvar brindes</button>
     </div>
   </section>
 
@@ -849,7 +849,7 @@ function renderBrindes(){
     <div class="autobox">
       <div class="row" style="align-items:end">
         <div style="flex:3"><label>Nome do brinde (igual ao do prêmio)</label><input list="nomesBrindes" value="${escAttr(b.nome)}" onchange="brindesEdit[${i}].nome=this.value"></div>
-        <div style="flex:0"><button class="btn sec" style="margin:0;padding:10px 12px;width:auto" onclick="brindesEdit.splice(${i},1);renderBrindes()">✕</button></div>
+        <div style="flex:0"><button class="btn sec" style="margin:0;padding:10px 12px;width:auto" onclick="if(confirm('Apagar o brinde '+(brindesEdit[${i}].nome?'“'+brindesEdit[${i}].nome+'”':'sem nome')+' da lista de impressoras e opções?'))brindesEdit.splice(${i},1);renderBrindes()">✕</button></div>
       </div>
       <div class="row" style="align-items:end">
         <div><label>Tipo</label><select onchange="tipoBrinde(${i},this.value)"><option value="1"${duplo?'':' selected'}>Brinde simples</option><option value="2"${nOp===2?' selected':''}>2 opções (cliente escolhe)</option><option value="3"${nOp===3?' selected':''}>3 opções (cliente escolhe)</option></select></div>
