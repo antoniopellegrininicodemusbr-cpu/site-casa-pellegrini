@@ -85,6 +85,8 @@
   button.btn.sec{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.14)}
   button.btn.gold{background:linear-gradient(135deg,var(--gold),#d99a00);color:#2b1d00}
   button.btn.wa{background:linear-gradient(135deg,#25D366,#1da851);color:#04210f}
+  details>summary{cursor:pointer;color:var(--gold);font-weight:700;font-size:13px;margin-top:12px;list-style-position:inside}
+  details[open]>summary{margin-bottom:6px}
   .muted{color:var(--muted);font-size:13px}
   .link{color:var(--gold);cursor:pointer;text-decoration:underline}
   .feedback{border-radius:11px;padding:14px;margin-top:14px;display:none;white-space:pre-wrap;font-size:14px;border:1px solid}
@@ -378,55 +380,61 @@
       <input type="number" id="cfgMargem" min="1" max="100" onchange="db.config.margemPct=Math.max(1,Math.min(100,+this.value||65));salvar();renderSaude()">
       <p class="smallnote">Regra usada: CAC máximo saudável = 1/3 do que sobra (cadastro: 1/3 do LTV; compra: 1/3 da margem do ticket médio). Quando a 2ª, 3ª compra melhorarem, o LTV sobe e o CAC por cadastro se afasta do CAC por compra.</p>
     </div>
-    <div class="card">
-      <h2>🔁 Funil de recompra</h2>
-      <p class="sub">Quantos clientes voltaram pra 2ª, 3ª compra… e a conversão entre cada etapa.</p>
-      <div id="saudeFunil"></div>
-    </div>
-    <div class="card">
-      <h2>🩺 Leitura rápida</h2>
-      <div id="saudeDiag"></div>
-    </div>
     <div class="card" id="cardAnalises" style="border-color:rgba(242,183,5,.35)">
-      <h2>📅 Movimento do Clube (direto do servidor)</h2>
-      <p class="sub">Calculado na hora com os registros do Clube — os mesmos números da planilha de resumo.</p>
+      <h2>📅 Período dos quadros abaixo</h2>
       <div class="row" style="align-items:flex-end">
         <div><label>Período</label><select id="anDias" onchange="carregarAnalises(true)"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option></select></div>
         <div><button class="btn sec" onclick="carregarAnalises(true)">🔄 Atualizar</button></div>
       </div>
-      <p class="smallnote">📌 Todos os números deste painel contam <b>só a partir de 03/11/2026</b>, dia em que o Clube estreou. Antes disso o app já estava nas maquininhas em teste e o Fidelizi ainda funcionava — esses dias ficam de fora pra não distorcer. Por isso, enquanto o Clube tiver menos de 30 (ou 60, 90) dias, esses períodos mostram o mesmo que "desde a estreia".</p>
+      <p class="smallnote">📌 Os quadros 1 a 5 contam <b>só a partir de 03/11/2026</b>, dia em que o Clube estreou, e são calculados na hora pelo servidor. Enquanto o Clube tiver menos dias que o período escolhido, o número é o mesmo em "30", "60" e "90 dias".</p>
       <div class="erro" id="anMsg"></div>
-      <div class="segrid" id="anTotais" style="margin-top:10px"></div>
-      <div class="row" id="anCad" style="margin-top:8px"></div>
-      <div style="overflow-x:auto"><table id="anDiario"></table></div>
     </div>
-    <div class="card" id="anPessoasCard" style="border-color:rgba(127,227,154,.35);display:none">
-      <h2>🎯 Gente nova: ganhou prêmio na roleta e entrou no Clube (por pessoa)</h2>
-      <p class="sub">Só <b>gente nova</b>: quem rodou a roleta, deu o celular e <b>não fazia parte do Clube nem do Fidelizi</b> — é a conversão pro Clube novo. Clientes antigos do Fidelizi (mesmo os que ainda não tinham senha) e quem já era membro ficam de fora. Cada celular conta <b>1 vez</b>, mesmo que tenha comprado várias vezes antes de se cadastrar. O dia é o do <b>1º prêmio</b> — o número de um dia continua subindo enquanto o pessoal daquele dia for se cadastrando. Mesmo período do quadro acima.</p>
-      <div class="segrid" id="anPessoas"></div>
+    <div class="card">
+      <h2>🧾 1. Das vendas na máquina, quantas identificamos?</h2>
+      <p class="sub">Cada venda aprovada na maquininha cai em <b>um</b> destes grupos. Quanto menor o "sem identificação", mais gente o Clube alcança.</p>
+      <div id="anIdent"></div>
+      <p class="smallnote" id="anIdentNota"></p>
+      <details><summary>📅 Ver dia a dia</summary><div style="overflow-x:auto"><table id="anDiario"></table></div></details>
+    </div>
+    <div class="card" id="anPessoasCard" style="border-color:rgba(127,227,154,.35)">
+      <h2>🎯 2. Gente nova vira membro?</h2>
+      <p class="sub">Só <b>gente nova</b>: quem rodou a roleta, deu o celular e <b>não fazia parte do Clube nem do Fidelizi</b>. Cada celular conta <b>1 vez</b>. Cada linha mostra quantas dessas <b>mesmas pessoas</b> chegaram até aquela etapa — onde a barra cai é onde estamos perdendo gente.</p>
+      <div id="anFunilNovos"></div>
       <p class="smallnote" id="anPessoasFora"></p>
-      <p class="smallnote">📌 “Em até X dias” só conta quem ganhou o prêmio há pelo menos X dias — quem ganhou ontem ainda não teve 7 dias pra se cadastrar e ficaria puxando a taxa pra baixo.</p>
-      <div style="overflow-x:auto"><table id="anPessoasDia"></table></div>
+      <details><summary>📅 Ver por dia do prêmio</summary><div style="overflow-x:auto"><table id="anPessoasDia"></table></div>
+        <p class="smallnote">O dia é o do 1º prêmio: o número de um dia continua subindo enquanto o pessoal daquele dia for se cadastrando (o convite vale 20 dias).</p></details>
     </div>
     <div class="card">
-      <h2>🏆 Ranking de prêmios</h2>
-      <p class="sub">Quantos de cada prêmio saíram na roleta, quantos o cliente <b>voltou pra resgatar</b> e a % de resgate. Prêmio com % alta é o que traz o cliente de volta. Preço e custo estimados pelo CMV (33% do preço do cardápio) — pra trocar por outro de valor parecido.</p>
-      <div class="row" style="align-items:flex-end">
-        <div><label>Ordenar por</label><select id="anOrdem" onchange="renderAnalises()"><option value="taxa">% de resgate</option><option value="dados">Mais dados</option><option value="custo">Custo (CMV)</option><option value="dias">Dias até voltar</option></select></div>
-        <div><label>Origem</label><select id="anOrigem" onchange="carregarAnalises(true)"><option value="roleta">Só roleta</option><option value="todas">Todos (pontos, aniversário, presentes…)</option></select></div>
-      </div>
-      <div style="overflow-x:auto"><table id="anRanking"></table></div>
-      <p class="smallnote">% de resgate = resgatados ÷ dados (sem os cancelados). Prêmios ainda dentro da validade contam como "em aberto" — a % sobe com o tempo; compare prêmios dados na mesma época. Prêmios trazidos do Fidelizi ficam de fora.</p>
+      <h2>🧭 3. De onde vêm os membros novos?</h2>
+      <p class="sub">Cadastros <b>completos</b> feitos no período, pelo caminho que trouxe a pessoa.</p>
+      <div id="anCad"></div>
     </div>
     <div class="card">
-      <h2>🆕 Clientes novos x antigos</h2>
-      <div class="segrid" id="anClientes"></div>
-      <div id="anOrigens"></div>
+      <h2>🔁 4. Quem é membro volta?</h2>
+      <p class="sub">Quantos clientes voltaram pra 2ª, 3ª compra… Conta <b>toda a base</b> (inclui o histórico trazido do Fidelizi), não só o período.</p>
+      <div id="saudeFunil"></div>
+      <h2 style="margin-top:18px;font-size:15px">🎁 Prêmios dados × resgatados (no período)</h2>
+      <div style="overflow-x:auto"><table id="anPremios"></table></div>
+      <p class="smallnote">% de resgate = resgatados ÷ dados (sem os cancelados). Prêmio ainda dentro da validade conta como "em aberto" — a % sobe com o tempo. Prêmios trazidos do Fidelizi ficam de fora.</p>
+      <details><summary>🏆 Ver ranking por prêmio (preço e custo)</summary>
+        <p class="sub" style="margin-top:8px">Prêmio com % alta é o que traz o cliente de volta. Preço e custo estimados pelo CMV (33% do preço do cardápio) — pra trocar por outro de valor parecido.</p>
+        <div class="row" style="align-items:flex-end">
+          <div><label>Ordenar por</label><select id="anOrdem" onchange="renderAnalises()"><option value="taxa">% de resgate</option><option value="dados">Mais dados</option><option value="custo">Custo (CMV)</option><option value="dias">Dias até voltar</option></select></div>
+          <div><label>Origem</label><select id="anOrigem" onchange="carregarAnalises(true)"><option value="roleta">Só roleta</option><option value="todas">Todos (pontos, aniversário, presentes…)</option></select></div>
+        </div>
+        <div style="overflow-x:auto"><table id="anRanking"></table></div>
+      </details>
     </div>
     <div class="card">
-      <h2>💬 Mensagens do WhatsApp</h2>
+      <h2>💬 5. As mensagens do Clube funcionam?</h2>
+      <p class="sub">Só as mensagens <b>do Clube</b> (convite, saldo, prêmio vencendo, aniversário…). Atendimento e cotação de fornecedores saem do mesmo número, mas não entram aqui.</p>
       <div class="segrid" id="anWa"></div>
       <div id="anWaDet"></div>
+    </div>
+    <div class="card">
+      <h2>🩺 Leitura rápida</h2>
+      <div id="saudeDiag"></div>
+      <div id="anDiag"></div>
     </div>
 
   </section>
@@ -700,59 +708,88 @@ const brl2=(v)=> v==null? '—' : 'R$ '+(+v).toLocaleString('pt-BR',{minimumFrac
 function renderAnalises(){
   if(!AN) return;
   const t=AN.totais, box=(n,l,cor)=>`<div class="segbox"><div class="n"${cor?' style="color:'+cor+'"':''}>${n}</div><div class="l">${l}</div></div>`;
-  // 07/11/2026 (Antonio): sem "Valor pontuado" e sem "Prêmios da roleta"; a tabela por dia segue esta mesma ordem
-  $('anTotais').innerHTML=box(t.vendasStone||0,'Compras totais na máquina ('+brl(Math.round(t.vendasStoneValor||0))+')')+box(t.compras,'Compras pontuadas (membros)')+box(t.convites,'Convites enviados com prêmio na roleta (não membros)')
-    +box(brl(Math.round(t.ticket)),'Ticket médio')+box(t.convitesCadastro||0,'Convites que viraram cadastro<br><span style="font-size:10px">'+(t.convitesCadastroNovos||0)+' gente nova · '+(t.convitesCadastroFidelizi||0)+' clientes antigos do Fidelizi</span>','#7fe39a')
-    +box(t.premiosAutomaticos||0,'Brindes automáticos (inatividade e aniversário)')+box(t.premiosResgatados,'Prêmios resgatados','#7fe39a')
-    ;
-  const tabOrig=(obj,tit)=>{ const e=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]); return e.length? '<table><tr><th>'+tit+'</th><th>Qtde</th></tr>'+e.map(([k,v])=>`<tr><td style="white-space:normal">${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '<p class="muted">Nenhum no período.</p>'; };
-  $('anCad').innerHTML='<div style="min-width:260px"><div class="segrid">'+box(t.cadastros,'Cadastros de gente nova (nunca foram do Fidelizi)','#7fe39a')+'</div>'+tabOrig(AN.clientes.cadastrosPorOrigem,'De onde vieram os novos membros')+'</div>'
-    +'<div style="min-width:260px"><div class="segrid">'+box(t.fideliziCompletou||0,'Clientes antigos do Fidelizi que completaram o cadastro aqui')+'</div>'+tabOrig(AN.clientes.porOrigemFidelizi,'Por onde entraram')+'</div>';
+  const pc=(a,b)=> b? Math.round(100*a/b)+'%' : '—';
+  const barra=(p,cor)=>`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;min-width:70px;height:8px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden"><div style="width:${Math.max(0,Math.min(100,Math.round(p)))}%;height:100%;background:${cor||'var(--gold)'}"></div></div><span style="min-width:40px">${Math.round(p)}%</span></div>`;
+  const semServidor='<p class="muted">Este quadro aparece depois da próxima atualização do servidor.</p>';
+  const diag=[];
+
+  /* ---- 1. vendas identificadas ---- */
+  const I=AN.identificacao;
+  if(I){
+    const gr=[['De membros (cartão reconhecido ou celular da conta)',I.membros,'#7fe39a'],['De gente nova (deu o celular e ganhou o convite)',I.genteNova,'var(--gold)'],
+      ['De clientes antigos do Fidelizi que ainda não tinham senha (convite)',I.fidelizi,'#8fb4ff'],['Compra abaixo de R$ 25 com celular (link de cadastro)',I.entrada,'#c9a0ff'],
+      ['Sem identificação',I.semIdentificar,'#ff9ba3']].filter((g,i)=>g[1]||i!==3);
+    $('anIdent').innerHTML=`<p style="margin:4px 0 10px;font-size:14px"><b style="color:var(--gold);font-size:20px">${I.vendas}</b> vendas aprovadas na máquina desde ${diaBRf(I.desde).slice(0,5)}</p>`
+      +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:rgba(255,255,255,.08);margin-bottom:8px">'+gr.map(g=>`<div title="${g[0]}" style="width:${I.vendas?100*g[1]/I.vendas:0}%;background:${g[2]}"></div>`).join('')+'</div>'
+      +'<table><tr><th>Grupo</th><th>Vendas</th><th>% das vendas</th></tr>'+gr.map(g=>`<tr><td style="white-space:normal"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${g[2]};margin-right:6px"></span>${g[0]}</td><td><b>${g[1]}</b></td><td>${pc(g[1],I.vendas)}</td></tr>`).join('')+'</table>';
+    $('anIdentNota').innerHTML='Como é contado: vendas <b>aprovadas</b> nas maquininhas (sem a de teste), a partir de 07/11 — primeiro dia inteiro com todas as vendas registradas. "Sem identificação" é o que sobra: o cliente não quis dar o celular ou a venda não passou pela tela do Clube.';
+    if(I.vendas) diag.push((I.semIdentificar/I.vendas>0.5?'⚠️':'💡')+` De cada 100 vendas na máquina, <b>${Math.round(100*I.semIdentificar/I.vendas)}</b> ficam sem identificação — é o maior espaço pra crescer a base.`);
+  } else { $('anIdent').innerHTML=semServidor; $('anIdentNota').innerHTML=''; }
   const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.vendasStone||0));
-  $('anDiario').innerHTML='<tr><th>Dia</th><th>Máquina</th><th>Compras (membros)</th><th>Convites</th><th>Ticket</th><th>Convites → cadastro</th><th>Brindes autom.</th><th>Resgatados</th><th>Cadastros novos</th><th>Fidelizi completou</th></tr>'
+  $('anDiario').innerHTML='<tr><th>Dia</th><th>Vendas na máquina</th><th>Compras de membros</th><th>Convites</th><th>Ticket</th><th>Convites → cadastro</th><th>Brindes autom.</th><th>Resgatados</th><th>Cadastros novos</th><th>Fidelizi completou</th></tr>'
     +dd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:var(--gold);width:${Math.round(50*(l.vendasStone||0)/maxV)}px"></span>${l.vendasStone||0}</div></td><td>${l.compras}</td><td>${l.convites}</td><td>${l.ticket?brl(Math.round(l.ticket)):'—'}</td><td>${l.convitesCadastro||0}</td><td>${l.premiosAutomaticos||0}</td><td>${l.premiosResgatados}</td><td>${l.cadastros}</td><td>${l.fideliziCompletou||0}</td></tr>`).join('');
-  // 11/11/2026: conversão por PESSOA (cada celular 1 vez, coorte pelo dia do 1º prêmio)
-  const cp=AN.conversaoPessoas;
-  $('anPessoasCard').style.display=cp?'':'none';
-  if(cp){
-    const jt=(j)=> j.elegiveis? `${pct(j.taxa)}<br><span style="font-size:10px">${j.ativaram} de ${j.elegiveis}</span>` : '—<br><span style="font-size:10px">ninguém com '+j.dias+(j.dias==1?' dia':' dias')+' ainda</span>';
-    const md=cp.diasMediana==null?'—': cp.diasMediana<1? Math.max(1,Math.round(cp.diasMediana*24))+' h' : cp.diasMediana.toLocaleString('pt-BR')+' dias';
-    const como=[cp.umToque?cp.umToque+' pelo link de 1 toque':'',cp.manual?cp.manual+' creditados à mão':''].filter(Boolean).join(' · ');
-    $('anPessoas').innerHTML=box(cp.pessoas,'Gente nova que ganhou prêmio<br><span style="font-size:10px">'+cp.compras+' compras no total</span>')
-      +box(cp.ativaram+' · '+pct(cp.taxa),'Entraram no Clube até agora'+(como?'<br><span style="font-size:10px">'+como+'</span>':''),'#7fe39a')
-      +cp.jan.map(j=>box(jt(j),'Entraram em até '+j.dias+(j.dias==1?' dia':' dias'))).join('')
-      +box(md,'Tempo típico até entrar (mediana)');
-    $('anPessoasFora').innerHTML=cp.foraFidelizi!=null? 'Fora deste quadro: '+cp.foraFidelizi+' clientes antigos do Fidelizi que ganharam prêmio na roleta no período.' : '';
-    const pd=cp.porDia.slice().reverse();
-    $('anPessoasDia').innerHTML=pd.length? '<tr><th>Dia do 1º prêmio</th><th>Pessoas</th><th>Entraram</th><th>%</th><th>Em até 1 dia</th><th>Em até 3 dias</th><th>Em até 7 dias</th><th>Em até 20 dias</th></tr>'
-      +pd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.pessoas}</td><td>${l.ativaram}</td><td>${pct(l.taxa)}</td>${l.jan.map(j=>`<td>${j.elegiveis? j.ativaram+' ('+pct(j.taxa)+')' : '<span class="muted">aguardando</span>'}</td>`).join('')}</tr>`).join('')
-      : '<tr><td class="muted">Nenhuma pessoa nova ganhou prêmio no período.</td></tr>';
-  }
+
+  /* ---- 2. gente nova vira membro? (funil em degraus) ---- */
+  const cp=AN.conversaoPessoas, Fn=AN.funilNovos;
+  if(Fn){
+    const st=[['Ganharam prêmio e deram o celular',Fn.pessoas,Fn.celularInvalido? Fn.celularInvalido+' com celular incompleto ou errado (ex.: sem o 9) — desde 14/11 o servidor corrige ou recusa':''],
+      ['Mensagem do convite entregue no WhatsApp',Fn.entregue,''],
+      ['Leram a mensagem',Fn.lida,'mínimo: quem desliga a confirmação de leitura não aparece'],
+      ['Abriram o link',Fn.clicou,'contado desde '+diaBRf(Fn.cliquesDesde).slice(0,5)+' — antes disso fica zerado'],
+      ['Criaram a conta',Fn.entrou,'']];
+    $('anFunilNovos').innerHTML=Fn.pessoas? '<table><tr><th>Etapa</th><th>Pessoas</th><th>% de quem ganhou prêmio</th><th>% da etapa anterior</th></tr>'
+      +st.map((s,i)=>{ const ant=i&&st[i-1][1]&&s[1]<=st[i-1][1]? pc(s[1],st[i-1][1]) : '—';
+        return `<tr><td style="white-space:normal;min-width:190px">${s[0]}${s[2]?'<br><span class="muted" style="font-size:11px">'+s[2]+'</span>':''}</td><td><b style="color:var(--gold)">${s[1]}</b></td><td>${barra(100*s[1]/Fn.pessoas,i===st.length-1?'#7fe39a':'')}</td><td>${ant}</td></tr>`; }).join('')+'</table>'
+      : '<p class="muted">Nenhuma pessoa nova ganhou prêmio no período.</p>';
+    const md=cp&&cp.diasMediana!=null? (cp.diasMediana<1? Math.max(1,Math.round(cp.diasMediana*24))+' h' : cp.diasMediana.toLocaleString('pt-BR')+' dias') : '';
+    $('anPessoasFora').innerHTML=[md?'Quem cria a conta leva em geral <b>'+md+'</b> depois do prêmio.':'',
+      Fn.antesDoRegistro? Fn.antesDoRegistro+' pessoas ganharam prêmio antes de 06/11 à noite, quando as mensagens ainda não eram registradas — ficam fora do funil.':'',
+      cp&&cp.foraFidelizi!=null? 'Também ficam fora '+cp.foraFidelizi+' clientes antigos do Fidelizi que ganharam prêmio no período.':''].filter(Boolean).join(' ');
+    if(Fn.pessoas){ diag.push((Fn.entrou/Fn.pessoas<0.1?'⚠️':'✅')+` De cada 100 pessoas novas que ganham prêmio na roleta, <b>${Math.round(100*Fn.entrou/Fn.pessoas)}</b> criam a conta. ${Math.round(100*(Fn.pessoas-Fn.entregue)/Fn.pessoas)} nem recebem a mensagem e ${Math.round(100*(Fn.entregue-Fn.lida)/Fn.pessoas)} recebem mas não leem.`); }
+  } else { $('anFunilNovos').innerHTML=cp? `<p><b style="color:var(--gold)">${cp.pessoas}</b> pessoas novas ganharam prêmio · <b style="color:#7fe39a">${cp.ativaram}</b> criaram a conta (${pct(cp.taxa)}).</p>`+semServidor : semServidor; $('anPessoasFora').innerHTML=''; }
+  const pd=cp? cp.porDia.slice().reverse() : [];
+  $('anPessoasDia').innerHTML=pd.length? '<tr><th>Dia do 1º prêmio</th><th>Pessoas novas</th><th>Criaram a conta</th><th>%</th></tr>'
+    +pd.map(l=>`<tr><td>${diaBRf(l.dia).slice(0,5)}</td><td>${l.pessoas}</td><td>${l.ativaram}</td><td>${pct(l.taxa)}</td></tr>`).join('')
+    : '<tr><td class="muted">Nenhuma pessoa nova ganhou prêmio no período.</td></tr>';
+
+  /* ---- 3. de onde vêm os membros novos ---- */
+  const c=AN.clientes;
+  const tabOrig=(obj,tit)=>{ const e=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]), tot=e.reduce((a,x)=>a+x[1],0); return e.length? '<table><tr><th>'+tit+'</th><th>Cadastros</th><th>%</th></tr>'+e.map(([k,v])=>`<tr><td style="white-space:normal">${esc(k)}</td><td><b>${v}</b></td><td>${barra(100*v/tot)}</td></tr>`).join('')+'</table>' : '<p class="muted">Nenhum no período.</p>'; };
+  $('anCad').innerHTML=`<p style="margin:4px 0 6px;font-size:14px"><b style="color:#7fe39a;font-size:20px">${t.cadastros}</b> cadastros de gente nova (nunca foram do Fidelizi)</p>`+tabOrig(c.cadastrosPorOrigem,'Caminho')
+    +`<details><summary>Clientes antigos do Fidelizi que completaram o cadastro aqui (${t.fideliziCompletou||0})</summary>`+tabOrig(c.porOrigemFidelizi,'Por onde entraram')+'</details>'
+    +'<p class="smallnote">"+ compra na maquininha" = a pessoa ganhou o convite na roleta e depois se cadastrou por aquele caminho. "Sem origem registrada" = entrou direto no site ou antes de 07/11, quando a origem passou a ser guardada.</p>';
+
+  /* ---- 4. prêmios dados × resgatados + ranking ---- */
+  const Pm=AN.premiosResumo;
+  $('anPremios').innerHTML=Pm? '<tr><th>Tipo de prêmio</th><th>Dados</th><th>Resgatados</th><th>% de resgate</th><th>Vencidos</th><th>Em aberto</th></tr>'
+    +[['Roleta (compra)',Pm.roleta],['Brindes automáticos (aniversário e cliente sumido)',Pm.automaticos],['Outros (troca por pontos, presentes, boas-vindas)',Pm.outros]].filter(x=>x[1].dados)
+      .map(([n,g])=>`<tr><td style="white-space:normal">${n}</td><td>${g.dados}</td><td><b style="color:#7fe39a">${g.resgatados}</b></td><td>${g.taxaResgate==null?'—':barra(g.taxaResgate,'#7fe39a')}</td><td>${g.vencidos}</td><td>${g.emAberto}</td></tr>`).join('')
+    : `<tr><td class="muted">${t.premiosDados} prêmios dados · ${t.premiosResgatados} resgatados no período.</td></tr>`;
   const ord=$('anOrdem').value, rk=AN.ranking.slice();
   const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
   rk.sort(f);
   $('anRanking').innerHTML=rk.length? '<tr><th>Prêmio</th><th>Dados</th><th>Resgatados</th><th>% resgate</th><th>Vencidos</th><th>Em aberto</th><th>Dias até voltar</th><th>Preço (cardápio)</th><th>Custo (CMV)</th><th>Custo dos resgatados</th></tr>'
     +rk.map(r=>`<tr><td>${esc(r.premio)}</td><td>${r.dados}</td><td>${r.resgatados}</td><td><div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;height:8px;border-radius:4px;background:#7fe39a;width:${Math.round(0.6*(r.taxaResgate||0))}px"></span>${pct(r.taxaResgate)}</div></td><td>${r.vencidos}</td><td>${r.emAberto}</td><td>${r.diasAteVoltar==null?'—':r.diasAteVoltar.toLocaleString('pt-BR')}</td><td>${brl2(r.preco)}</td><td>${brl2(r.custo)}</td><td>${brl2(r.custoResgatado)}</td></tr>`).join('')
     : '<tr><td class="muted">Nenhum prêmio no período.</td></tr>';
-  const c=AN.clientes;
-  $('anClientes').innerHTML=box(c.total,'Contas no Clube')+box(c.migrados,'Vieram do Fidelizi')+box(c.novos,'Nasceram no Clube','#7fe39a')
-    +box(c.comSenha,'Com senha')+box(c.preContas,'Pré-conta (só celular)')+box(c.novosNoPeriodo,'Novos no período','#7fe39a');
-  const orig=Object.entries(c.porOrigem||{}).sort((a,b)=>b[1]-a[1]);
-  const origF=Object.entries(c.porOrigemFidelizi||{}).sort((a,b)=>b[1]-a[1]);
-  $('anOrigens').innerHTML=(orig.length? '<table><tr><th>Gente nova no período — de onde veio</th><th>Quantidade</th></tr>'+orig.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '')
-    +(origF.length? '<table style="margin-top:14px"><tr><th>Clientes do Fidelizi que completaram o cadastro ('+(c.fideliziCompletouNoPeriodo||0)+') — por onde</th><th>Quantidade</th></tr>'+origF.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>' : '')
-    +'<p class="smallnote"><b>Convite</b> = alguém que não é do Clube pagou e digitou o celular na maquininha: recebe o WhatsApp com o link e os pontos ficam guardados até se cadastrar. <b>Pré-conta</b> (só celular, sem cadastro) era o jeito antigo — desde a virada não nasce mais nenhuma.</p>';
-  const w=AN.whatsapp;
-  $('anWa').innerHTML=box(w.enviadas,'Enviadas')+box(w.entregues,'Entregues','#7fe39a')+box(w.lidas,'Lidas')+box(w.falhas,'Falharam','#ff9ba3')+box(w.descadastros,'Pediram SAIR')+box(w.recebidas,'Recebidas');
+
+  /* ---- 5. mensagens do Clube ---- */
+  const w=AN.whatsapp, novoW=w.falhasEntrega!=null, envOk=w.enviadasOk!=null?w.enviadasOk:w.enviadas;
+  $('anWa').innerHTML=box(envOk,'Enviadas')+box(w.entregues+'<span style="font-size:13px;color:var(--muted)"> · '+pc(w.entregues,envOk)+'</span>','Entregues','#7fe39a')
+    +box(w.lidas+'<span style="font-size:13px;color:var(--muted)"> · '+pc(w.lidas,envOk)+'</span>','Lidas (mínimo)')
+    +(novoW? box(w.falhasEntrega,'Não entregues','#ff9ba3') : box(w.falhas,'Falharam','#ff9ba3'))+box(w.descadastros,'Pediram SAIR');
   const tpl=Object.entries(w.porTemplate||{}).sort((a,b)=>b[1]-a[1]), fal=Object.entries(w.falhasPorMotivo||{}).sort((a,b)=>b[1]-a[1]);
-  // 12/11/2026: enviadas × quem abriu o link, por tipo de mensagem
   const fun=(w.funil||[]).filter(f=>f.enviadas||f.cliques);
-  const funHtml=fun.length?'<table><tr><th>Tipo de mensagem</th><th>Enviadas</th><th>Abriram o link (pessoas)</th><th>%</th></tr>'+fun.map(f=>`<tr><td>${esc(f.nome)}</td><td>${f.enviadas}</td><td>${f.pessoas}</td><td>${f.taxa==null?'—':String(f.taxa).replace('.',',')+'%'}</td></tr>`).join('')+'</table><p class="smallnote">Quem abriu o link é contado pelo site desde '+diaBRf(w.cliquesDesde||'2026-11-13')+' (antes disso a coluna fica zerada). Convite e lembrete usam o mesmo link, por isso aparecem juntos.</p>':'';
-  $('anWaDet').innerHTML=funHtml+(tpl.length?'<table><tr><th>Mensagem (template)</th><th>Enviadas</th></tr>'+tpl.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table>':'')
-    +(fal.length?'<table><tr><th>Motivo da falha</th><th>Qtde</th><th>O que é</th><th>É normal?</th></tr>'+fal.map(([k,v])=>{ const x=FALHAS_WA[String(k).split(' ')[0]]||['Código não catalogado — ver na documentação da Meta.','<span style="color:#ffd27a">Verificar</span>'];
-      return `<tr><td>${esc(k)}</td><td>${v}</td><td style="white-space:normal;min-width:200px">${x[0]}</td><td style="white-space:normal;min-width:140px">${x[1]}</td></tr>`; }).join('')+'</table>':'')
-    +(fal.length?'<p class="smallnote">Mensagem que falha <b>não é cobrada</b> pela Meta. As falhas das 10h–11h30 são das mensagens automáticas (pós-visita, prêmio vencendo, aniversário, inatividade); em outros horários costumam ser código de senha ou presente.</p>':'')
-    +'<p class="smallnote">O registro das mensagens enviadas e dos recibos (entregue/lida) começou em '+diaBRf(w.desde)+'. Falhas e descadastros vêm de antes.</p>';
+  const cel=(n,tot)=> n==null?'—': `${n} <span class="muted">(${pc(n,tot)})</span>`;
+  const funHtml=fun.length?'<div style="overflow-x:auto"><table><tr><th>Tipo de mensagem</th><th>Enviadas</th><th>Entregues</th><th>Lidas</th><th>Abriram o link</th></tr>'
+    +fun.map(f=>`<tr><td style="white-space:normal">${esc(f.nome)}</td><td><b>${f.enviadas}</b></td><td>${cel(f.entregues,f.enviadas)}</td><td>${cel(f.lidas,f.enviadas)}</td><td>${f.k==='codigo'||f.k==='outras'?'—':cel(f.pessoas,f.enviadas)}</td></tr>`).join('')+'</table></div>':'';
+  $('anWaDet').innerHTML=funHtml
+    +'<p class="smallnote">As % são sobre as enviadas daquele tipo. "Lidas" é o mínimo (quem desliga a confirmação de leitura não aparece). "Abriram o link" = pessoas, contadas pelo site desde '+diaBRf(w.cliquesDesde||'2026-11-13').slice(0,5)+'. Convite e lembrete usam o mesmo link, por isso aparecem juntos.'
+    +(w.recibosDeFora? ' Ficaram de fora '+w.recibosDeFora+' recibos de mensagens que não são do Clube (atendimento, cotação de fornecedores).':'')+' O registro de envios e recibos começou em '+diaBRf(w.desde).slice(0,5)+'.</p>'
+    +(tpl.length?'<details><summary>Ver por modelo de mensagem</summary><table><tr><th>Modelo</th><th>Enviadas</th></tr>'+tpl.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')+'</table></details>':'')
+    +(fal.length?'<details><summary>Ver motivos de falha ('+w.falhas+')</summary><div style="overflow-x:auto"><table><tr><th>Motivo da falha</th><th>Qtde</th><th>O que é</th><th>É normal?</th></tr>'+fal.map(([k,v])=>{ const x=FALHAS_WA[String(k).split(' ')[0]]||['Código não catalogado — ver na documentação da Meta.','<span style="color:#ffd27a">Verificar</span>'];
+      return `<tr><td>${esc(k)}</td><td>${v}</td><td style="white-space:normal;min-width:200px">${x[0]}</td><td style="white-space:normal;min-width:140px">${x[1]}</td></tr>`; }).join('')+'</table></div>'
+      +'<p class="smallnote">Aqui entram as falhas de <b>todas</b> as mensagens do número da casa (Clube e atendimento). Mensagem que falha <b>não é cobrada</b> pela Meta. As falhas das 10h–11h30 são das mensagens automáticas; em outros horários costumam ser código de senha ou presente.</p></details>':'');
+  $('anDiag').innerHTML=diag.map(x=>`<p style="margin:6px 0;font-size:13.5px">${x}</p>`).join('');
 }
 
 /* ============ ⏰ CONVITES VENCIDOS (07/11/2026) ============ */
