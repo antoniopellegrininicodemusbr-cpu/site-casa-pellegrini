@@ -497,7 +497,14 @@ function modoConvite(j){
   const box = document.getElementById('convBox');
   const itens = (j.premios||[]).map((p) => '<div style="font-size:16px;font-weight:700;color:#fff;margin-top:6px">🎁 '+escH(p)+'</div>').join('');
   const pts = j.pontos>0 ? '<div style="margin-top:6px;color:#fff">⭐ '+j.pontos+(j.pontos===1?' ponto':' pontos')+' da sua compra</div>' : '';
-  box.innerHTML = '<div style="font-family:\'Pellegrini Display\',Impact,sans-serif;color:var(--dourado);font-size:20px">Ative seu prêmio</div>' +
+  /* 13/11/2026: link de ENTRADA (compra abaixo de R$ 25 na maquininha) — não há prêmio nem ponto guardado;
+     o que a pessoa ganha é o brinde de boas-vindas ao criar a conta. */
+  const entrada = !itens && !pts && j.boasVindas;
+  box.innerHTML = entrada ?
+    '<div style="font-family:\'Pellegrini Display\',Impact,sans-serif;color:var(--dourado);font-size:20px">Entre no Clube e ganhe</div>' +
+    '<div style="font-size:16px;font-weight:700;color:#fff;margin-top:6px">🎁 '+escH(j.boasVindas)+'</div>' +
+    '<div style="color:var(--muted);font-size:12.5px;margin-top:10px">Brinde de boas-vindas · vale na sua próxima compra a partir de R$ 25 · leva 30 segundos</div>' :
+    '<div style="font-family:\'Pellegrini Display\',Impact,sans-serif;color:var(--dourado);font-size:20px">Ative seu prêmio</div>' +
     '<div style="color:var(--muted);font-size:13.5px;margin-top:4px">Está guardado esperando você:</div>' + itens + pts +
     (j.venceEm ? '<div style="color:var(--muted);font-size:12.5px;margin-top:10px">Vale até '+escH(j.venceEm)+' · leva 30 segundos</div>' : '');
   box.style.display = 'block';
@@ -506,7 +513,7 @@ function modoConvite(j){
   tel.value = fmtCel(j.telefone); tel.readOnly = true; tel.style.opacity = '.75';
   const dicaTel = tel.parentElement.querySelector('.dica'); if (dicaTel) dicaTel.textContent = '✅ É o número da sua compra — já está certo.';
   document.getElementById('cfCad').style.display = 'none';
-  document.getElementById('btn').textContent = 'Ativar meu prêmio';
+  document.getElementById('btn').textContent = entrada ? 'Criar minha conta' : 'Ativar meu prêmio';
   verPainel('form');
 }
 (async function(){
@@ -855,6 +862,14 @@ async function enviar(e){
     } else if (j.completouPreConta){
       // veio do convite automático da maquininha: os pontos já estavam lá
       b.textContent='🎁 Os pontos das suas visitas já estão na sua conta.';
+      b.style.display='block';
+    }
+    /* 13/11/2026: brinde de boas-vindas (quem entra pelo link sem prêmio de roleta) */
+    if (j.brindeBoasVindas && j.brindeBoasVindas.premio){
+      const escB = (t) => String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      b.innerHTML = (b.style.display==='block' ? b.innerHTML+'<br><br>' : '') +
+        '🎁 Seu brinde de boas-vindas já está na sua conta:<br><strong>'+escB(j.brindeBoasVindas.premio)+'</strong><br>'+
+        'Vale até '+escB(j.brindeBoasVindas.validoAte||'')+', em compra a partir de R$ '+escB(j.brindeBoasVindas.apartirDe||25)+'.';
       b.style.display='block';
     }
     window.scrollTo({top:0,behavior:'smooth'});
