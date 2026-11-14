@@ -375,10 +375,10 @@
       <h2>💰 Quanto vale um cliente (LTV) e quanto pagar por um (Ads)</h2>
       <p class="sub">O teto do que vale pagar por um cliente novo (CAC) sai do valor que ele gera ao longo do tempo (LTV).</p>
       <p class="sub" id="saudeLtvExpl" style="background:rgba(255,255,255,.04);border-left:3px solid var(--gold);padding:8px 10px;border-radius:6px"></p>
-      <div class="segrid" id="saudeLtv"></div>
+      <div id="saudeLtv" style="overflow-x:auto"></div>
       <label style="margin-top:12px">Margem de contribuição (%) — quanto sobra de cada R$ vendido depois do custo do produto</label>
       <input type="number" id="cfgMargem" min="1" max="100" onchange="db.config.margemPct=Math.max(1,Math.min(100,+this.value||65));salvar();renderSaude()">
-      <p class="smallnote">Regra usada: CAC máximo saudável = 1/3 do LTV (proporção LTV:CAC de 3:1).</p>
+      <p class="smallnote">Regra usada: CAC máximo saudável = 1/3 do que sobra (cadastro: 1/3 do LTV; compra: 1/3 da margem do ticket médio). Quando a 2ª, 3ª compra melhorarem, o LTV sobe e o CAC por cadastro se afasta do CAC por compra.</p>
     </div>
     <div class="card">
       <h2>🔁 Funil de recompra</h2>
@@ -1125,11 +1125,22 @@ function renderSaude(){
   const compradores = cs.filter(c=>(+c.visitas||0)>0).length;
   $('saudeLtvExpl').innerHTML=`<b>Quem entra na conta:</b> todos os <b>${n}</b> cadastrados no Clube — inclusive os <b>${n-compradores}</b> que ainda não compraram. Ou seja, é por <b>cliente que entrou no Clube</b>, não só por quem já comprou.<br>`+
     `<b>Receita:</b> tudo o que essas contas já gastaram com a gente, incluindo o histórico trazido do Fidelizi.<br>`+
-    `Então o CAC abaixo é o máximo pra pagar por <b>um cadastro novo</b> vindo de anúncio. Só entre quem já comprou (${compradores}), a receita média é <b>${brl(Math.round(compradores?totGasto/compradores:0))}</b>.`;
-  $('saudeLtv').innerHTML=`
-    <div class="segbox"><div class="n">${brl(Math.round(gastoMedioCliente))}</div><div class="l">Receita média / cliente</div></div>
-    <div class="segbox"><div class="n" style="color:var(--gold)">${brl(Math.round(ltv))}</div><div class="l">LTV (com margem ${margemPct}%)</div></div>
-    <div class="segbox"><div class="n" style="color:#7fe39a">${brl(Math.round(cacMax))}</div><div class="l">CAC máximo p/ Ads</div></div>`;
+    `Então o CAC por cadastro é o máximo pra pagar por <b>um cadastro novo</b> vindo de anúncio. Só entre quem já comprou (${compradores}), a receita média é <b>${brl(Math.round(compradores?totGasto/compradores:0))}</b>.<br>`+
+    `<b>Por compra:</b> o ticket médio é o valor de uma compra (faturamento ÷ visitas). O CAC por compra é o máximo pra pagar por <b>uma compra</b> vinda de anúncio (campanhas de venda), contando só aquela compra.`;
+  const margemCompra = ticket*margem;
+  const cacCompra = margemCompra/3;
+  const nb=(v,cor)=>`<b style="font-size:17px;color:${cor||'var(--text,#fff)'}">${brl(Math.round(v))}</b>`;
+  $('saudeLtv').innerHTML=`<table style="width:100%;border-collapse:collapse">
+    <tr><th style="text-align:left"></th><th style="text-align:left">Valor</th><th style="text-align:left">Lucro (${margemPct}%)</th><th style="text-align:left">CAC máximo (1/3)</th></tr>
+    <tr><td><b>Campanhas de cadastro</b><br><small class="muted">por cliente que entra no Clube</small></td>
+      <td>${nb(gastoMedioCliente)}<br><small class="muted">receita média</small></td>
+      <td>${nb(ltv,'var(--gold)')}<br><small class="muted">LTV</small></td>
+      <td>${nb(cacMax,'#7fe39a')}<br><small class="muted">por cadastro</small></td></tr>
+    <tr><td><b>Campanhas de compra</b><br><small class="muted">por compra feita</small></td>
+      <td>${nb(ticket)}<br><small class="muted">ticket médio</small></td>
+      <td>${nb(margemCompra,'var(--gold)')}<br><small class="muted">margem por compra</small></td>
+      <td>${nb(cacCompra,'#7fe39a')}<br><small class="muted">por compra</small></td></tr>
+  </table>`;
   const etapas=['1ª','2ª','3ª','4ª','5ª+'], cont=[0,0,0,0,0];
   cs.forEach(c=>{ const v=c.visitas||0; for(let i=0;i<5;i++) if(v>=i+1) cont[i]++; });
   let funil='<table style="width:100%"><tr><th>Etapa</th><th>Clientes</th><th>Conversão da etapa anterior</th></tr>';
@@ -1145,7 +1156,7 @@ function renderSaude(){
   const linhas=[];
   linhas.push(recompra>=20?`✅ <b>${recompra}%</b> dos clientes voltaram pra 2ª compra — boa retenção.`:`⚠️ Só <b>${recompra}%</b> voltaram pra 2ª compra — focar em reativação.`);
   linhas.push(inativos>s.ativos?`⚠️ Mais inativos (${inativos}) que ativos (${s.ativos}) — caprichar nos brindes de inatividade.`:`✅ Base mais ativa (${s.ativos}) que inativa (${inativos}).`);
-  linhas.push(`💡 Pelo LTV, vale pagar até <b>${brl(Math.round(cacMax))}</b> por cliente novo no Meta/TikTok (proporção 3:1).`);
+  linhas.push(`💡 Pelo LTV, vale pagar até <b>${brl(Math.round(cacMax))}</b> por cadastro novo e até <b>${brl(Math.round(ticket*(margemPct/100)/3))}</b> por compra no Meta/TikTok/Google (proporção 3:1).`);
   $('saudeDiag').innerHTML=linhas.map(t=>`<p style="margin:6px 0;font-size:13.5px">${t}</p>`).join('');
 }
 
