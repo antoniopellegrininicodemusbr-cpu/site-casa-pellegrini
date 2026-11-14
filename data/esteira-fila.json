@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-11-13",
- "total": 361,
+ "atualizado_em": "2026-11-14",
+ "total": 362,
  "registros": [
+  {
+   "media_id": "17893773843457911",
+   "data_post": "2026-11-13",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DfskKc5PyiZ/",
+   "caption": "Bora agilizar 📝🐕  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "2",
+   "motivo_reprova": "Menção explícita a confraternização de dezembro (evento/momento datado)",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_especifica|tema:confraternização de dezembro",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-11-14",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18122333831067267",
    "data_post": "2026-11-11",
@@ -6050,7 +6069,7 @@
    "media_type": "REELS",
    "permalink": "https://www.instagram.com/reel/DCURl08Rw8z/",
    "caption": "No capricho 🤌🏼",
-   "status": "REPESCAGEM",
+   "status": "EXPIRADO",
    "nota_gemini": "9",
    "motivo_reprova": "",
    "flags": "gemini_aprovou:sim|tema:sobremesa brownie com sorvete|legenda_v2:ok|entrada:resgate_prazo;vence_2anos:2026-11-13;cardapio_conferido:brownie_com_sorvete_no_menu_2026-10-20|veredito:REPROVADO_2026-10-27;teste R$58,73/8996imp/4155reach/0c/CTR1,82%;CPA_infinito_vs_linha_2x_destino(qualquer;dia19,69|noite21,57);REPESCAGEM;vence_2anos:2026-11-13(17d_pode_nao_voltar)",
