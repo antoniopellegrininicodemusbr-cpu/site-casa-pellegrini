@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-11-14",
- "total": 362,
+ "atualizado_em": "2026-11-15",
+ "total": 363,
  "registros": [
+  {
+   "media_id": "18643722310027353",
+   "data_post": "2026-11-15",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DfwuxtAPV8i/",
+   "caption": "Se conselho fosse bom, não se dava, se vendia…  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9.5",
+   "motivo_reprova": "",
+   "flags": "gemini_aprovou:sim|sazon:calor|tema:Dicas de pratos e chopp|legenda_v2:ok",
+   "conjunto_sugerido": "qualquer",
+   "data_triagem": "2026-11-15",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "17893773843457911",
    "data_post": "2026-11-13",
