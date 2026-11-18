@@ -134,6 +134,11 @@
   a.btn{display:block;text-align:center;text-decoration:none;background:#25D366;color:#04210f;padding:13px 18px;border-radius:14px;margin-top:12px;
     font-family:var(--display);font-size:18px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;line-height:1.15}
   .busca{margin-bottom:6px}
+  /* 17/11/2026: lista "Deram o celular e não entraram" */
+  .ldSem{background:rgba(255,158,33,.12)} tr.ldSem td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+  .ldTag{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700;white-space:nowrap;display:inline-block}
+  .ldTag.rec{background:#1f5132;color:#7fe39a} .ldTag.sem{background:rgba(255,158,33,.18);color:var(--gold)} .ldTag.fz{background:rgba(143,180,255,.15);color:#8fb4ff}
+  #ldLista td,#ldLista th{white-space:nowrap} #ldLista td.pr{white-space:normal;min-width:140px}
   @media (max-width:560px){ header{padding:10px 12px} nav button{padding:8px 10px;font-size:15px} .card{padding:14px} .card h2{font-size:20px}
     .brand .logo{height:32px} .brand b{font-size:18px} }
 </style>
@@ -334,6 +339,28 @@
         </select></div>
       </div>
       <div id="crmClientes"></div>
+    </div>
+    <div class="card" id="cardLeads">
+      <h2>📇 Deram o celular e não entraram</h2>
+      <p class="sub">Quem comprou, deu o celular na maquininha e <b>ainda não criou a conta</b>. Até 20 dias a pessoa recebe os avisos automáticos (convite e lembretes); depois disso <span class="ldSem" style="padding:1px 6px;border-radius:5px">fica marcada</span> e não recebe mais nada sozinha. <b>Voltou só com o cartão</b> = compras depois, com o mesmo cartão (6 primeiros + 4 últimos números), sem dar o celular — conta a partir de 06/11, quando a maquininha passou a mandar todas as vendas.</p>
+      <div class="segrid" id="ldResumo"></div>
+      <div class="row" style="align-items:center;margin-top:10px">
+        <div><select id="ldFiltro" onchange="renderLeads()">
+          <option value="todos">Todos</option><option value="recebendo">Recebendo avisos (até 20 dias)</option>
+          <option value="sem">Sem avisos (+20 dias)</option><option value="voltou">Voltaram só com o cartão</option>
+        </select></div>
+        <div><select id="ldOrdem" onchange="renderLeads()">
+          <option value="recente">Compra mais recente</option><option value="antigo">Mais dias desde a 1ª compra</option>
+          <option value="compras">Mais compras</option><option value="valor">Mais gasto</option>
+        </select></div>
+      </div>
+      <input class="busca" id="ldBusca" placeholder="Buscar por celular" oninput="renderLeads()" style="margin-top:8px">
+      <div class="row">
+        <div><button class="btn sec" id="ldBtn" onclick="leadsCarregar()" style="margin-top:8px">🔄 Atualizar</button></div>
+        <div><button class="btn sec" onclick="leadsCsv()" style="margin-top:8px">⬇️ Baixar lista (planilha)</button></div>
+      </div>
+      <div class="erro" id="ldMsg"></div>
+      <div id="ldLista" style="overflow-x:auto"></div>
     </div>
   </section>
 
@@ -804,7 +831,7 @@ async function vencidoCreditar(id,btn){
   msg('cvMsg',(r.nome||'Cliente')+': creditado. Saldo agora '+r.saldo+' pontos.',true);
 }
 
-function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm') renderCRM(); if(abaAtual==='garcons') garconsCarregar(); if(abaAtual==='saude'){ renderSaude(); carregarAnalises(false); } if(abaAtual==='admin') exportCarregarCfg(); }
+function renderAba(){ if(!carregado) return; if(abaAtual==='admin') renderAdmin(); if(abaAtual==='crm'){ renderCRM(); if(!LEADS) leadsCarregar(); } if(abaAtual==='garcons') garconsCarregar(); if(abaAtual==='saude'){ renderSaude(); carregarAnalises(false); } if(abaAtual==='admin') exportCarregarCfg(); }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -1000,6 +1027,51 @@ function renderCRM(){
   renderClientes();
 }
 const MAX_LINHAS=200;
+/* ============ 📇 DERAM O CELULAR E NÃO ENTRARAM (17/11/2026) ============ */
+let LEADS=null, _leadsCarregando=false;
+async function leadsCarregar(){
+  if(_leadsCarregando) return; _leadsCarregando=true; ocupado('ldBtn',true,'⏳ Carregando…'); msg('ldMsg','');
+  const r=await chamar('/admin/leads'); _leadsCarregando=false; ocupado('ldBtn',false);
+  if(!r.ok){ msg('ldMsg', r.erro||'Não carregou.'); return; }
+  LEADS=r; renderLeads();
+}
+function leadsFiltrados(){
+  if(!LEADS) return [];
+  const f=$('ldFiltro').value, o=$('ldOrdem').value, q=($('ldBusca').value||'').replace(/\D/g,'');
+  let l=LEADS.lista.filter(x=> f==='recebendo'?x.recebendo : f==='sem'?!x.recebendo : f==='voltou'?!!x.voltou : true);
+  if(q) l=l.filter(x=>x.telefone.includes(q));
+  const ord={recente:(a,b)=>b.ultimaTs-a.ultimaTs, antigo:(a,b)=>b.dias-a.dias, compras:(a,b)=>(b.compras+(b.voltou?b.voltou.compras:0))-(a.compras+(a.voltou?a.voltou.compras:0)), valor:(a,b)=>(b.valor+(b.voltou?b.voltou.valor:0))-(a.valor+(a.voltou?a.voltou.valor:0))};
+  return l.slice().sort(ord[o]||ord.recente);
+}
+function renderLeads(){
+  if(!LEADS){ $('ldResumo').innerHTML=''; $('ldLista').innerHTML='<p class="muted">Carregando…</p>'; return; }
+  const R=LEADS;
+  $('ldResumo').innerHTML=[[R.total,'Deram o celular'],[R.recebendo,'Recebendo avisos (até 20 dias)'],[R.semAvisos,'Sem avisos (+20 dias)'],[R.voltaram,'Voltaram só com o cartão']]
+    .map(([n,l])=>`<div class="segbox"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`).join('');
+  const l=leadsFiltrados();
+  if(!l.length){ $('ldLista').innerHTML='<p class="muted" style="margin-top:10px">Ninguém nesse filtro.</p>'; return; }
+  const dia=(ts)=> ts? new Date(ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) : '—';
+  $('ldLista').innerHTML=`<table><tr><th>Celular</th><th>1ª compra</th><th>Compras c/ celular</th><th>Voltou só c/ cartão</th><th>Prêmios</th><th>Situação</th></tr>`+
+    l.map(x=>`<tr class="${x.recebendo?'':'ldSem'}">
+      <td>${esc(fmtTel(x.telefone))}${x.fidelizi?` <span class="ldTag fz" title="Já tinha conta no Fidelizi (${+x.pontosFidelizi||0} pts), sem senha">Fidelizi</span>`:''}</td>
+      <td>${dia(x.primeiraTs)} <span class="muted">· há ${x.dias} ${x.dias===1?'dia':'dias'}</span></td>
+      <td>${x.compras} <span class="muted">· ${brl(x.valor)}</span></td>
+      <td>${x.voltou?`<b style="color:var(--gold)">${x.voltou.compras}×</b> <span class="muted">· ${brl(x.voltou.valor)} · última ${dia(x.voltou.ultimaTs)}</span>`:(x.cartao?'<span class="muted">não</span>':'<span class="muted" title="A compra do convite não foi no cartão (Pix/voucher) ou é de antes da 0.3.4">—</span>')}</td>
+      <td class="pr">${x.premios.length?esc(x.premios.join(', ')):'<span class="muted">—</span>'}</td>
+      <td>${x.recebendo?`<span class="ldTag rec">recebendo até ${dia(x.prazoTs)}</span>`:'<span class="ldTag sem">sem avisos</span>'}</td></tr>`).join('')+
+    `</table><p class="smallnote">${l.length} pessoa(s) neste filtro. Cada celular aparece 1 vez (compras do mesmo número somadas, com ou sem o 9).</p>`;
+}
+function leadsCsv(){
+  const l=leadsFiltrados(); if(!l.length) return msg('ldMsg','Nada pra baixar nesse filtro.');
+  const dia=(ts)=> ts? new Date(ts).toLocaleDateString('pt-BR') : '';
+  const cab=['celular','primeira_compra','dias_desde_primeira','compras_com_celular','valor_com_celular','voltou_so_cartao_compras','voltou_so_cartao_valor','ultima_volta','premios','situacao','fidelizi'];
+  const lin=l.map(x=>['55'+x.telefone, dia(x.primeiraTs), x.dias, x.compras, String(x.valor).replace('.',','), x.voltou?x.voltou.compras:0, x.voltou?String(x.voltou.valor).replace('.',','):'0', x.voltou?dia(x.voltou.ultimaTs):'',
+    x.premios.join(' + '), x.recebendo?'recebendo avisos':'sem avisos', x.fidelizi?'sim':'']);
+  const csv='\ufeff'+[cab].concat(lin).map(r=>r.map(c=>{ c=String(c); return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }).join(';')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='clube-deram-celular-'+new Date().toISOString().slice(0,10)+'.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+
 function renderClientes(){
   if(!carregado) return;
   const q=($('crmBusca').value||'').trim().toLowerCase(), qd=q.replace(/\D/g,'');
