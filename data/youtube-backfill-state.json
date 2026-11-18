@@ -730,7 +730,11 @@
   "18071728559092577",
   "18068222108117189",
   "18123419203466300",
-  "18021653711738928"
+  "18021653711738928",
+  "18057664544361598",
+  "18411857050111304",
+  "18088257355698753",
+  "17850805773523751"
  ],
  "failed": {
   "18159851395114721": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The request metadata specifies an invalid video description.\",\n    \"errors\": [\n      {\n        \"message\": \"The req",
@@ -786,10 +790,11 @@
   "17849485248423190": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The user has exceeded the number of videos they may upload.\",\n    \"errors\": [\n      {\n        \"message\": \"The user",
   "18091755973498322": "sem media_url (provavel copyright/indisponivel)",
   "18357866590150578": "sem media_url (provavel copyright/indisponivel)",
-  "18044409122262060": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The user has exceeded the number of videos they may upload.\",\n    \"errors\": [\n      {\n        \"message\": \"The user"
+  "18044409122262060": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The user has exceeded the number of videos they may upload.\",\n    \"errors\": [\n      {\n        \"message\": \"The user",
+  "18234293494295657": "HTTP 400 ao abrir a sessao de upload: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The user has exceeded the number of videos they may upload.\",\n    \"errors\": [\n      {\n        \"message\": \"The user"
  },
- "day": "2026-11-17",
- "day_count": 5,
+ "day": "2026-11-18",
+ "day_count": 4,
  "failed_historico_21_08": {
   "17978040793056788": "HTTP Error 400: Bad Request",
   "17998537129115430": "HTTP Error 400: Bad Request",
