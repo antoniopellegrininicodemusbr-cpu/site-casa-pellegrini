@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Pontuar no Balcão · Clube Pellegrini</title>
+<!-- 19/11/2026 (Antonio): tela do PC do salão 2, aberta pelo PONTUAR_BALCAO.bat (janela de app do Edge).
+     Uma função só: pontuar venda em DINHEIRO ou venda da maquininha que ficou sem pontuar.
+     Garçom entra com a senha da maquininha → celular, mesa e valor → confirma o Colibri → roleta na tela. -->
+<style>
+  @font-face{font-family:'Pellegrini Display';src:url('/fonts/bebas-neue.woff2') format('woff2');font-weight:400 900;font-display:swap;size-adjust:118%}
+  :root{
+    --bg0:#14172E; --bg1:#1B1F3C; --bg2:#232849; --linha:#30365C; --linha2:#4A5180;
+    --red:#BD1823; --gold:#FF9E21; --cream:#F6F5F1; --text:#ECEBE6; --muted:#A3A8C2;
+    --display:'Pellegrini Display','Bebas Neue',Impact,'Arial Narrow',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--text);background:var(--bg0);
+    background-image:radial-gradient(1200px 600px at 85% -10%,rgba(189,24,35,.22),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(255,158,33,.10),transparent 60%);
+    display:flex;flex-direction:column;user-select:none}
+  h1,h2{font-family:var(--display);font-weight:400;letter-spacing:.04em;text-transform:uppercase;line-height:1.05}
+  header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 22px;background:var(--bg1);border-bottom:3px solid var(--red)}
+  .marca{display:flex;align-items:center;gap:14px}
+  .marca img{height:40px;width:auto;background:#fff;border-radius:8px;padding:4px 10px}
+  .marca b{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.06em;color:var(--cream);display:block;line-height:1}
+  .marca small{font-size:11px;letter-spacing:.22em;color:var(--gold);font-weight:700}
+  .quem{display:none;align-items:center;gap:10px}
+  .quem span{background:var(--bg2);border:1px solid var(--linha2);border-radius:999px;padding:7px 14px;font-weight:600}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:22px}
+  .tela{display:none;width:100%;max-width:760px;animation:entra .25s ease}
+  .tela.on{display:block}
+  @keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .card{background:var(--bg1);border:1px solid var(--linha);border-radius:22px;padding:30px 34px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .card h1{font-size:44px;color:var(--cream);margin-bottom:6px}
+  .sub{color:var(--muted);font-size:17px;margin-bottom:22px}
+  button{font:inherit;cursor:pointer;border:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--red);color:#fff;border-radius:14px;padding:16px 26px;
+    font-family:var(--display);font-size:28px;letter-spacing:.06em;text-transform:uppercase;transition:filter .15s,transform .05s}
+  .btn:hover{filter:brightness(1.1)} .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+  .btn.sec{background:transparent;border:2px solid var(--linha2);color:var(--cream)}
+  .btn.ouro{background:var(--gold);color:#1B1F3C}
+  .btn.full{width:100%}
+  /* senha */
+  .pontos{display:flex;justify-content:center;gap:14px;margin:6px 0 22px;min-height:30px}
+  .pontos i{width:22px;height:22px;border-radius:50%;border:2px solid var(--linha2)}
+  .pontos i.cheio{background:var(--gold);border-color:var(--gold)}
+  .teclado{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:420px;margin:0 auto 18px}
+  .teclado button{background:var(--bg2);color:var(--cream);border:1px solid var(--linha2);border-radius:16px;height:72px;font-size:32px;font-weight:700}
+  .teclado button:hover{background:#2c3259}
+  .teclado button.c{color:var(--gold);font-size:22px}
+  /* formulário */
+  .campo{margin-bottom:16px}
+  .campo label{display:block;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px}
+  .campo input{width:100%;background:var(--bg0);border:2px solid var(--linha2);border-radius:14px;color:var(--cream);font-size:34px;font-weight:700;
+    padding:12px 18px;outline:none;user-select:text;font-variant-numeric:tabular-nums}
+  .campo input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,158,33,.18)}
+  .duas{display:grid;grid-template-columns:1fr 1.4fr;gap:16px}
+  .rs{position:relative} .rs::before{content:"R$";position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:24px;color:var(--muted);font-weight:700}
+  .rs input{padding-left:62px}
+  .resumo{background:var(--bg2);border:1px solid var(--linha2);border-radius:16px;padding:16px 18px;margin:4px 0 18px;font-size:19px;display:none}
+  .resumo b{color:var(--cream)}
+  .resumo .linha{display:flex;gap:10px;align-items:center;padding:4px 0}
+  .vendas{margin-top:12px;border-top:1px dashed var(--linha2);padding-top:12px}
+  .vendas p{font-size:15px;color:var(--gold);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+  .opc{display:flex;align-items:center;gap:12px;background:var(--bg0);border:2px solid var(--linha);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font-size:17px}
+  .opc input{width:22px;height:22px;accent-color:var(--red)}
+  .opc.marcada{border-color:var(--gold)}
+  .erro{color:#ff8a8a;font-weight:600;min-height:24px;margin:-4px 0 12px;font-size:16px}
+  /* popup */
+  .fundo{position:fixed;inset:0;background:rgba(8,10,25,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .fundo.on{display:flex;animation:entra .2s ease}
+  .modal{background:var(--cream);color:#1B1F3C;border-radius:22px;max-width:620px;width:100%;padding:30px 32px;border-top:8px solid var(--red);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .modal h2{font-size:38px;color:var(--red);margin-bottom:10px}
+  .modal p{font-size:19px;line-height:1.45;margin-bottom:16px}
+  .modal .valor{font-family:var(--display);font-size:46px;color:#1B1F3C;letter-spacing:.03em}
+  .sim{display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #d9d6cc;border-radius:14px;padding:14px 16px;font-size:20px;font-weight:700;cursor:pointer;margin-bottom:20px}
+  .sim input{width:30px;height:30px;accent-color:var(--red)}
+  .sim.marcada{border-color:var(--red)}
+  .botoes{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+  .modal .btn.sec{color:#1B1F3C;border-color:#bdb9ad}
+  /* roleta */
+  .roda{display:flex;flex-direction:column;align-items:center;width:100%}
+  .roda .titulo{font-size:20px;color:var(--gold);letter-spacing:.2em;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+  .roda h1{font-size:50px;color:var(--cream);margin-bottom:0;text-align:center}
+  #t-roleta{max-width:1000px}
+  #cv{display:block;width:100%;height:min(64vh,640px);cursor:pointer}
+  .dica{font-size:22px;font-weight:700;color:var(--cream);min-height:32px;margin:2px 0 12px;text-align:center}
+  /* fim */
+  .fim{text-align:center}
+  .fim h1{font-size:64px;color:var(--cream)}
+  .lista{margin:18px auto;max-width:520px;text-align:left}
+  .lista div{background:var(--bg2);border:1px solid var(--linha2);border-left:6px solid var(--gold);border-radius:12px;padding:12px 16px;margin-bottom:10px;font-size:22px;font-weight:700;color:var(--cream)}
+  .placar{display:inline-block;background:var(--red);color:#fff;border-radius:16px;padding:12px 26px;margin:6px 0 14px}
+  .placar b{font-family:var(--display);font-weight:400;font-size:52px;letter-spacing:.03em;display:block;line-height:1}
+  .placar small{font-size:15px;letter-spacing:.14em;text-transform:uppercase}
+  .aviso{font-size:18px;color:var(--muted);margin-bottom:22px;white-space:pre-line}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--linha2);color:var(--cream);padding:12px 20px;border-radius:12px;font-weight:600;display:none;z-index:60}
+</style>
+</head>
+<body>
+<header>
+  <div class="marca"><img src="/logo-sm.webp" alt="Casa Pellegrini" width="400" height="156"><div><b>Pontuar no Balcão</b><small>CLUBE PELLEGRINI</small></div></div>
+  <div class="quem" id="quem"><span id="quemNome">👤</span><button class="btn sec" style="font-size:18px;padding:9px 16px" onclick="sair()">Trocar atendente</button></div>
+</header>
+
+<main>
+  <section class="tela" id="t-semChave"><div class="card" style="text-align:center">
+    <h1>Computador não liberado</h1>
+    <p class="sub">Abra esta tela pelo atalho <b>PONTUAR_BALCAO</b> da área de trabalho. Se continuar assim, chame a gerência.</p>
+  </div></section>
+
+  <section class="tela" id="t-login"><div class="card" style="max-width:520px;margin:auto;text-align:center">
+    <h1>Quem está lançando?</h1>
+    <p class="sub">Digite a sua senha de garçom (a mesma da maquininha).</p>
+    <div class="pontos" id="pontos"></div>
+    <div class="teclado" id="teclado"></div>
+    <div class="erro" id="erroLogin"></div>
+    <button class="btn full" id="btnEntrar" onclick="entrar()">Entrar</button>
+  </div></section>
+
+  <section class="tela" id="t-venda"><div class="card">
+    <h1>Pontuar venda</h1>
+    <p class="sub">Venda em dinheiro, ou venda da maquininha que ficou sem pontuar.</p>
+    <div class="campo"><label for="tel">Celular do cliente (com DDD)</label><input id="tel" inputmode="numeric" autocomplete="off" placeholder="(24) 99999-9999"></div>
+    <div class="duas">
+      <div class="campo"><label for="mesa">Mesa</label><input id="mesa" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="00"></div>
+      <div class="campo"><label for="valor">Valor exato pago</label><div class="rs"><input id="valor" inputmode="numeric" autocomplete="off" placeholder="0,00"></div></div>
+    </div>
+    <div class="resumo" id="resumo"></div>
+    <div class="erro" id="erroVenda"></div>
+    <button class="btn full" id="btnSeguir" onclick="seguir()">Continuar</button>
+  </div></section>
+
+  <section class="tela" id="t-roleta"><div class="roda">
+    <div class="titulo" id="rTitulo">Roleta</div>
+    <h1 id="rNivel">Gire a roleta!</h1>
+    <canvas id="cv"></canvas>
+    <div class="dica" id="rDica"></div>
+    <button class="btn ouro" id="btnGirar" style="font-size:32px;padding:12px 56px">🎡 Girar</button>
+  </div></section>
+
+  <section class="tela" id="t-fim"><div class="card fim">
+    <h1 id="fTitulo">Parabéns!</h1>
+    <div class="lista" id="fLista"></div>
+    <div id="fPlacar"></div>
+    <p class="aviso" id="fAviso"></p>
+    <button class="btn full" onclick="novaVenda()">Nova venda</button>
+  </div></section>
+</main>
+
+<div class="fundo" id="modal"><div class="modal">
+  <h2 id="mTitulo"></h2>
+  <div id="mCorpo"></div>
+  <div class="botoes">
+    <button class="btn sec" onclick="fecharModal()">Voltar</button>
+    <button class="btn" id="mOk" onclick="confirmar()">Pontuar</button>
+  </div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/clube';
+let CHAVE = null, SESSAO = null, GARCOM = null, PIN = '', CONSULTA = null, ESCOLHA = null, RESULT = null, RIDX = 0;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const brl = (v) => Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const prod = (p) => ({Credito: 'Crédito', Debito: 'Débito', 'Pix QRcode': 'Pix'}[p] || p || 'Cartão');
+const hora = (ts) => new Date(ts).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'});
+
+function mostrar(t) {
+  document.querySelectorAll('.tela').forEach((x) => x.classList.toggle('on', x.id === 't-' + t));
+  $('quem').style.display = (GARCOM && t !== 'login' && t !== 'semChave') ? 'flex' : 'none';
+  if (t === 'venda') setTimeout(() => $('tel').focus(), 60);
+}
+function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toast._t); toast._t = setTimeout(() => { t.style.display = 'none'; }, 3500); }
+
+// a chave do PC chega pelo atalho (#k=...) e fica guardada neste computador
+function lerChave() {
+  const m = location.hash.match(/k=([A-Za-z0-9_-]{24,})/);
+  if (m) { CHAVE = m[1]; try { localStorage.setItem('balcaoChave', CHAVE); } catch (e) {} history.replaceState(null, '', location.pathname); }
+  else { try { CHAVE = localStorage.getItem('balcaoChave'); } catch (e) {} }
+}
+async function chamar(rota, dados) {
+  const h = {'Content-Type': 'application/json', 'X-Balcao-Chave': CHAVE || ''};
+  if (SESSAO) h['X-Balcao-Sessao'] = SESSAO;
+  let r;
+  try { r = await fetch(API + rota, {method: 'POST', headers: h, body: JSON.stringify(dados || {}), cache: 'no-store'}); }
+  catch (e) { return {ok: false, erro: 'Sem internet. Confira a conexão e tente de novo.'}; }
+  const j = await r.json().catch(() => ({ok: false, erro: 'Resposta inválida do servidor (' + r.status + ').'}));
+  if (j.semChave) mostrar('semChave');
+  else if (j.sair) { SESSAO = null; GARCOM = null; PIN = ''; desenharPontos(); fecharModal(); mostrar('login'); toast(j.erro || 'Entre de novo.'); }
+  return j;
+}
+
+/* ---------- senha do garçom ---------- */
+function montarTeclado() {
+  const t = $('teclado'); t.innerHTML = '';
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].forEach((k) => {
+    const b = document.createElement('button'); b.textContent = k; if (k === 'C' || k === '⌫') b.className = 'c';
+    b.onclick = () => tecla(k); t.appendChild(b);
+  });
+}
+function tecla(k) { if (k === 'C') PIN = ''; else if (k === '⌫') PIN = PIN.slice(0, -1); else if (PIN.length < 6) PIN += k; $('erroLogin').textContent = ''; desenharPontos(); }
+function desenharPontos() { $('pontos').innerHTML = Array.from({length: Math.max(4, PIN.length)}, (_, i) => '<i class="' + (i < PIN.length ? 'cheio' : '') + '"></i>').join(''); }
+async function entrar() {
+  if (PIN.length < 4) { $('erroLogin').textContent = 'A senha tem de 4 a 6 números.'; return; }
+  $('btnEntrar').disabled = true;
+  const j = await chamar('/balcao/entrar', {pin: PIN});
+  $('btnEntrar').disabled = false; PIN = ''; desenharPontos();
+  if (!j.ok) { $('erroLogin').textContent = j.erro || 'Não deu certo.'; return; }
+  SESSAO = j.sessao; GARCOM = j.garcom; $('quemNome').textContent = '👤 ' + GARCOM.nome;
+  novaVenda();
+}
+function sair() { if (ROLETA) ROLETA.desligar(); if (SESSAO) chamar('/balcao/sair'); SESSAO = null; GARCOM = null; PIN = ''; desenharPontos(); mostrar('login'); }
+
+/* ---------- dados da venda ---------- */
+function mascTel(v) {
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 2) return d.length ? '(' + d : '';
+  if (d.length <= 6) return '(' + d.slice(0, 2) + ') ' + d.slice(2);
+  return '(' + d.slice(0, 2) + ') ' + d.slice(2, d.length - 4) + '-' + d.slice(-4);
+}
+function mascValor(v) { const d = v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 7); return d ? brl(Number(d) / 100) : ''; }
+function valorNum() { return Number(($('valor').value || '0').replace(/\./g, '').replace(',', '.')) || 0; }
+function limparResumo() { CONSULTA = null; ESCOLHA = null; $('resumo').style.display = 'none'; $('btnSeguir').textContent = 'Continuar'; $('erroVenda').textContent = ''; }
+['tel', 'mesa', 'valor'].forEach((id) => $(id).addEventListener('input', (e) => {
+  const el = e.target;
+  if (id === 'tel') el.value = mascTel(el.value); else if (id === 'mesa') el.value = el.value.replace(/\D/g, '').slice(0, 3); else el.value = mascValor(el.value);
+  limparResumo();
+}));
+$('tel').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('mesa').focus(); });
+$('mesa').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('valor').focus(); });
+$('valor').addEventListener('keydown', (e) => { if (e.key === 'Enter') seguir(); });
+
+function novaVenda() { if (ROLETA) ROLETA.desligar(); ['tel', 'mesa', 'valor'].forEach((id) => { $(id).value = ''; }); limparResumo(); RESULT = null; mostrar('venda'); }
+function erroV(m) { $('erroVenda').textContent = m; }
+
+async function seguir() {
+  if (CONSULTA) return abrirModal();
+  const tel = $('tel').value.replace(/\D/g, ''), mesa = $('mesa').value, valor = valorNum();
+  if (tel.length < 10) return erroV('Digite o celular com DDD.');
+  if (!mesa) return erroV('Digite a mesa.');
+  if (!(valor > 0)) return erroV('Digite o valor exato pago.');
+  $('btnSeguir').disabled = true;
+  const j = await chamar('/balcao/consultar', {telefone: tel, valor});
+  $('btnSeguir').disabled = false;
+  if (!j.ok) { if (!j.sair) erroV(j.erro || 'Não deu certo.'); return; }
+  CONSULTA = j; ESCOLHA = j.vendas.length ? null : 'dinheiro';
+  let h = '<div class="linha">' + (j.membro
+    ? '✅ <span><b>' + esc(j.nome || 'Cliente') + '</b> já é do Clube · ganha <b>' + j.pontos + ' ponto' + (j.pontos === 1 ? '' : 's') + '</b></span>'
+    : '🆕 <span><b>Ainda não é do Clube</b> — recebe o convite no WhatsApp pra criar a conta e liberar o prêmio</span>') + '</div>';
+  h += '<div class="linha">' + (valor >= 25 ? '🎡 <span>Gira a roleta de R$ <b>' + brl(valor) + '</b> agora, na tela</span>' : 'ℹ️ <span>Abaixo de R$ 25 não tem roleta</span>') + '</div>';
+  if (j.vendas.length) {
+    h += '<div class="vendas"><p>Achamos venda na maquininha com esse valor sem pontuar — é ela?</p>' +
+      j.vendas.map((v, i) => '<label class="opc"><input type="radio" name="esc" value="' + i + '"> 💳 ' + esc(prod(v.produto)) +
+        (v.final ? ' •••• ' + esc(v.final) : '') + ' · R$ ' + brl(j.valor) + ' · ' + hora(v.ts) + (v.maquina ? ' · máq. ' + esc(v.maquina) : '') + '</label>').join('') +
+      '<label class="opc"><input type="radio" name="esc" value="din"> 💵 Não — foi pago em dinheiro</label></div>';
+  }
+  $('resumo').innerHTML = h; $('resumo').style.display = 'block';
+  document.querySelectorAll('.opc').forEach((o) => o.addEventListener('click', () => {
+    const r = o.querySelector('input'); r.checked = true;
+    document.querySelectorAll('.opc').forEach((x) => x.classList.toggle('marcada', x === o));
+    ESCOLHA = r.value === 'din' ? 'dinheiro' : j.vendas[Number(r.value)];
+    erroV('');
+  }));
+  $('btnSeguir').textContent = 'Pontuar';
+}
+
+/* ---------- popup ---------- */
+function abrirModal() {
+  if (!ESCOLHA) return erroV('Marque se foi a venda da maquininha ou dinheiro.');
+  const valor = valorNum();
+  if (ESCOLHA === 'dinheiro') {
+    $('mTitulo').textContent = 'Essa conta foi lançada no Colibri em dinheiro?';
+    $('mCorpo').innerHTML = '<p>Caso não tenha sido, <b>encerre ela no dinheiro com esse valor</b> para evitar erros no caixa do período.</p>' +
+      '<p class="valor">R$ ' + brl(valor) + ' · Mesa ' + esc($('mesa').value) + '</p>' +
+      '<label class="sim" id="simBox"><input type="checkbox" id="simChk"> Sim, foi lançada no Colibri em dinheiro</label>';
+    $('mOk').disabled = true;
+    $('simChk').addEventListener('change', (e) => { $('mOk').disabled = !e.target.checked; $('simBox').classList.toggle('marcada', e.target.checked); });
+  } else {
+    $('mTitulo').textContent = 'Pontuar a venda da maquininha?';
+    $('mCorpo').innerHTML = '<p>💳 ' + esc(prod(ESCOLHA.produto)) + (ESCOLHA.final ? ' •••• ' + esc(ESCOLHA.final) : '') + ' às ' + hora(ESCOLHA.ts) + '</p>' +
+      '<p class="valor">R$ ' + brl(valor) + ' · Mesa ' + esc($('mesa').value) + '</p><p>Essa venda foi no cartão: no Colibri ela fica como está.</p>';
+    $('mOk').disabled = false;
+  }
+  $('modal').classList.add('on');
+}
+function fecharModal() { $('modal').classList.remove('on'); }
+async function confirmar() {
+  $('mOk').disabled = true; $('mOk').textContent = '⏳ Pontuando…';
+  const corpo = {telefone: $('tel').value.replace(/\D/g, ''), mesa: $('mesa').value, valor: valorNum()};
+  if (ESCOLHA === 'dinheiro') corpo.colibriOk = !!($('simChk') && $('simChk').checked); else corpo.atk = ESCOLHA.atk;
+  const j = await chamar('/balcao/pontuar', corpo);
+  $('mOk').textContent = 'Pontuar'; $('mOk').disabled = false; fecharModal();
+  if (!j.ok) { if (!j.sair) erroV(j.erro || 'Não deu certo.'); return; }
+  RESULT = j; RIDX = 0;
+  if (j.roletas.length) abrirRoleta(); else mostrarFim();
+}
+
+/* ---------- roleta: PORTE da RoletaView.kt da maquininha ----------
+   Cada nível tem a sua roleta (madeira, ferro, medalhas de bronze/prata/ouro/platina, pérola, pedras lapidadas),
+   com aro, tachas que acendem, ponteiro que balança nos pinos, fatia premiada acesa, faixa com o nome do prêmio
+   e chuva do material do nível. O prêmio vem sorteado do servidor; aqui a roda só gira até ele. */
+const Roleta = (() => {
+  const hx = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), 255];
+  const cores = (...h) => h.map(hx);
+  const lim = (v, a, b) => Math.max(a, Math.min(b, v));
+  const css = (c) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (lim(c[3], 0, 255) / 255).toFixed(3) + ')';
+  const argb = (a, r, g, b) => [r, g, b, lim(Math.round(a), 0, 255)];
+  const BRANCO = [255, 255, 255, 255], PRETO = [0, 0, 0, 255], TRANSP = [0, 0, 0, 0];
+  const mistura = (a, b, t) => { const k = lim(t, 0, 1); return [0, 1, 2, 3].map((i) => Math.round(a[i] + (b[i] - a[i]) * k)); };
+  const clarear = (c, t) => mistura(c, BRANCO, t), escurecer = (c, t) => mistura(c, PRETO, t);
+  const alfa = (c, a) => [c[0], c[1], c[2], lim(Math.round(a), 0, 255)];
+  const lum = (c) => (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255;
+  const rad = (g) => g * Math.PI / 180;
+  const px = (m, r, g) => m + r * Math.cos(rad(g)), py = (m, r, g) => m + r * Math.sin(rad(g));
+  const mod360 = (a) => { const m = a % 360; return m < 0 ? m + 360 : m; };
+  const semente = (s) => { let a = s >>> 0; const f = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    return {f, i: (n) => Math.floor(f() * n), b: () => f() < 0.5}; };
+  const paradas = (gr, cs, ps) => { cs.forEach((c, i) => gr.addColorStop(ps ? ps[i] : (cs.length === 1 ? 0 : i / (cs.length - 1)), css(c))); return gr; };
+  const gLin = (g, x0, y0, x1, y1, cs, ps) => paradas(g.createLinearGradient(x0, y0, x1, y1), cs, ps);
+  const gRad = (g, x, y, r, cs, ps) => paradas(g.createRadialGradient(x, y, 0, x, y, r), cs, ps);
+  const gCon = (g, x, y, ini, cs, ps) => paradas(g.createConicGradient(rad(ini), x, y), cs, ps);
+  const circ = (g, x, y, r) => { g.beginPath(); g.arc(x, y, Math.max(0, r), 0, Math.PI * 2); };
+  const elipse = (g, l, t, r, b) => { g.beginPath(); g.ellipse((l + r) / 2, (t + b) / 2, Math.abs(r - l) / 2, Math.abs(b - t) / 2, 0, 0, Math.PI * 2); };
+  const girarEm = (g, graus, x, y) => { g.translate(x, y); g.rotate(rad(graus)); g.translate(-x, -y); };
+  const linha = (g, x0, y0, x1, y1) => { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
+  const arco = (g, x, y, r, ini, sw) => { g.beginPath(); g.arc(x, y, r, rad(ini), rad(ini + sw)); g.stroke(); };
+  const pizza = (g, x, y, r, a0, sw) => { g.beginPath(); if (sw >= 359.9) g.arc(x, y, r, 0, Math.PI * 2); else { g.moveTo(x, y); g.arc(x, y, r, rad(a0), rad(a0 + sw)); g.closePath(); } };
+  const caixa = (g, l, t, r, b, raio) => { const k = Math.min(raio, (r - l) / 2, (b - t) / 2); g.beginPath(); g.moveTo(l + k, t); g.arcTo(r, t, r, b, k); g.arcTo(r, b, l, b, k); g.arcTo(l, b, l, t, k); g.arcTo(l, t, r, t, k); g.closePath(); };
+
+  const ROTULO_MAX = 14, N_TACHAS = 16, VOLTAS = 5, T0 = 260, T1 = 5400, T2 = 520, RECUO = 10, COMEMORA_MS = 1300;
+  const LATAO = cores('#7A5A1E', '#D9B25A', '#FFF0B0'), OURO_ARO = cores('#8A6410', '#D4AF37', '#FBE896'), OURO_BRANCO = cores('#7C8591', '#C4CAD3', '#F6F8FA');
+
+  function temaDe(nivel, corNivel) {
+    const n = String(nivel || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const T = (familia, tons, destaque, aro, tacha, luz, brilho, particulas, extra) =>
+      Object.assign({familia, tons, destaque: hx(destaque), aro, tacha, luz: hx(luz), brilho, particulas, arcoIris: false, pedra: null}, extra || {});
+    if (n.includes('madeira')) return T('MADEIRA', cores('#B07A42', '#D2A468', '#7C4D25'), '#7A1C22', cores('#2E1A0B', '#5A3819', '#8A6034'), LATAO, '#FFE2A0', 26, cores('#8B5A2B', '#B98550', '#6B441F', '#D9B25A', '#E7C48E'));
+    if (n.includes('ferro')) return T('FERRO', cores('#4B5058', '#6A6F78', '#33373E'), '#D9541A', cores('#17191C', '#3B3F46', '#6B717A'), cores('#3A3E45', '#8F96A0', '#DADFE6'), '#FFA550', 40, cores('#FFB347', '#FFE27A', '#FF7A1A', '#9AA0A8', '#5A5F67'));
+    if (n.includes('bronze')) return T('METAL', cores('#B36C2C', '#D4904A', '#8A5020'), '#2E7D6B', cores('#5A2F0E', '#A5642A', '#E6B078'), cores('#6A3A14', '#C98744', '#FFD9A6'), '#FFE0B0', 62, cores('#CD7F32', '#E6A45E', '#A35F1F', '#F2C48A'));
+    if (n.includes('prata')) return T('METAL', cores('#ABAFB5', '#D3D6DA', '#878C93'), '#1A1E3B', cores('#565B63', '#A4A9B0', '#ECEEF0'), cores('#666B73', '#C2C6CC', '#FFFFFF'), '#FFFFFF', 80, cores('#C0C4C9', '#E8EBEF', '#9AA1AB', '#FFFFFF'));
+    if (n.includes('ouro')) return T('METAL', cores('#E2AB1E', '#F8D048', '#CB9412'), '#A3121C', OURO_ARO, OURO_ARO, '#FFF3B0', 80, cores('#F2B705', '#FFDD55', '#D99A00', '#FFF0A8'));
+    if (n.includes('platina')) return T('METAL', cores('#C6D2EA', '#F3F6FD', '#9FB0D4'), '#1F3F8F', cores('#5E6E93', '#BECBE6', '#FFFFFF'), cores('#6F7FA6', '#D6DFF2', '#FFFFFF'), '#DCE8FF', 112, cores('#D8DCE6', '#FFFFFF', '#AEB6C8', '#BFD4FF'), {pedra: cores('#5C8FE0', '#BFE0FF', '#FFFFFF')});
+    if (n.includes('perola')) return T('PEROLA', cores('#E3CDB6', '#F9F1E6', '#D9B7AC'), '#36313F', OURO_ARO, cores('#C9B6A6', '#F4EADF', '#FFFFFF'), '#FFFFFF', 60, cores('#F4EADF', '#FFFFFF', '#EBD3D8', '#D6E4F2'), {arcoIris: true});
+    if (n.includes('safira')) return T('GEMA', cores('#1F58BD', '#3F80EA', '#143B86'), '#EEF4FF', OURO_BRANCO, cores('#143B86', '#3F80EA', '#CFE2FF'), '#A9CCFF', 78, cores('#2A6FDB', '#6FA4FF', '#143B86', '#FFFFFF', '#BFD9FF'));
+    if (n.includes('esmeralda')) return T('GEMA', cores('#128A54', '#2FC480', '#0A5E38'), '#F0CC5A', OURO_ARO, cores('#0A5E38', '#2FC480', '#C9FFE4'), '#A8FFD2', 78, cores('#1FAE6B', '#6FE3AB', '#0A5E38', '#FFFFFF', '#F0CC5A'));
+    if (n.includes('rubi')) return T('GEMA', cores('#B30F2A', '#E53350', '#7A0A1C'), '#F0CC5A', OURO_ARO, cores('#7A0A1C', '#E53350', '#FFD0D8'), '#FFB0BC', 78, cores('#C8102E', '#FF6B81', '#7A0A1C', '#FFFFFF', '#F0CC5A'));
+    if (n.includes('diamante')) return T('GEMA', cores('#BDEAF3', '#EAFBFE', '#8FD3E2'), '#2B4EA8', OURO_BRANCO, cores('#8FD3E2', '#E3FAFD', '#FFFFFF'), '#FFFFFF', 96, cores('#7FE3F0', '#FFFFFF', '#C8F4FA', '#C8B5FF', '#FFD6F0'), {arcoIris: true});
+    const c = hx(corNivel || '#F2B705');   // nível novo, de nome desconhecido: metal polido na cor dele
+    const trio = [c, clarear(c, 0.3), escurecer(c, 0.25)], metal = [escurecer(c, 0.5), c, clarear(c, 0.65)];
+    return T('METAL', trio, '#1A1E3B', metal, metal, '#FFFFFF', 64, trio);
+  }
+
+  function criar(cv) {
+    const ctx = cv.getContext('2d');
+    let premios = [], tema = temaDe('', null), fat = [], destaque = [], angulo = 0, vencedorIdx = null, sorteado = 0, girando = false;
+    let tGiro = -1, tParou = -1, gIni = 0, gFim = 0, gOver = 0, angAnterior = 0, flap = 0, flapVel = 0, ultimo = 0, rajada2 = false, chuvaAcum = 0, cintilaAcum = 0;
+    let W = 0, H = 0, dpr = 1, cx = 0, cy = 0, rExt = 0, R = 0, aroW = 0, hubR = 0, u = 1, yPivo = 0, pivoR = 0, pivoNoBmp = 0, vistaW = 0;
+    let bRoda = null, bFrente = null, bPonteiro = null, bLuz = null, sujo = true, ligado = false, raf = 0, fita = null, avisou = false;
+    const particulas = [], cintilas = [];
+    const api = {onEnd: null};
+    const FONTE = "'Segoe UI',Roboto,system-ui,-apple-system,Arial,sans-serif";
+    const fonteRot = (t) => '700 ' + t.toFixed(2) + 'px ' + FONTE;
+
+    const rotulo = (p) => { const t = (p.curto && p.curto.trim()) ? p.curto.trim() : p.nome; return t.length > ROTULO_MAX ? t.slice(0, ROTULO_MAX - 1) + '…' : t; };
+    function fatias() {
+      if (!premios.length) return [];
+      const tot = premios.reduce((s, p) => s + (p.prob > 0 ? p.prob : 0), 0);
+      if (tot <= 0) { const a = 360 / premios.length; return premios.map((_, i) => [i * a, a]); }
+      let ini = 0; return premios.map((p) => { const tam = (p.prob > 0 ? p.prob : 0) / tot * 360; const f = [ini, tam]; ini += tam; return f; });
+    }
+    /** O(s) prêmio(s) mais raro(s) ganha(m) a fatia de destaque — é o "grande prêmio" da roleta. */
+    function acharDestaque() {
+      const d = premios.map(() => false);
+      if (premios.length < 4) return d;
+      const tot = premios.reduce((s, p) => s + (p.prob > 0 ? p.prob : 0), 0);
+      const pos = premios.filter((p) => p.prob > 0); if (!pos.length) return d;
+      const menor = Math.min(...pos.map((p) => p.prob));
+      if (tot <= 0 || menor / tot > 0.12) return d;
+      const quais = premios.map((p, i) => i).filter((i) => premios[i].prob > 0 && Math.abs(premios[i].prob - menor) < 1e-9);
+      if (quais.length <= 2) quais.forEach((i) => { d[i] = true; });
+      return d;
+    }
+    function corFatia(i) {
+      if (destaque[i]) return tema.destaque;
+      const n = tema.tons.length; let k = i % n;
+      if (i === premios.length - 1 && i > 0 && k === 0) k = 1;   // a última não repete o tom da primeira
+      return tema.tons[k];
+    }
+
+    function configurar(lista, nivel, corNivel) {
+      girando = false; premios = (lista || []).map((p) => ({nome: String(p.nome || ''), curto: String(p.curto || ''), prob: Number(p.prob) || 0}));
+      tema = temaDe(nivel, corNivel); fat = fatias(); destaque = acharDestaque();
+      vencedorIdx = null; tGiro = -1; tParou = -1; angulo = Math.random() * 360; flap = 0; flapVel = 0;
+      particulas.length = 0; cintilas.length = 0; fita = null; avisou = false; sujo = true;
+    }
+    /** Gira até o prêmio `idx` (sorteado pelo servidor), parando num ponto qualquer DENTRO da fatia. */
+    function girar(idx) {
+      if (girando || !premios.length || fat.length !== premios.length || !(idx >= 0 && idx < premios.length)) return false;
+      const agora = performance.now();
+      gIni = mod360(angulo + balanco(agora));
+      girando = true; sorteado = idx; vencedorIdx = null; tParou = -1; fita = null; avisou = false; particulas.length = 0;
+      const f = 0.14 + 0.72 * Math.random();
+      const pos = fat[idx][0] + fat[idx][1] * f;
+      const alvo = mod360(270 - pos);                 // o ponteiro fica no TOPO (270°)
+      let delta = alvo - gIni; if (delta < 0) delta += 360;
+      gFim = gIni + 360 * VOLTAS + delta;
+      gOver = Math.min(2.6, 0.4 * f * fat[idx][1]);   // passa um tiquinho e volta, sem atravessar a divisa
+      angulo = gIni; angAnterior = gIni; tGiro = agora;
+      return true;
+    }
+    const balanco = (agora) => (girando || vencedorIdx != null) ? 0 : 2.2 * Math.sin((agora % 3400) / 3400 * 2 * Math.PI);
+    function anguloEm(ms) {
+      if (ms <= T0) return gIni - RECUO * Math.sin(ms / T0 * Math.PI / 2);
+      if (ms <= T0 + T1) { const k = (ms - T0) / T1, a0 = gIni - RECUO; return a0 + (gFim + gOver - a0) * (1 - Math.pow(1 - k, 3)); }
+      if (ms <= T0 + T1 + T2) { const k = (ms - T0 - T1) / T2; return gFim + gOver * (1 - k * k * (3 - 2 * k)); }
+      return gFim;
+    }
+    function cruzouPino(a, b) { for (const ft of fat) { const off = ft[0] - 270; if (Math.floor((b + off) / 360) > Math.floor((a + off) / 360)) return true; } return false; }
+    function parar(agora) {
+      if (!girando || tParou >= 0) return;
+      angulo = gFim; tGiro = -1; vencedorIdx = sorteado; tParou = agora;
+      prepararFita(premios[sorteado].nome); explodir(44); rajada2 = false; chuvaAcum = 0;
+    }
+
+    // ================================================================ PINTURA (uma vez)
+    function bmp(w, h) { const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w * dpr)); c.height = Math.max(1, Math.ceil(h * dpr));
+      const g = c.getContext('2d'); g.scale(dpr, dpr); return {c, g, w: c.width / dpr, h: c.height / dpr}; }
+    const borrao = (g, raio) => { g.filter = 'blur(' + (raio * 0.55 * dpr).toFixed(2) + 'px)'; };
+
+    function construir() {
+      const r = cv.getBoundingClientRect(); W = r.width; H = r.height;
+      if (W < 40 || H < 40 || !premios.length) return;
+      dpr = lim(window.devicePixelRatio || 1, 1, 2);
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      rExt = Math.max(20, Math.min(W / 2 - 4, (H / 2) / (1 + 14 / 146)));
+      u = rExt / 146; cx = W / 2; cy = H / 2 + 4 * u;
+      aroW = rExt * 0.125; R = rExt - aroW; hubR = R * 0.29; pivoR = rExt * 0.082; yPivo = cy - rExt + rExt * 0.015;
+      vistaW = Math.min(W, 2 * rExt + 8 * u);
+      bRoda = pintarRoda(); bFrente = pintarFrente(); bPonteiro = pintarPonteiro(); bLuz = pintarLuz();
+      sujo = false;
+    }
+
+    /** A RODA: fatias no material do nível, divisórias, pinos e rótulos. Gira inteira. */
+    function pintarRoda() {
+      const lado = 2 * R + 4, b = bmp(lado, lado), g = b.g, m = lado / 2, fam = tema.familia;
+      b.m = m;
+      g.save(); circ(g, m, m, R); g.clip();
+      premios.forEach((pr, i) => {
+        const a0 = fat[i][0], sw = fat[i][1]; if (sw <= 0.01) return;
+        const base = corFatia(i);
+        pizza(g, m, m, R, a0, sw); g.fillStyle = css(base); g.fill();
+        g.save(); pizza(g, m, m, R, a0, sw); g.clip();
+        if (fam === 'MADEIRA') veios(g, m, a0, sw, base, 7 + i * 31);
+        else if (fam === 'FERRO') { if (destaque[i]) brasa(g, m); else dobra(g, m, a0, sw, base, 0.10, 0.14); }
+        else if (fam === 'METAL') dobra(g, m, a0, sw, base, 0.30, 0.24);
+        else if (fam === 'PEROLA') dobra(g, m, a0, sw, base, 0.22, 0.10);
+        else facetas(g, m, a0, sw);
+        g.restore();
+      });
+      // textura do disco inteiro
+      if (fam === 'FERRO') escovado(g, m);
+      else if (fam === 'METAL') guilhoche(g, m);
+      else if (fam === 'PEROLA') madreperola(g, m);
+      else if (fam === 'GEMA') {
+        if (tema.arcoIris) arcoIris(g, m, 46);
+        g.fillStyle = gRad(g, m, m, R, [argb(60, 255, 255, 255), argb(0, 255, 255, 255), argb(0, 0, 0, 0), argb(70, 0, 0, 0)], [0, 0.5, 0.72, 1]);
+        circ(g, m, m, R); g.fill();
+      }
+      // pista dos pinos: faixa de fora um pouco mais escura, com friso
+      g.lineCap = 'butt'; g.lineWidth = R * 0.105; g.strokeStyle = css(argb((fam === 'PEROLA' || tema.arcoIris) ? 26 : 44, 0, 0, 0));
+      circ(g, m, m, R * 0.9475); g.stroke();
+      g.lineWidth = Math.max(1, 1.1 * u); g.strokeStyle = css(alfa(tema.tacha[2], fam === 'FERRO' ? 70 : 130));
+      circ(g, m, m, R * 0.895); g.stroke();
+      // escurece a borda (dá volume ao disco)
+      g.fillStyle = gRad(g, m, m, R, [TRANSP, TRANSP, argb(58, 0, 0, 0)], [0, 0.74, 1]); circ(g, m, m, R); g.fill();
+      // divisórias
+      if (premios.length > 1) premios.forEach((pr, i) => { if (fat[i][1] <= 0.01) return; g.save(); girarEm(g, fat[i][0], m, m); divisoria(g, m); g.restore(); });
+      g.restore();
+
+      // rótulos
+      const rFimTxt = R * 0.872;
+      g.textAlign = 'right'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
+      premios.forEach((pr, i) => {
+        const sw = fat[i][1]; if (sw <= 0.01) return;
+        const base = corFatia(i), rot = ajustarRotulo(g, rotulo(pr), sw, rFimTxt), claro = lum(base) > 0.56;
+        const corTxt = claro ? escurecer(tema.tons[2], 0.74) : (fam === 'MADEIRA' ? hx('#FFF4DC') : BRANCO);
+        const corContorno = claro ? argb(205, 255, 255, 255) : alfa(escurecer(base, 0.72), 225);
+        g.font = fonteRot(rot.tam);
+        const passo = rot.tam * 1.08;
+        g.save(); girarEm(g, fat[i][0] + sw / 2, m, m);
+        rot.linhas.forEach((ln, k) => {
+          const y = m + rot.tam * 0.36 + (k - (rot.linhas.length - 1) / 2) * passo;
+          g.lineWidth = rot.tam * 0.24; g.strokeStyle = css(corContorno); g.strokeText(ln, m + rFimTxt, y);
+          g.fillStyle = css(corTxt); g.fillText(ln, m + rFimTxt, y);
+        });
+        g.restore();
+      });
+      // pinos (um em cada divisa) — é neles que o ponteiro bate
+      if (premios.length > 1) premios.forEach((pr, i) => { if (fat[i][1] <= 0.01) return; bola(g, px(m, R * 0.9475, fat[i][0]), py(m, R * 0.9475, fat[i][0]), R * 0.031, tema.tacha); });
+      return b;
+    }
+
+    /** Maior letra que cabe na fatia; fatia larga pode quebrar o rótulo em 2 linhas. */
+    function ajustarRotulo(g, texto, sw, rFimTxt) {
+      const espaco = rFimTxt - (hubR + 5 * u), maxT = 15.5 * u, minT = 7.5 * u;
+      const cabe = (linhas) => {
+        for (let t = maxT; t >= minT; t -= 0.5 * u) {
+          g.font = fonteRot(t);
+          const larg = Math.max(...linhas.map((l) => g.measureText(l).width));
+          if (larg <= espaco) {
+            const alt = linhas.length * t * 1.08;
+            const corda = sw >= 170 ? Infinity : 2 * (rFimTxt - larg) * Math.tan(rad(sw / 2)) * 0.92;
+            if (alt <= corda) return t;
+          }
+        }
+        return 0;
+      };
+      let melhor = {linhas: [texto], tam: cabe([texto])};
+      if (sw >= 22 && texto.includes(' ')) { const duas = partir(texto), t2 = cabe(duas); if (t2 > melhor.tam + 0.9 * u) melhor = {linhas: duas, tam: t2}; }
+      return melhor.tam > 0 ? melhor : {linhas: [texto], tam: minT};
+    }
+    /** Quebra no espaço mais perto do meio. */
+    function partir(t) {
+      let melhor = -1;
+      for (let i = 0; i < t.length; i++) if (t[i] === ' ' && (melhor < 0 || Math.abs(i - Math.floor(t.length / 2)) < Math.abs(melhor - Math.floor(t.length / 2)))) melhor = i;
+      return melhor <= 0 ? [t] : [t.slice(0, melhor).trim(), t.slice(melhor + 1).trim()];
+    }
+
+    // ---------------------------------------------------------------- texturas
+    /** MADEIRA: cada fatia é uma tábua, com o veio correndo ao comprido e um nó de vez em quando. */
+    function veios(g, m, a0, sw, base, sem) {
+      const rnd = semente(sem);
+      const meia = sw >= 180 ? R : R * Math.sin(rad(sw / 2)) + 2 * u;
+      const esc = escurecer(base, 0.5), cla = clarear(base, 0.4);
+      g.save(); girarEm(g, a0 + sw / 2, m, m); g.lineCap = 'round';
+      for (let y = -meia; y <= meia;) {
+        const amp = u * (0.5 + rnd.f() * 1.9), per = R * (0.35 + rnd.f() * 0.55), fase = rnd.f() * 6.283;
+        g.beginPath(); g.moveTo(m, m + y);
+        for (let x = 0; x <= R;) { x += R / 16; g.lineTo(m + x, m + y + amp * Math.sin(x / per * 6.283 + fase)); }
+        g.lineWidth = u * (0.5 + rnd.f() * 1.4);
+        g.strokeStyle = css(rnd.f() < 0.72 ? alfa(esc, 30 + rnd.i(64)) : alfa(cla, 30 + rnd.i(56)));
+        g.stroke();
+        y += u * (1.5 + rnd.f() * 3.3);
+      }
+      if (sw > 26 && rnd.f() < 0.7) {      // nó da madeira
+        const nx = m + R * (0.5 + rnd.f() * 0.28), ny = m + (rnd.f() - 0.5) * meia * 0.5;
+        for (let k = 1; k <= 4; k++) { g.lineWidth = u * 0.9; g.strokeStyle = css(alfa(esc, 150 - k * 26)); elipse(g, nx - k * 2.6 * u, ny - k * 1.5 * u, nx + k * 2.6 * u, ny + k * 1.5 * u); g.stroke(); }
+        g.fillStyle = css(alfa(esc, 170)); elipse(g, nx - 1.6 * u, ny - u, nx + 1.6 * u, ny + u); g.fill();
+      }
+      g.restore();
+    }
+    /** METAL: cada fatia é uma "dobra" — clara de um lado, escura do outro (pregueado de medalha). */
+    function dobra(g, m, a0, sw, base, claro, escuro) {
+      const meia = sw >= 180 ? R : R * Math.sin(rad(sw / 2));
+      g.save(); girarEm(g, a0 + sw / 2, m, m);
+      g.fillStyle = gLin(g, m, m - meia, m, m + meia, [clarear(base, claro), base, escurecer(base, escuro)], [0, 0.5, 1]);
+      g.fillRect(m - R, m - R, 2 * R, 2 * R);
+      g.restore();
+    }
+    /** FERRO, fatia de destaque: ferro em brasa (amarelo na ponta, vermelho escuro pro centro). */
+    function brasa(g, m) { g.fillStyle = gRad(g, m, m, R, cores('#5A1206', '#B8330C', '#F0761A', '#FFC44A'), [0.2, 0.55, 0.82, 1]); circ(g, m, m, R); g.fill(); }
+    /** FERRO: chapa torneada — riscos em círculo, e uns pontos de ferrugem perto da borda. */
+    function escovado(g, m) {
+      const rnd = semente(4242); g.lineCap = 'butt';
+      for (let r = hubR * 0.6; r < R;) {
+        for (let k = 0; k < 3; k++) {
+          g.lineWidth = u * (0.5 + rnd.f() * 0.6);
+          g.strokeStyle = css(rnd.b() ? argb(12 + rnd.i(30), 255, 255, 255) : argb(14 + rnd.i(38), 0, 0, 0));
+          arco(g, m, m, r, rnd.f() * 360, 30 + rnd.f() * 150);
+        }
+        r += u * (0.9 + rnd.f() * 0.8);
+      }
+      for (let k = 0; k < 150; k++) {
+        const rr = R * (0.55 + 0.45 * Math.pow(rnd.f(), 0.6)), a = rnd.f() * 360;
+        g.fillStyle = css(argb(26 + rnd.i(60), 150, 78, 34)); circ(g, px(m, rr, a), py(m, rr, a), u * (0.5 + rnd.f() * 1.3)); g.fill();
+      }
+    }
+    /** MEDALHA: raios finos saindo do centro + frisos gravados. */
+    function guilhoche(g, m) {
+      g.lineWidth = Math.max(1, 0.7 * u); const n = 150;
+      for (let i = 0; i < n; i++) { const a = i * 360 / n; g.strokeStyle = css(i % 2 === 0 ? argb(26, 255, 255, 255) : argb(20, 0, 0, 0)); linha(g, px(m, hubR, a), py(m, hubR, a), px(m, R * 0.89, a), py(m, R * 0.89, a)); }
+      g.lineWidth = Math.max(1, 0.9 * u);
+      g.strokeStyle = css(argb(70, 0, 0, 0)); circ(g, m, m, hubR + 5 * u); g.stroke();
+      g.strokeStyle = css(argb(84, 255, 255, 255)); circ(g, m, m, hubR + 6.2 * u); g.stroke();
+    }
+    /** Furta-cor (pérola e diamante): arco-íris bem claro por cima. */
+    function arcoIris(g, m, a) {
+      g.fillStyle = gCon(g, m, m, 0, [argb(a, 255, 170, 215), argb(a, 170, 220, 255), argb(a, 190, 255, 220), argb(a, 255, 245, 170), argb(a, 215, 190, 255), argb(a, 170, 235, 255), argb(a, 255, 200, 190), argb(a, 255, 170, 215)]);
+      circ(g, m, m, R); g.fill();
+    }
+    /** PÉROLA: madrepérola — furta-cor + ondas de nácar. */
+    function madreperola(g, m) {
+      arcoIris(g, m, 84);
+      const rnd = semente(99);
+      for (let r = hubR; r < R;) {
+        const k = 5 + rnd.i(5), amp = u * (1.2 + rnd.f() * 2.4), fase = rnd.f() * 6.283;
+        g.beginPath();
+        for (let a = 0; a <= 360; a += 4) { const rr = r + amp * Math.sin(rad(a) * k + fase); if (a === 0) g.moveTo(px(m, rr, a), py(m, rr, a)); else g.lineTo(px(m, rr, a), py(m, rr, a)); }
+        g.closePath();
+        g.lineWidth = u * (0.7 + rnd.f() * 1.3);
+        g.strokeStyle = css(rnd.f() < 0.6 ? argb(40 + rnd.i(40), 255, 255, 255) : argb(14 + rnd.i(16), 120, 80, 95));
+        g.stroke();
+        r += u * (4 + rnd.f() * 5);
+      }
+      g.fillStyle = gRad(g, m, m, R * 0.62, [argb(70, 255, 255, 255), argb(0, 255, 255, 255)]); circ(g, m, m, R * 0.62); g.fill();
+    }
+    /** PEDRA: cada fatia lapidada — coroa, cintura e mesa, claro e escuro alternando como num brilhante. */
+    function facetas(g, m, a0, sw) {
+      const am = a0 + sw / 2, a1 = a0 + sw, rF = R * 1.7, r2a = R * 0.66, r2m = R * 0.75, r1a = R * 0.45, r1m = R * 0.38;
+      const P = (r, a) => [px(m, r, a), py(m, r, a)];
+      const poli = (cor, ...pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fillStyle = css(cor); g.fill(); };
+      const seg = (a, b) => linha(g, a[0], a[1], b[0], b[1]);
+      poli(argb(58, 255, 255, 255), P(r2a, a0), P(rF, a0), P(rF, am), P(r2m, am));          // coroa: metade clara, metade escura
+      poli(argb(50, 0, 0, 0), P(r2m, am), P(rF, am), P(rF, a1), P(r2a, a1));
+      poli(argb(38, 0, 0, 0), P(r1a, a0), P(r2a, a0), P(r2m, am), P(r1m, am));             // cintura: invertido
+      poli(argb(44, 255, 255, 255), P(r1m, am), P(r2m, am), P(r2a, a1), P(r1a, a1));
+      poli(argb(24, 255, 255, 255), [m, m], P(r1a, a0), P(r1m, am));                       // mesa
+      poli(argb(18, 0, 0, 0), [m, m], P(r1m, am), P(r1a, a1));
+      g.lineWidth = Math.max(1, 0.8 * u); g.strokeStyle = css(argb(104, 255, 255, 255));   // arestas pegando luz
+      seg(P(r2a, a0), P(r2m, am)); seg(P(r2m, am), P(r2a, a1)); seg(P(r1a, a0), P(r1m, am)); seg(P(r1m, am), P(r1a, a1));
+      g.strokeStyle = css(argb(64, 255, 255, 255));
+      seg(P(r1m, am), P(r2m, am)); seg(P(r2m, am), P(R, am));
+    }
+    /** Divisória entre fatias (canvas já girado: a linha sai do centro pra direita). */
+    function divisoria(g, m) {
+      g.lineCap = 'butt'; const x0 = m + hubR * 0.5, x1 = m + R, fam = tema.familia;
+      const risco = (larg, cor, dy) => { g.lineWidth = larg; g.strokeStyle = css(cor); linha(g, x0, m + (dy || 0), x1, m + (dy || 0)); };
+      if (fam === 'MADEIRA') { risco(2.4 * u, argb(230, 30, 15, 5)); risco(0.9 * u, argb(58, 255, 235, 200), 1.7 * u); }
+      else if (fam === 'FERRO') { risco(2.6 * u, argb(235, 10, 11, 13)); risco(0.9 * u, argb(70, 255, 255, 255), 1.8 * u); [0.42, 0.60, 0.78].forEach((f) => bola(g, m + R * f, m, 1.9 * u, tema.tacha)); }   // rebites da chapa
+      else if (fam === 'METAL') { risco(1.7 * u, alfa(escurecer(tema.aro[0], 0.35), 215)); risco(0.9 * u, argb(130, 255, 255, 255), 1.3 * u); }
+      else if (fam === 'PEROLA') { risco(2 * u, alfa(tema.aro[1], 240)); risco(0.7 * u, alfa(tema.aro[2], 230), -0.5 * u); }
+      else { risco(2.2 * u, argb(90, 0, 0, 0)); risco(1.2 * u, argb(190, 255, 255, 255)); }
+    }
+    /** Bolinha de metal/pérola com brilho (pino, tacha, rebite). */
+    function bola(g, x, y, r, t) {
+      g.fillStyle = gRad(g, x - r * 0.35, y - r * 0.4, r * 1.4, [t[2], t[1], t[0]], [0, 0.45, 1]); circ(g, x, y, r); g.fill();
+      g.lineWidth = Math.max(0.6, r * 0.16); g.strokeStyle = css(alfa(escurecer(t[0], 0.55), 210)); circ(g, x, y, r); g.stroke();
+    }
+    /** Tachas deslocadas meia casa: nenhuma fica escondida embaixo do ponteiro. */
+    const anguloTacha = (i) => -90 + 360 / N_TACHAS * (i + 0.5);
+
+    /** O que NÃO gira: sombra, aro com tachas, reflexo fixo e o miolo do Clube. */
+    function pintarFrente() {
+      const b = bmp(W, H), g = b.g, fam = tema.familia, aro = tema.aro;
+      // sombra da roleta na "mesa"
+      g.save(); borrao(g, 7 * u); g.fillStyle = css(argb(120, 0, 0, 0)); circ(g, cx, cy + 4.5 * u, rExt - 1.5 * u); g.fill(); g.restore();
+      g.save(); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; circ(g, cx, cy, rExt - 1); g.fill(); g.restore();
+      // o aro faz sombra em cima do disco
+      g.fillStyle = gRad(g, cx, cy, R, [TRANSP, TRANSP, argb(96, 0, 0, 0)], [0, 0.91, 1]); circ(g, cx, cy, R); g.fill();
+      // reflexo parado (a roda gira por baixo dele)
+      g.save(); circ(g, cx, cy, R); g.clip();
+      const a1 = tema.brilho, a2 = Math.floor(tema.brilho * 0.62);
+      if (fam === 'MADEIRA') {   // verniz: um clarão largo e suave
+        g.fillStyle = gLin(g, cx - R, cy - R, cx + R * 0.3, cy + R * 0.5, [argb(a1 + 30, 255, 240, 210), argb(0, 255, 240, 210)]); circ(g, cx, cy, R); g.fill();
+      } else {
+        const br = (a) => argb(a, 255, 255, 255);
+        g.fillStyle = gCon(g, cx, cy, -82, [br(0), br(a1), br(0), br(0), br(a2), br(0), br(0)], [0, 0.07, 0.15, 0.5, 0.57, 0.65, 1]); circ(g, cx, cy, R); g.fill();
+        if (fam === 'GEMA' || fam === 'PEROLA') {   // "vidro": meia-lua clara em cima
+          g.fillStyle = gLin(g, 0, cy - R, 0, cy - R * 0.15, [br(54), br(0)]); elipse(g, cx - R * 0.82, cy - R * 0.97, cx + R * 0.82, cy - R * 0.12); g.fill();
+        }
+      }
+      g.restore();
+      // ---- aro ----
+      g.beginPath(); g.arc(cx, cy, rExt, 0, Math.PI * 2); g.arc(cx, cy, R, 0, Math.PI * 2);
+      g.fillStyle = gLin(g, 0, cy - rExt, 0, cy + rExt, [aro[2], aro[1], aro[0]], [0, 0.42, 1]); g.fill('evenodd');
+      // chanfro de dentro (luz invertida = parece cavado)
+      g.lineWidth = aroW * 0.30; g.strokeStyle = gLin(g, 0, cy - rExt, 0, cy + rExt, [alfa(aro[0], 235), alfa(aro[1], 235), alfa(aro[2], 235)], [0, 0.55, 1]);
+      circ(g, cx, cy, R + aroW * 0.15); g.stroke();
+      const rnd = semente(77), rTacha = R + aroW * 0.60;
+      if (fam === 'MADEIRA') {   // veio acompanhando a curva + dois filetes de latão
+        g.lineCap = 'round';
+        for (let k = 0; k < 70; k++) {
+          const rr = R + aroW * (0.32 + rnd.f() * 0.66);
+          g.lineWidth = u * (0.5 + rnd.f() * 0.9);
+          g.strokeStyle = css(rnd.f() < 0.7 ? argb(40 + rnd.i(60), 20, 10, 3) : argb(28 + rnd.i(40), 255, 220, 170));
+          arco(g, cx, cy, rr, rnd.f() * 360, 16 + rnd.f() * 60);
+        }
+        g.lineCap = 'butt'; g.lineWidth = 1.3 * u; g.strokeStyle = css(alfa(tema.tacha[1], 235));
+        circ(g, cx, cy, R + aroW * 0.32); g.stroke(); circ(g, cx, cy, rExt - aroW * 0.10); g.stroke();
+      } else if (fam === 'FERRO') {   // ferro batido: marquinhas de martelo
+        for (let k = 0; k < 170; k++) {
+          const rr = R + aroW * (0.32 + rnd.f() * 0.66), a = rnd.f() * 360;
+          g.fillStyle = css(rnd.b() ? argb(22 + rnd.i(34), 255, 255, 255) : argb(30 + rnd.i(50), 0, 0, 0));
+          circ(g, px(cx, rr, a), py(cy, rr, a), u * (0.7 + rnd.f() * 1.5)); g.fill();
+        }
+      } else if (fam === 'METAL') {   // serrilha de moeda na borda + cordão de continhas por dentro
+        g.lineWidth = Math.max(1, 0.9 * u); const n = 132;
+        for (let i = 0; i < n; i++) { const a = i * 360 / n; g.strokeStyle = css(i % 2 === 0 ? argb(84, 0, 0, 0) : argb(96, 255, 255, 255));
+          linha(g, px(cx, rExt - aroW * 0.26, a), py(cy, rExt - aroW * 0.26, a), px(cx, rExt - 1.2 * u, a), py(cy, rExt - 1.2 * u, a)); }
+        g.fillStyle = css(alfa(aro[2], 215));
+        for (let i = 0; i < 84; i++) { const a = i * 360 / 84; circ(g, px(cx, R + aroW * 0.34, a), py(cy, R + aroW * 0.34, a), 1.05 * u); g.fill(); }
+      } else {   // engaste de joia: granitos (milgrain) nas duas beiradas
+        g.fillStyle = css(alfa(aro[2], 225));
+        for (let i = 0; i < 96; i++) { const a = i * 360 / 96;
+          circ(g, px(cx, R + aroW * 0.34, a), py(cy, R + aroW * 0.34, a), 0.95 * u); g.fill();
+          circ(g, px(cx, rExt - aroW * 0.11, a), py(cy, rExt - aroW * 0.11, a), 0.95 * u); g.fill(); }
+      }
+      // contornos e fio de luz em cima
+      g.lineCap = 'butt';
+      g.lineWidth = 1.3 * u; g.strokeStyle = css(alfa(escurecer(aro[0], 0.5), 235)); circ(g, cx, cy, rExt - 0.6 * u); g.stroke();
+      g.lineWidth = 1.6 * u; g.strokeStyle = css(alfa(escurecer(aro[0], 0.6), 240)); circ(g, cx, cy, R); g.stroke();
+      g.lineWidth = u; g.strokeStyle = css(argb(120, 255, 255, 255)); arco(g, cx, cy, rExt - 2.2 * u, 205, 130);
+      // tachas
+      const rT = aroW * (fam === 'PEROLA' ? 0.30 : 0.25);
+      const pedra = tema.pedra || (fam === 'GEMA' ? tema.tacha : null);
+      for (let i = 0; i < N_TACHAS; i++) {
+        const a = anguloTacha(i), x = px(cx, rTacha, a), y = py(cy, rTacha, a);
+        if (pedra) {   // pedrinha cravada: garra de metal + pedra com a "mesa" clara
+          bola(g, x, y, rT * 1.12, aro); bola(g, x, y, rT * 0.84, pedra);
+          const q = rT * 0.42;
+          g.beginPath(); g.moveTo(x, y - q); g.lineTo(x + q, y); g.lineTo(x, y + q); g.lineTo(x - q, y); g.closePath(); g.fillStyle = css(argb(84, 255, 255, 255)); g.fill();
+          g.fillStyle = css(argb(215, 255, 255, 255)); circ(g, x - rT * 0.3, y - rT * 0.34, Math.max(0.6, rT * 0.13)); g.fill();
+        } else if (fam === 'FERRO') {   // parafuso sextavado
+          g.beginPath(); for (let k = 0; k < 6; k++) { const ha = a + k * 60; if (k === 0) g.moveTo(px(x, rT * 1.15, ha), py(y, rT * 1.15, ha)); else g.lineTo(px(x, rT * 1.15, ha), py(y, rT * 1.15, ha)); } g.closePath();
+          g.fillStyle = gLin(g, x, y - rT, x, y + rT, [tema.tacha[2], tema.tacha[0]]); g.fill();
+          g.lineWidth = Math.max(0.8, 0.9 * u); g.strokeStyle = css(argb(220, 8, 9, 11)); g.stroke();
+          bola(g, x, y, rT * 0.5, tema.tacha);
+        } else bola(g, x, y, rT, tema.tacha);
+      }
+      // ---- miolo: medalhão vermelho do Clube, com aro no metal do nível ----
+      g.save(); borrao(g, 4 * u); g.fillStyle = css(argb(120, 0, 0, 0)); circ(g, cx, cy + 2.2 * u, hubR); g.fill(); g.restore();
+      const bisel = (fam === 'MADEIRA' || fam === 'FERRO') ? tema.tacha : aro;
+      g.fillStyle = gLin(g, 0, cy - hubR, 0, cy + hubR, [bisel[2], bisel[1], bisel[0]], [0, 0.45, 1]); circ(g, cx, cy, hubR); g.fill();
+      g.fillStyle = gLin(g, 0, cy - hubR, 0, cy + hubR, [bisel[0], bisel[1], bisel[2]], [0, 0.55, 1]); circ(g, cx, cy, hubR * 0.88); g.fill();
+      const rE = hubR * 0.80;
+      g.fillStyle = gRad(g, cx - rE * 0.25, cy - rE * 0.35, rE * 1.5, cores('#E8394A', '#BC1722', '#7A0C14'), [0, 0.5, 1]); circ(g, cx, cy, rE); g.fill();
+      g.lineWidth = Math.max(0.8, 0.9 * u); g.strokeStyle = css(argb(140, 60, 5, 10)); circ(g, cx, cy, rE); g.stroke();
+      g.save();
+      g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.shadowColor = css(argb(150, 60, 0, 6)); g.shadowBlur = 1.5 * u * dpr; g.shadowOffsetY = 0.8 * u * dpr;
+      const serif = (t) => "700 " + t.toFixed(2) + "px Georgia,'Times New Roman',serif";
+      let ts = rE * 0.46; g.font = serif(ts); while (g.measureText('CLUBE').width > rE * 1.5 && ts > 4) { ts -= 0.5; g.font = serif(ts); }
+      g.fillText('CLUBE', cx, cy - rE * 0.02);
+      ts = rE * 0.27; g.font = serif(ts); while (g.measureText('PELLEGRINI').width > rE * 1.62 && ts > 3) { ts -= 0.5; g.font = serif(ts); }
+      g.fillText('PELLEGRINI', cx, cy + rE * 0.36);
+      g.restore();
+      // brilho de esmalte
+      g.fillStyle = gLin(g, 0, cy - rE, 0, cy, [argb(70, 255, 255, 255), argb(0, 255, 255, 255)]); elipse(g, cx - rE * 0.74, cy - rE * 0.94, cx + rE * 0.74, cy - rE * 0.08); g.fill();
+      return b;
+    }
+
+    /** Ponteiro: lingueta vermelha do Clube com borda no metal do nível. Balança no pino. */
+    function pintarPonteiro() {
+      const comp = (cy - R * 0.885) - yPivo;            // do eixo até a ponta
+      const bw = 2 * (pivoR + 7 * u) + 2, bh = pivoR + comp + 12 * u + 2, b = bmp(bw, bh), g = b.g;
+      const ox = bw / 2, oy = pivoR + 5 * u; pivoNoBmp = oy; b.ox = ox;
+      const forma = (extra, ponta) => { g.beginPath(); g.arc(ox, oy, pivoR + extra, rad(160), rad(380)); g.lineTo(ox, oy + comp + ponta); g.closePath(); };
+      g.save(); g.translate(1.6 * u, 2.6 * u); borrao(g, 3 * u); g.fillStyle = css(argb(115, 0, 0, 0)); forma(0, 0); g.fill(); g.restore();   // sombra
+      g.fillStyle = gLin(g, ox - pivoR, 0, ox + pivoR, 0, cores('#F04A58', '#BC1722', '#7A0C14'), [0, 0.5, 1]); forma(0, 0); g.fill();
+      g.lineJoin = 'round'; g.lineWidth = 2.2 * u; g.strokeStyle = css(tema.tacha[1]); forma(0, 0); g.stroke();
+      g.lineWidth = 0.9 * u; g.strokeStyle = css(alfa(escurecer(tema.tacha[0], 0.5), 220)); forma(1.2 * u, 1.8 * u); g.stroke();
+      bola(g, ox, oy, pivoR * 0.52, tema.tacha);   // eixo
+      return b;
+    }
+    /** Clarãozinho que acende em cima de cada tacha (as "luzes" da roleta). */
+    function pintarLuz() {
+      const r = aroW * 0.72, lado = 2 * r + 2, b = bmp(lado, lado), g = b.g, m = lado / 2; b.m = m;
+      g.fillStyle = gRad(g, m, m, r, [BRANCO, alfa(tema.luz, 210), alfa(tema.luz, 0)], [0, 0.3, 1]); circ(g, m, m, r); g.fill();
+      return b;
+    }
+
+    // ================================================================ QUADRO A QUADRO
+    function quadro(agora) {
+      if (!ligado) return;
+      raf = requestAnimationFrame(quadro);
+      if (!premios.length) return;
+      if (sujo || !bRoda) construir();
+      if (!bRoda) return;
+      const g = ctx;
+      const dt = ultimo === 0 ? 0.016 : lim((agora - ultimo) / 1000, 0.001, 0.034); ultimo = agora;
+      // ---- avança o giro e o ponteiro ----
+      if (tGiro >= 0) {
+        const ms = agora - tGiro;
+        if (ms >= T0 + T1 + T2) parar(agora);
+        else {
+          const novo = anguloEm(ms);
+          if (ms > T0 && ms <= T0 + T1 && novo > angAnterior && cruzouPino(angAnterior, novo)) {
+            const vn = lim((novo - angAnterior) / dt / 1000, 0, 1);
+            flap = -(9 + 9 * vn); flapVel = 0;           // o pino empurra a lingueta
+          }
+          angAnterior = novo; angulo = novo;
+        }
+      }
+      flapVel += (-900 * flap - 24 * flapVel) * dt;       // mola: a lingueta volta tremendo
+      flap += flapVel * dt;
+      if (Math.abs(flap) < 0.03 && Math.abs(flapVel) < 0.6) { flap = 0; flapVel = 0; }
+      const tc = tParou >= 0 ? agora - tParou : -1;
+      if (girando && tc >= COMEMORA_MS && !avisou) { avisou = true; girando = false; const i = vencedorIdx; if (i != null && api.onEnd) setTimeout(() => api.onEnd(premios[i], i), 0); }
+      const ang = angulo + balanco(agora);
+
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+      g.save();
+      if (tc >= 0 && tc <= 340) { const s = 1 + 0.035 * Math.sin(Math.PI * tc / 340); g.translate(cx, cy); g.scale(s, s); g.translate(-cx, -cy); }   // "pulo" quando sai o prêmio
+      g.save(); girarEm(g, ang, cx, cy); g.drawImage(bRoda.c, cx - bRoda.m, cy - bRoda.m, bRoda.w, bRoda.h); g.restore();
+      const v = vencedorIdx;
+      if (v != null && tc >= 0 && v < fat.length) desenharVencedor(g, v, tc);
+      g.drawImage(bFrente.c, 0, 0, bFrente.w, bFrente.h);
+      desenharLuzes(g, agora, tc);
+      desenharCintilas(g, agora, dt, tc);
+      if (tc >= 0 && tc <= 900) desenharOndas(g, tc);
+      g.save(); g.translate(cx, yPivo); g.rotate(rad(flap)); g.drawImage(bPonteiro.c, -bPonteiro.ox, -pivoNoBmp, bPonteiro.w, bPonteiro.h); g.restore();
+      g.restore();
+      // ---- chuva de prêmio (por cima de tudo) ----
+      if (tc >= 0) {
+        if (!rajada2 && tc >= 420) { rajada2 = true; canhoes(15); }
+        if (tc >= 150 && tc <= 1500 && particulas.length < 130) { chuvaAcum += dt * 34; while (chuvaAcum >= 1) { chuvaAcum -= 1; chover(); } }
+      }
+      desenharParticulas(g, dt);
+      if (v != null && tc >= 0) desenharFita(g, tc);
+    }
+
+    /** Fatia premiada acesa e pulsando; o resto da roda escurece. */
+    function desenharVencedor(g, v, tc) {
+      const a0 = angulo + fat[v][0], sw = fat[v][1];
+      const k = lim(tc / 260, 0, 1), pulso = 0.5 + 0.5 * Math.sin(tc / 1000 * 2 * Math.PI * 2.2);
+      if (sw < 359.5) { g.fillStyle = css(argb(118 * k, 8, 10, 22)); pizza(g, cx, cy, R, a0 + sw, 360 - sw); g.fill(); }
+      g.fillStyle = css(argb((22 + 44 * pulso) * k, 255, 255, 255)); pizza(g, cx, cy, R, a0, sw); g.fill();
+      g.lineJoin = 'round'; g.lineWidth = (2.4 + 1.8 * pulso) * u; g.strokeStyle = css(alfa(clarear(tema.luz, 0.35), (165 + 90 * pulso) * k));
+      pizza(g, cx, cy, R, a0, sw); g.stroke();
+      if (tc < 240) { g.fillStyle = css(argb(150 * (1 - tc / 240), 255, 255, 255)); circ(g, cx, cy, R); g.fill(); }   // clarão
+    }
+    /** Luzes nas tachas: passeiam devagar, correm junto com a roda, piscam todas no prêmio. */
+    const onda = (f) => { const k = Math.max(0, Math.cos(f * 2 * Math.PI)); return k * k * k; };
+    function desenharLuzes(g, agora, tc) {
+      const rT = R + aroW * 0.60;
+      for (let i = 0; i < N_TACHAS; i++) {
+        let b;
+        if (tc >= 0 && tc <= 2600) b = ((Math.floor(tc / 90) + (tc > 1000 ? i : 0)) % 2 === 0) ? 1 : 0.1;
+        else if (tGiro >= 0) b = onda(i / N_TACHAS * 4 + angulo / 90);
+        else b = onda(i / N_TACHAS * 2 - (agora % 2400) / 2400);
+        if (b < 0.05) continue;
+        const a = anguloTacha(i);
+        g.globalAlpha = lim(b, 0, 1); g.drawImage(bLuz.c, px(cx, rT, a) - bLuz.m, py(cy, rT, a) - bLuz.m, bLuz.w, bLuz.h);
+      }
+      g.globalAlpha = 1;
+    }
+    // cintilas: estrelinhas que acendem e apagam no metal polido e nas pedras
+    function desenharCintilas(g, agora, dt, tc) {
+      const festa = tc >= 0 && tc <= 3000, fam = tema.familia;
+      const [maxN, taxa] = fam === 'GEMA' ? [7, 9] : fam === 'PEROLA' ? [4, 4] : fam === 'METAL' ? (tema.brilho > 90 ? [6, 6] : [4, 4]) : [0, 0];
+      const limN = festa ? maxN * 2 + 4 : maxN;
+      cintilaAcum += dt * (festa ? taxa * 2 + 8 : taxa);
+      while (cintilaAcum >= 1) {
+        cintilaAcum -= 1;
+        if (cintilas.length >= limN) continue;
+        const noAro = Math.random() < 0.4;
+        const rr = noAro ? R + aroW * (0.2 + 0.7 * Math.random()) : R * (0.36 + 0.58 * Math.random()), a = Math.random() * 360;
+        cintilas.push({x: px(cx, rr, a), y: py(cy, rr, a), t0: agora, dur: 420 + Math.random() * 520, tam: u * (3.5 + Math.random() * 5.5)});
+      }
+      for (let i = cintilas.length - 1; i >= 0; i--) {
+        const s = cintilas[i], k = (agora - s.t0) / s.dur;
+        if (k >= 1) { cintilas.splice(i, 1); continue; }
+        const e = Math.sin(Math.PI * k);
+        g.fillStyle = css(argb(235 * e, 255, 255, 255)); estrela(g, s.x, s.y, s.tam * e);
+      }
+    }
+    /** Estrela de 4 pontas. */
+    function estrela(g, x, y, s) {
+      if (s <= 0.2) return; const f = s * 0.17;
+      g.beginPath(); g.moveTo(x, y - s); g.lineTo(x + f, y - f); g.lineTo(x + s, y); g.lineTo(x + f, y + f); g.lineTo(x, y + s); g.lineTo(x - f, y + f); g.lineTo(x - s, y); g.lineTo(x - f, y - f); g.closePath(); g.fill();
+    }
+    /** Duas ondas de choque saindo do miolo quando o prêmio sai. */
+    function desenharOndas(g, tc) {
+      for (const atraso of [0, 230]) {
+        const k = (tc - atraso) / 640; if (k <= 0 || k >= 1) continue;
+        const e = 1 - (1 - k) * (1 - k);
+        g.lineWidth = (6 - 4 * k) * u; g.strokeStyle = css(alfa(clarear(tema.luz, 0.4), 210 * (1 - k)));
+        circ(g, cx, cy, hubR + (rExt * 1.1 - hubR) * e); g.stroke();
+      }
+    }
+
+    // ---------------------------------------------------------------- faixa com o nome do prêmio
+    function prepararFita(nome) {
+      const texto = String(nome || '').trim();
+      if (!texto || W <= 0) { fita = null; return; }
+      const maxL = vistaW - 50 * u;
+      const largura = (ls, t) => { ctx.font = fonteRot(t); return Math.max(...ls.map((l) => ctx.measureText(l).width)); };
+      let linhas = [texto], tam = 23 * u;
+      if (largura(linhas, tam) > maxL && texto.includes(' ')) linhas = partir(texto);
+      while (tam > 11 * u && largura(linhas, tam) > maxL) tam -= 0.5 * u;
+      fita = {linhas, tam, larg: largura(linhas, tam) + 34 * u, alt: linhas.length * tam * 1.22 + 15 * u};
+    }
+    function desenharFita(g, tc) {
+      const f = fita; if (!f) return;
+      const k = lim((tc - 140) / 420, 0, 1); if (k <= 0) return;
+      const volta = 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);      // entra passando do ponto e volta
+      const s = volta * (1 + 0.02 * Math.sin(tc / 1000 * 2 * Math.PI * 1.6));
+      g.save(); g.translate(cx, cy); g.scale(s, s); g.translate(-cx, -cy);
+      const raio = Math.min(f.alt / 2, 17 * u), l = cx - f.larg / 2, r = cx + f.larg / 2, t = cy - f.alt / 2, b = cy + f.alt / 2;
+      g.fillStyle = css(argb(96, 0, 0, 0)); caixa(g, l, t + 3.5 * u, r, b + 3.5 * u, raio); g.fill();
+      g.fillStyle = '#BC1722'; caixa(g, l, t, r, b, raio); g.fill();
+      g.lineWidth = 2.4 * u; g.strokeStyle = css(tema.familia === 'FERRO' ? tema.tacha[2] : tema.aro[2]); caixa(g, l, t, r, b, raio); g.stroke();
+      g.lineWidth = 0.9 * u; g.strokeStyle = css(argb(120, 60, 5, 10)); caixa(g, l + 2.6 * u, t + 2.6 * u, r - 2.6 * u, b - 2.6 * u, raio); g.stroke();
+      g.font = fonteRot(f.tam); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.shadowColor = css(argb(150, 50, 0, 6)); g.shadowBlur = 2 * u * dpr; g.shadowOffsetY = 1.2 * u * dpr;
+      const passo = f.tam * 1.22;
+      f.linhas.forEach((ln, i) => g.fillText(ln, cx, cy + f.tam * 0.36 + (i - (f.linhas.length - 1) / 2) * passo));
+      g.restore();
+    }
+
+    // ---------------------------------------------------------------- chuva de prêmio
+    // Cada material solta o que é dele: lascas e discos de madeira, faíscas de forja e porcas, moedas do metal
+    // do nível, pérolas e bolhas, pedras lapidadas — e estrelas.
+    const MOEDA = 0, PEDRA = 1, LASCA = 2, DISCO = 3, FAISCA = 4, PORCA = 5, PEROLA = 6, BOLHA = 7, ESTRELA = 8;
+    function formaDoTema(semFaisca) {
+      const r = Math.random(), fam = tema.familia;
+      if (fam === 'MADEIRA') return r < 0.55 ? LASCA : r < 0.85 ? DISCO : ESTRELA;
+      if (fam === 'FERRO') return r < 0.62 ? (semFaisca ? PORCA : FAISCA) : r < 0.88 ? PORCA : ESTRELA;
+      if (fam === 'METAL') return r < 0.74 ? MOEDA : ESTRELA;
+      if (fam === 'PEROLA') return r < 0.58 ? PEROLA : r < 0.8 ? BOLHA : ESTRELA;
+      return r < 0.62 ? PEDRA : ESTRELA;
+    }
+    const sorteiaDe = (lista, n) => lista[Math.floor(Math.random() * n)];
+    function nova(x, y, vx, vy, forma) {
+      const cor = forma === ESTRELA ? (Math.random() < 0.5 ? BRANCO : clarear(tema.luz, 0.3))
+        : forma === FAISCA ? sorteiaDe(tema.particulas, Math.min(3, tema.particulas.length))
+        : forma === PORCA ? tema.tacha[1] : sorteiaDe(tema.particulas, tema.particulas.length);
+      const tam = u * (forma === FAISCA ? 3 + Math.random() * 4 : (forma === ESTRELA || forma === LASCA) ? 5 + Math.random() * 6 : 6.5 + Math.random() * 7.5);
+      particulas.push({x, y, vx, vy, giro: Math.random() * 360, vGiro: (Math.random() - 0.5) * 760, tam, cor, forma, vida: 1});
+    }
+    /** Estouro do centro, pra todo lado (mais pra cima). */
+    function explodir(qtd) {
+      for (let k = 0; k < qtd; k++) {
+        const forma = formaDoTema(false), a = -Math.PI * 1.12 + Math.random() * Math.PI * 1.24;
+        const forca = (0.45 + 0.55 * Math.random()) * (forma === FAISCA ? 900 : 640) * u;
+        nova(cx + (Math.random() - 0.5) * 40 * u, cy + (Math.random() - 0.5) * 24 * u, Math.cos(a) * forca * 0.8, Math.sin(a) * forca, forma);
+      }
+    }
+    /** Dois canhões, um de cada lado, atirando pra cima e pro meio. */
+    function canhoes(cada) {
+      for (const lado of [-1, 1]) for (let k = 0; k < cada; k++) {
+        const forma = formaDoTema(false), forca = (0.6 + 0.4 * Math.random()) * 720 * u, abre = rad(18 + Math.random() * 34);
+        nova(cx + lado * R * 0.95, cy + R * 0.62, -lado * Math.sin(abre) * forca, -Math.cos(abre) * forca, forma);
+      }
+    }
+    /** Chuva caindo de cima, enquanto dura a festa. */
+    function chover() { nova(Math.random() * W, -12 * u, (Math.random() - 0.5) * 110 * u, (140 + Math.random() * 300) * u, formaDoTema(true)); }
+
+    function desenharParticulas(g, dt) {
+      if (!particulas.length) return;
+      const grav = 1350 * u;
+      for (let n = particulas.length - 1; n >= 0; n--) {
+        const p = particulas[n], faisca = p.forma === FAISCA;
+        p.vy += (faisca ? grav * 0.45 : p.forma === BOLHA ? grav * 0.25 : grav) * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.giro += p.vGiro * dt;
+        if (faisca) p.vida -= dt / 0.75; else if (p.y > H * 0.76) p.vida -= dt * 1.5;
+        if (p.vida <= 0 || p.y - p.tam > H || p.x < -40 * u || p.x > W + 40 * u) { particulas.splice(n, 1); continue; }
+        const al = lim(Math.round(255 * p.vida), 0, 255), t = p.tam;
+        if (faisca) {   // risco de luz na direção do movimento
+          g.lineCap = 'round';
+          g.lineWidth = t * 0.42; g.strokeStyle = css(alfa(p.cor, al)); linha(g, p.x, p.y, p.x - p.vx * 0.03, p.y - p.vy * 0.03);
+          g.lineWidth = t * 0.2; g.strokeStyle = css(argb(al, 255, 250, 220)); linha(g, p.x, p.y, p.x - p.vx * 0.012, p.y - p.vy * 0.012);
+          g.lineCap = 'butt'; continue;
+        }
+        if (p.forma === ESTRELA) { g.fillStyle = css(alfa(p.cor, al)); estrela(g, p.x, p.y, t * (0.75 + 0.25 * Math.sin(rad(p.giro * 2)))); continue; }
+        g.save(); g.translate(p.x, p.y); g.rotate(rad(p.giro));
+        if (p.forma === MOEDA) {          // gira no ar: a largura vai e volta
+          const larg = t * (0.3 + 0.7 * Math.abs(Math.cos(rad(p.giro * 1.7))));
+          g.fillStyle = css(alfa(escurecer(p.cor, 0.3), al)); elipse(g, -larg, -t, larg, t); g.fill();
+          g.fillStyle = css(alfa(p.cor, al)); elipse(g, -larg * 0.8, -t * 0.8, larg * 0.8, t * 0.8); g.fill();
+          g.fillStyle = css(argb(al * 120 / 255, 255, 255, 255)); elipse(g, -larg * 0.5, -t * 0.6, larg * 0.05, t * 0.05); g.fill();
+        } else if (p.forma === PEDRA) {   // brilhante visto de lado
+          const pol = (cor, pts) => { g.beginPath(); pts.forEach((q, i) => (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]))); g.closePath(); g.fillStyle = css(cor); g.fill(); };
+          pol(alfa(p.cor, al), [[-t * 0.5, -t * 0.62], [t * 0.5, -t * 0.62], [t * 0.9, -t * 0.18], [0, t], [-t * 0.9, -t * 0.18]]);
+          pol(argb(al * 110 / 255, 255, 255, 255), [[-t * 0.5, -t * 0.62], [-t * 0.1, -t * 0.18], [0, t], [-t * 0.9, -t * 0.18]]);
+          pol(argb(al * 60 / 255, 0, 0, 0), [[t * 0.5, -t * 0.62], [t * 0.9, -t * 0.18], [0, t], [t * 0.2, -t * 0.18]]);
+        } else if (p.forma === LASCA) {   // lasca de madeira com veio
+          g.fillStyle = css(alfa(p.cor, al)); caixa(g, -t * 1.25, -t * 0.42, t * 1.25, t * 0.42, t * 0.2); g.fill();
+          g.lineWidth = Math.max(1, t * 0.1); g.strokeStyle = css(alfa(escurecer(p.cor, 0.45), al * 190 / 255));
+          linha(g, -t, -t * 0.1, t, -t * 0.02); linha(g, -t * 0.8, t * 0.18, t * 0.9, t * 0.2);
+        } else if (p.forma === DISCO) {   // rodela de tronco, com os anéis
+          g.fillStyle = css(alfa(p.cor, al)); circ(g, 0, 0, t); g.fill();
+          g.lineWidth = Math.max(1, t * 0.12); g.strokeStyle = css(alfa(escurecer(p.cor, 0.45), al * 200 / 255));
+          circ(g, 0, 0, t * 0.92); g.stroke(); circ(g, 0, 0, t * 0.55); g.stroke(); circ(g, 0, 0, t * 0.22); g.stroke();
+        } else if (p.forma === PORCA) {   // porca sextavada
+          g.beginPath(); for (let k = 0; k < 6; k++) { const a = rad(k * 60); if (k === 0) g.moveTo(Math.cos(a) * t, Math.sin(a) * t); else g.lineTo(Math.cos(a) * t, Math.sin(a) * t); } g.closePath();
+          g.fillStyle = css(alfa(p.cor, al)); g.fill();
+          g.fillStyle = css(alfa(escurecer(p.cor, 0.7), al)); circ(g, 0, 0, t * 0.42); g.fill();
+          g.fillStyle = css(argb(al * 90 / 255, 255, 255, 255)); circ(g, -t * 0.35, -t * 0.4, t * 0.16); g.fill();
+        } else if (p.forma === PEROLA) {
+          g.fillStyle = css(alfa(escurecer(p.cor, 0.16), al)); circ(g, 0, 0, t * 0.8); g.fill();
+          g.fillStyle = css(alfa(p.cor, al)); circ(g, -t * 0.08, -t * 0.1, t * 0.66); g.fill();
+          g.fillStyle = css(argb(al * 235 / 255, 255, 255, 255)); circ(g, -t * 0.28, -t * 0.3, t * 0.2); g.fill();
+        } else {                          // bolha
+          g.lineWidth = Math.max(1, t * 0.12); g.strokeStyle = css(argb(al * 200 / 255, 255, 255, 255)); circ(g, 0, 0, t * 0.7); g.stroke();
+          g.fillStyle = css(argb(al * 150 / 255, 255, 255, 255)); circ(g, -t * 0.25, -t * 0.28, t * 0.14); g.fill();
+        }
+        g.restore();
+      }
+    }
+
+    window.addEventListener('resize', () => { sujo = true; });
+    return Object.assign(api, {
+      configurar, girar,
+      ligar() { if (ligado) return; ligado = true; ultimo = 0; raf = requestAnimationFrame(quadro); },
+      desligar() { ligado = false; cancelAnimationFrame(raf); },
+      get girando() { return girando; },
+      /** Índice da fatia embaixo do ponteiro agora (conferência e teste automático). */
+      fatiaNoPonteiro() { const p = mod360(270 - angulo); for (let i = 0; i < fat.length; i++) if (p >= fat[i][0] && p < fat[i][0] + fat[i][1]) return i; return fat.length - 1; },
+    });
+  }
+  return {criar};
+})();
+
+let ROLETA = null, GIROU = false;
+function abrirRoleta() {
+  const r = RESULT.roletas[RIDX]; GIROU = false;
+  $('rTitulo').textContent = RESULT.roletas.length > 1 ? 'Roleta ' + (RIDX + 1) + ' de ' + RESULT.roletas.length : 'Roleta do Clube';
+  $('rNivel').textContent = 'Roleta ' + r.nivel;
+  $('rDica').textContent = 'Toque na roleta para girar';
+  $('btnGirar').textContent = '🎡 Girar'; $('btnGirar').onclick = girar; $('btnGirar').style.visibility = 'visible';
+  mostrar('roleta');
+  if (!ROLETA) { ROLETA = Roleta.criar($('cv')); $('cv').addEventListener('click', girar); }
+  ROLETA.onEnd = () => ganhou(r);
+  ROLETA.configurar(r.fatias, r.nivel, r.cor); ROLETA.ligar();
+}
+function girar() {
+  if (!ROLETA || GIROU || !RESULT) return;
+  const r = RESULT.roletas[RIDX];
+  if (!ROLETA.girar(r.indice)) return;
+  GIROU = true; $('btnGirar').style.visibility = 'hidden'; $('rDica').textContent = 'Girando…';
+}
+function ganhou(r) {
+  const ultima = RIDX >= RESULT.roletas.length - 1;
+  $('rDica').textContent = '🎉 Você ganhou: ' + r.premio;
+  $('btnGirar').textContent = ultima ? 'Ver resultado' : 'Próxima roleta ▸'; $('btnGirar').style.visibility = 'visible';
+  $('btnGirar').onclick = () => { if (ultima) mostrarFim(); else { RIDX++; abrirRoleta(); } };
+}
+
+/* ---------- fim ---------- */
+function mostrarFim() {
+  if (ROLETA) ROLETA.desligar();
+  const j = RESULT; const pr = j.roletas.map((r) => r.premio);
+  $('fTitulo').textContent = j.jaEraDoClube ? 'Parabéns' + (j.nome ? ', ' + j.nome : '') + '!' : (pr.length ? 'Parabéns!' : 'Convite enviado!');
+  $('fLista').innerHTML = pr.map((p) => '<div>🎁 ' + esc(p) + '</div>').join('');
+  $('fPlacar').innerHTML = j.jaEraDoClube && j.saldo != null
+    ? '<div class="placar"><b>+' + j.pontos + ' = ' + j.saldo + '</b><small>Pontos no Clube</small></div>' : '';
+  $('fAviso').textContent = j.jaEraDoClube
+    ? (pr.length ? '🔒 Na sua conta — liberado a partir de amanhã, às 10:30.' : 'Pontos lançados na sua conta.')
+    : ((pr.length ? (pr.length > 1 ? 'Esses prêmios são seus' : 'Esse prêmio é seu') + ' assim que você criar sua conta 🎁\n' : '') + 'Mandamos o link no WhatsApp agora.');
+  mostrar('fim');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!$('t-login').classList.contains('on')) return;
+  if (/^\d$/.test(e.key)) tecla(e.key); else if (e.key === 'Backspace') tecla('⌫'); else if (e.key === 'Enter') entrar(); else if (e.key === 'Escape') tecla('C');
+});
+lerChave(); montarTeclado(); desenharPontos();
+mostrar(CHAVE ? 'login' : 'semChave');
+</script>
+</body>
+</html>
