@@ -213,6 +213,8 @@
 </header>
 <main>
   <div id="salvoInfo"></div>
+  <!-- 20/11/2026: 🚨 possível cobrança em dobro (mesmo cartão + mesmo valor, duas aprovadas em minutos) -->
+  <div id="alertaDobro" style="display:none"></div>
 
   <!-- ===================== ADMIN ===================== -->
   <section class="tab active" id="admin">
@@ -625,6 +627,37 @@ let db=vazio(), carregado=false, abaAtual='admin';
 async function iniciarApp(nome){
   mostrar('app'); $('quem').textContent='👤 '+(nome||'');
   await carregar();
+  carregarAlertasDobro();
+  if(!window._dobroTimer) window._dobroTimer=setInterval(carregarAlertasDobro, 5*60*1000);
+}
+/* ---------------- 🚨 cobrança em dobro (20/11/2026) ----------------
+   A maquininha mostrou erro, a Stone aprovou e o garçom cobrou de novo (15/11 e 19/11).
+   O servidor acusa: mesmo cartão + mesmo valor, as duas aprovadas, até 10 min de diferença.
+   Aqui só AVISA; o cancelamento é na Stone (app/portal) ou no Estorno da maquininha. */
+async function carregarAlertasDobro(){
+  const box=$('alertaDobro'); if(!box || !SESSAO) return;
+  const r=await chamar('/admin/alertas-dobro');
+  if(!r.ok || !(r.alertas||[]).length){ box.style.display='none'; box.innerHTML=''; return; }
+  const hora=(ts)=> ts? new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+  box.innerHTML='<div class="card" style="border:2px solid var(--red);background:#2a1016">'
+    +'<h3 style="color:#fff;margin-bottom:6px">🚨 Possível cobrança em dobro ('+r.alertas.length+')</h3>'
+    +'<p style="color:var(--muted);font-size:14px;margin-bottom:10px">Mesmo cartão e mesmo valor, duas vendas aprovadas em poucos minutos. Confira e, se foi engano, cancele UMA das duas na Stone (app ou portal) ou no Estorno da maquininha. Quando uma for cancelada pela maquininha o aviso some sozinho.</p>'
+    +r.alertas.map(a=>'<div class="listItem" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--linha)">'
+      +'<div><b style="font-size:17px">'+brl2((a.valorCent||0)/100)+'</b> · '+esc(a.produto||'')+' '+esc(a.bandeira||'')+' final <b>'+esc(a.cartaoFinal||'')+'</b>'
+      +'<br><small style="color:var(--muted)">'+hora(a.ts)+' e '+hora(a.segundaTs)+' ('+(a.segundos||0)+' s de diferença) · máquina '+esc(String(a.serial||'').slice(-6))
+      +(a.serialSegunda&&a.serialSegunda!==a.serial?' e '+esc(String(a.serialSegunda).slice(-6)):'')
+      +' · autorizações '+esc(a.autorizacaoPrimeira||'—')+' e '+esc(a.autorizacaoSegunda||'—')+'</small></div>'
+      +'<button class="btn sec" style="width:auto;margin:0;padding:9px 14px;font-size:14px" data-dobro="'+esc(a.id)+'">Já resolvi</button></div>').join('')
+    +'</div>';
+  box.style.display='block';
+  box.querySelectorAll('button[data-dobro]').forEach(b=>b.onclick=async()=>{
+    const nota=prompt('O que foi feito? (ex.: "cancelada no app da Stone", "eram duas contas iguais")');
+    if(!nota || nota.trim().length<3) return;
+    b.disabled=true;
+    const x=await chamar('/admin/alertas-dobro/resolver',{id:b.dataset.dobro,nota:nota.trim()});
+    if(!x.ok){ alert('Não gravou: '+(x.erro||'erro')); b.disabled=false; return; }
+    carregarAlertasDobro();
+  });
 }
 async function carregar(){
   if(_cfgTimer) return; // tem alteração esperando pra salvar — não sobrescreve
