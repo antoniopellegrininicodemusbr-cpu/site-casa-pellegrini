@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-11-19",
- "total": 364,
+ "atualizado_em": "2026-11-20",
+ "total": 365,
  "registros": [
+  {
+   "media_id": "18106320110372725",
+   "data_post": "2026-11-20",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/Df9vlFnPQJl/",
+   "caption": "Sextou papai 🧑‍🩰✨  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "3",
+   "motivo_reprova": "Meme/trend sobre dia da semana (feriado na sexta-feira), inadequado para anúncio evergreen.",
+   "flags": "gemini_aprovou:nao|datado:evento_unico|sazon:data_especifica|tema:dancinha feriado na sexta",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-11-20",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18021653711738928",
    "data_post": "2026-11-17",
