@@ -431,7 +431,7 @@
     </div>
     <div class="card">
       <h2>🧭 3. De onde vêm os membros novos?</h2>
-      <p class="sub">Cadastros <b>completos</b> feitos no período, pelo caminho que trouxe a pessoa.</p>
+      <p class="sub">Cadastros <b>completos</b> feitos no período, pelo caminho que trouxe a pessoa. Conta pelo <b>dia do cadastro</b>; o quadro 2 conta pelo dia do prêmio — por isso "Link do convite" pode ser maior que "Criaram a conta".</p>
       <div id="anCad"></div>
     </div>
     <div class="card">
@@ -441,6 +441,7 @@
       <h2 style="margin-top:18px;font-size:18px">🎁 Prêmios dados × resgatados (no período)</h2>
       <div style="overflow-x:auto"><table id="anPremios"></table></div>
       <p class="smallnote">% de resgate = resgatados ÷ dados (sem os cancelados). Prêmio ainda dentro da validade conta como "em aberto" — a % sobe com o tempo. Prêmios trazidos do Fidelizi ficam de fora.</p>
+      <div id="anPremiosIdade"></div>
       <details><summary>🏆 Ver ranking por prêmio (preço e custo)</summary>
         <p class="sub" style="margin-top:8px">Prêmio com % alta é o que traz o cliente de volta. Preço e custo estimados pelo CMV (33% do preço do cardápio) — pra trocar por outro de valor parecido.</p>
         <div class="row" style="align-items:flex-end">
@@ -803,7 +804,8 @@ function renderAnalises(){
     const md=cp&&cp.diasMediana!=null? (cp.diasMediana<1? Math.max(1,Math.round(cp.diasMediana*24))+' h' : cp.diasMediana.toLocaleString('pt-BR')+' dias') : '';
     $('anPessoasFora').innerHTML=[md?'Quem cria a conta leva em geral <b>'+md+'</b> depois do prêmio.':'',
       Fn.antesDoRegistro? Fn.antesDoRegistro+' pessoas ganharam prêmio antes de 06/11 à noite, quando as mensagens ainda não eram registradas — ficam fora do funil.':'',
-      cp&&cp.foraFidelizi!=null? 'Também ficam fora '+cp.foraFidelizi+' clientes antigos do Fidelizi que ganharam prêmio no período.':''].filter(Boolean).join(' ');
+      cp&&cp.foraFidelizi!=null? 'Também ficam fora '+cp.foraFidelizi+' clientes antigos do Fidelizi que ganharam prêmio no período.':'',
+      Fn.conviteNoPeriodo? '<br>Este quadro conta pelo <b>dia do prêmio</b>. Pelo <b>dia do cadastro</b> (quadro 3) foram <b>'+Fn.conviteNoPeriodo+'</b> contas criadas pelo convite no período, somando "Link do convite" e as linhas que terminam em "+ compra na maquininha"'+(Fn.premioAntes? ': <b>'+Fn.premioAntes+'</b> delas ganharam o prêmio antes deste período e por isso não entram aqui.':'.'):''].filter(Boolean).join(' ');
     if(Fn.pessoas){ diag.push((Fn.entrou/Fn.pessoas<0.1?'⚠️':'✅')+` De cada 100 pessoas novas que ganham prêmio na roleta, <b>${Math.round(100*Fn.entrou/Fn.pessoas)}</b> criam a conta. ${Math.round(100*(Fn.pessoas-Fn.entregue)/Fn.pessoas)} nem recebem a mensagem e ${Math.round(100*(Fn.entregue-Fn.lida)/Fn.pessoas)} recebem mas não leem.`); }
   } else { $('anFunilNovos').innerHTML=cp? `<p><b style="color:var(--gold)">${cp.pessoas}</b> pessoas novas ganharam prêmio · <b style="color:#7fe39a">${cp.ativaram}</b> criaram a conta (${pct(cp.taxa)}).</p>`+semServidor : semServidor; $('anPessoasFora').innerHTML=''; }
   const pd=cp? cp.porDia.slice().reverse() : [];
@@ -824,6 +826,12 @@ function renderAnalises(){
     +[['Roleta (compra)',Pm.roleta],['Brindes automáticos (aniversário e cliente sumido)',Pm.automaticos],['Outros (troca por pontos, presentes, boas-vindas)',Pm.outros]].filter(x=>x[1].dados)
       .map(([n,g])=>`<tr><td style="white-space:normal">${n}</td><td>${g.dados}</td><td><b style="color:#7fe39a">${g.resgatados}</b></td><td>${g.taxaResgate==null?'—':barra(g.taxaResgate,'#7fe39a')}</td><td>${g.vencidos}</td><td>${g.emAberto}</td></tr>`).join('')
     : `<tr><td class="muted">${t.premiosDados} prêmios dados · ${t.premiosResgatados} resgatados no período.</td></tr>`;
+  /* 22/11/2026: prêmio da roleta pela IDADE do prêmio (sempre desde a estreia) — o quadro do período mistura prêmio de ontem com o de 3 semanas */
+  const Pi=AN.premiosPorIdade;
+  $('anPremiosIdade').innerHTML=(Pi&&Pi.some(x=>x.dados))? '<h2 style="margin-top:18px;font-size:16px">🎡 Prêmio da roleta: resgate pela idade do prêmio</h2>'
+    +'<p class="sub">Sempre <b>desde a estreia</b>, não muda com o período escolhido. Prêmio novo ainda está no prazo: o resgate de verdade é o da faixa mais antiga.</p>'
+    +'<div style="overflow-x:auto"><table><tr><th>Prêmio dado</th><th>Dados</th><th>Resgatados</th><th>% de resgate</th><th>Vencidos</th><th>Em aberto</th></tr>'
+    +Pi.filter(x=>x.dados).map(g=>`<tr><td>${esc(g.nome)}</td><td>${g.dados}</td><td><b style="color:#7fe39a">${g.resgatados}</b></td><td>${g.taxaResgate==null?'—':barra(g.taxaResgate,'#7fe39a')}</td><td>${g.vencidos}</td><td>${g.emAberto}</td></tr>`).join('')+'</table></div>' : '';
   const ord=$('anOrdem').value, rk=AN.ranking.slice();
   const f={taxa:(a,b)=>(b.taxaResgate||0)-(a.taxaResgate||0)||b.dados-a.dados, dados:(a,b)=>b.dados-a.dados, custo:(a,b)=>(b.custo||0)-(a.custo||0), dias:(a,b)=>(a.diasAteVoltar==null?999:a.diasAteVoltar)-(b.diasAteVoltar==null?999:b.diasAteVoltar)}[ord];
   rk.sort(f);
