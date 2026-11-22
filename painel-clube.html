@@ -646,7 +646,10 @@ async function carregarAlertasDobro(){
       +'<div><b style="font-size:17px">'+brl2((a.valorCent||0)/100)+'</b> · '+esc(a.produto||'')+' '+esc(a.bandeira||'')+' final <b>'+esc(a.cartaoFinal||'')+'</b>'
       +'<br><small style="color:var(--muted)">'+hora(a.ts)+' e '+hora(a.segundaTs)+' ('+(a.segundos||0)+' s de diferença) · máquina '+esc(String(a.serial||'').slice(-6))
       +(a.serialSegunda&&a.serialSegunda!==a.serial?' e '+esc(String(a.serialSegunda).slice(-6)):'')
-      +' · autorizações '+esc(a.autorizacaoPrimeira||'—')+' e '+esc(a.autorizacaoSegunda||'—')+'</small></div>'
+      +' · autorizações '+esc(a.autorizacaoPrimeira||'—')+' e '+esc(a.autorizacaoSegunda||'—')
+      +' · '+(a.garcomPrimeira&&a.garcomSegunda ? (a.garcomPrimeira===a.garcomSegunda ? 'garçom <b>'+esc(a.garcomPrimeira)+'</b>' : 'garçons <b>'+esc(a.garcomPrimeira)+'</b> (1ª) e <b>'+esc(a.garcomSegunda)+'</b> (2ª)')
+        : a.garcomPrimeira||a.garcomSegunda ? 'garçom <b>'+esc(a.garcomPrimeira||a.garcomSegunda)+'</b> na '+(a.garcomPrimeira?'1ª':'2ª')+' cobrança (a outra ficou sem registro)'
+        : 'garçom não registrado')+'</small></div>'
       +'<button class="btn sec" style="width:auto;margin:0;padding:9px 14px;font-size:14px" data-dobro="'+esc(a.id)+'">Já resolvi</button></div>').join('')
     +'</div>';
   box.style.display='block';
