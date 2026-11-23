@@ -412,6 +412,7 @@
         <div><button class="btn sec" onclick="carregarAnalises(true)">🔄 Atualizar</button></div>
       </div>
       <p class="smallnote">📌 Os quadros 1 a 5 contam <b>só a partir de 03/11/2026</b>, dia em que o Clube estreou, e são calculados na hora pelo servidor. Enquanto o Clube tiver menos dias que o período escolhido, o número é o mesmo em "30", "60" e "90 dias".</p>
+      <p class="smallnote" id="anServidor"></p>
       <div class="erro" id="anMsg"></div>
     </div>
     <div class="card">
@@ -767,6 +768,19 @@ const pct=(v)=> v==null? '—' : (Math.round(v*10)/10).toLocaleString('pt-BR')+'
 const brl2=(v)=> v==null? '—' : 'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function renderAnalises(){
   if(!AN) return;
+  /* 23/11/2026: medidor do servidor — memória e tempo do cálculo da Saúde (a função é a mesma das maquininhas) */
+  (function(){ const sv=AN.servidor, el=$('anServidor'); if(!el) return;
+    if(!sv||!sv.memoriaMb||!sv.limiteMb){ el.innerHTML=''; return; }
+    const pm=Math.round(100*sv.memoriaMb/sv.limiteMb), pp=sv.pico30dMb? Math.round(100*sv.pico30dMb/sv.limiteMb) : 0;
+    const pior=Math.max(pm,pp), seg=Math.max(sv.duracaoS||0, sv.maisLento30dS||0);
+    const nivel=(pior>=85||seg>=22)? 2 : (pior>=70||seg>=18)? 1 : 0;
+    const dm=(d)=> d? d.slice(8,10)+'/'+d.slice(5,7) : '';
+    el.style.color=['var(--muted)','var(--gold)','#ff8a8a'][nivel];
+    el.innerHTML='🖥️ Servidor: este cálculo levou <b>'+(sv.duracaoS||0).toLocaleString('pt-BR')+' s</b> e usou <b>'+sv.memoriaMb+' MB</b> de '+sv.limiteMb.toLocaleString('pt-BR')+' MB ('+pm+'%).'
+      +(sv.pico30dMb? ' Maior uso em 30 dias: <b>'+sv.pico30dMb+' MB</b> ('+pp+'%) em '+dm(sv.pico30dDia)+'.' : '')
+      +(sv.maisLento30dS? ' Cálculo mais demorado: '+sv.maisLento30dS.toLocaleString('pt-BR')+' s em '+dm(sv.maisLento30dDia)+'.' : '')
+      +[' Com folga.',' <b>Atenção:</b> chegando perto do limite (memória acima de 70% ou cálculo acima de 18 s).',' <b>Perto do limite — avise o Claude</b> (memória acima de 85% ou cálculo acima de 22 s).'][nivel];
+  })();
   const t=AN.totais, box=(n,l,cor)=>`<div class="segbox"><div class="n"${cor?' style="color:'+cor+'"':''}>${n}</div><div class="l">${l}</div></div>`;
   const pc=(a,b)=> b? Math.round(100*a/b)+'%' : '—';
   const barra=(p,cor)=>`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;min-width:70px;height:8px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden"><div style="width:${Math.max(0,Math.min(100,Math.round(p)))}%;height:100%;background:${cor||'var(--gold)'}"></div></div><span style="min-width:40px">${Math.round(p)}%</span></div>`;
@@ -776,13 +790,18 @@ function renderAnalises(){
   /* ---- 1. vendas identificadas ---- */
   const I=AN.identificacao;
   if(I){
-    const gr=[['De membros (cartão reconhecido ou celular da conta)',I.membros,'#7fe39a'],['De gente nova (deu o celular e ganhou o convite)',I.genteNova,'var(--gold)'],
-      ['De clientes antigos do Fidelizi que ainda não tinham senha (convite)',I.fidelizi,'#8fb4ff'],['Compra abaixo de R$ 25 com celular (link de cadastro)',I.entrada,'#c9a0ff'],
-      ['Sem identificação',I.semIdentificar,'#ff9ba3']].filter((g,i)=>g[1]||i!==3);
+    /* 23/11/2026: "membros" aberto em 3 — cliente do Fidelizi é reconhecido pelo celular/cartão mesmo sem senha, então nunca aparecia na linha antiga "(convite)" */
+    const gr=(I.membrosClube!=null? [['De membros que nasceram no Clube (cartão ou celular)',I.membrosClube,'#7fe39a'],
+      ['De clientes que vieram do Fidelizi e já criaram a senha aqui',I.membrosFidelizi,'#3fae7a'],
+      ['De clientes do Fidelizi reconhecidos pelo celular ou cartão, ainda sem senha',(I.fideliziSemSenha||0)+(I.fidelizi||0),'#8fb4ff']]
+      : [['De membros (cartão reconhecido ou celular da conta)',I.membros,'#7fe39a'],['De clientes antigos do Fidelizi que ainda não tinham senha (convite)',I.fidelizi,'#8fb4ff']])
+      .concat([['De gente nova (deu o celular e ganhou o convite)',I.genteNova,'var(--gold)'],['Compra abaixo de R$ 25 com celular (link de cadastro)',I.entrada,'#c9a0ff',1],
+      ['Sem identificação',I.semIdentificar,'#ff9ba3']]).filter(g=>g[1]||!g[3]);
+    const pcf=(a,b)=> !b? '—' : (a>0&&100*a/b<1)? 'menos de 1%' : Math.round(100*a/b)+'%';
     $('anIdent').innerHTML=`<p style="margin:4px 0 10px;font-size:14px"><b style="color:var(--gold);font-size:20px">${I.vendas}</b> vendas aprovadas na máquina desde ${diaBRf(I.desde).slice(0,5)}</p>`
       +'<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:rgba(255,255,255,.08);margin-bottom:8px">'+gr.map(g=>`<div title="${g[0]}" style="width:${I.vendas?100*g[1]/I.vendas:0}%;background:${g[2]}"></div>`).join('')+'</div>'
-      +'<table><tr><th>Grupo</th><th>Vendas</th><th>% das vendas</th></tr>'+gr.map(g=>`<tr><td style="white-space:normal"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${g[2]};margin-right:6px"></span>${g[0]}</td><td><b>${g[1]}</b></td><td>${pc(g[1],I.vendas)}</td></tr>`).join('')+'</table>';
-    $('anIdentNota').innerHTML='Como é contado: vendas <b>aprovadas</b> nas maquininhas (sem a de teste), a partir de 07/11 — primeiro dia inteiro com todas as vendas registradas. "Sem identificação" é o que sobra: o cliente não quis dar o celular ou a venda não passou pela tela do Clube.';
+      +'<table><tr><th>Grupo</th><th>Vendas</th><th>% das vendas</th></tr>'+gr.map(g=>`<tr><td style="white-space:normal"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${g[2]};margin-right:6px"></span>${g[0]}</td><td><b>${g[1]}</b></td><td>${pcf(g[1],I.vendas)}</td></tr>`).join('')+'</table>';
+    $('anIdentNota').innerHTML='Como é contado: vendas <b>aprovadas</b> nas maquininhas (sem a de teste), a partir de 07/11 — primeiro dia inteiro com todas as vendas registradas. "Sem identificação" é o que sobra: o cliente não quis dar o celular ou a venda não passou pela tela do Clube. Quem veio do Fidelizi é reconhecido pelo celular ou pelo cartão mesmo sem ter criado a senha: entra como cliente da casa, não como gente nova.';
     if(I.vendas) diag.push((I.semIdentificar/I.vendas>0.5?'⚠️':'💡')+` De cada 100 vendas na máquina, <b>${Math.round(100*I.semIdentificar/I.vendas)}</b> ficam sem identificação — é o maior espaço pra crescer a base.`);
   } else { $('anIdent').innerHTML=semServidor; $('anIdentNota').innerHTML=''; }
   const dd=AN.diario.slice().reverse(), maxV=Math.max(1,...dd.map(l=>l.vendasStone||0));
