@@ -8,10 +8,15 @@ Racional (Antonio 25/09): em Petropolis o clima varia demais pra se guiar por es
 Anuncio de caldo pausado num dia quente nao acumula metrica ruim -> as reguas A/B nunca
 o julgam pelo dia errado, e o numero de anuncios se mantem.
 
-Veredito do dia:
-  FRIO  = tmax <= 19C  OU  precipitacao provavel (>=70% ou >=8mm)
-  CALOR = tmax >= 24C  E   sem chuva forte
+Veredito do dia (regra de 23/11/2026, decisao Antonio — antes a chuva virava FRIO em QUALQUER temperatura):
+  FRIO  = tmax <= 19C  OU  (chuva forte (>=70% ou >=8mm)  E  tmax <= 23C)
+  CALOR = tmax >= 24C  (com ou sem chuva)
   AMENO = resto -> tudo ativo
+  Motivo: em 23/11 deu FRIO com 28,8C por 9,5mm de chuva (10o caso do padrao "caldo em dia
+  muito quente por pouca chuva" que o Antonio mandou acompanhar em 06/10).
+  CALOR COM CHUVA FORTE: caldo desligado, calor normal rodando, mas os ESTRITOS de calor
+  (videos de sol: Gelo na Calcada, Conselho Chopp) ficam PAUSADOS — Antonio 17/11 e 23/11:
+  "no minimo somente em dia sem chuva".
 Acao: FRIO -> ativa sazon:frio, pausa sazon:calor. CALOR -> o inverso. AMENO -> ativa os dois.
 Nivel ESTRITO (Antonio 13/11/2026): flags sazon:calor_estrito / sazon:frio_estrito valem para
 criativo MUITO especifico de uma condicao -- so roda no veredito correspondente. calor_estrito
@@ -37,6 +42,7 @@ from datetime import datetime, timedelta, timezone
 LAT, LON = -22.5054, -43.1786  # Centro Historico de Petropolis
 FRIO_TMAX, CALOR_TMAX = 19.0, 24.0
 CHUVA_PROB, CHUVA_MM = 70, 8.0
+TETO_CHUVA_FRIO = 23.0  # 23/11/2026: chuva so vira FRIO se o dia tambem for fresco
 ABRE_HORA = 10  # hora BRT em que os conjuntos abrem
 FILA = "data/esteira-fila.json"
 STATE = "data/clima-state.json"
@@ -93,11 +99,11 @@ def veredito(alvo):
         print(f"clima: fonte primaria falhou ({e}); tentando met.no")
         tmax, prob, mm, fonte = clima_metno(alvo)
     chuva = (prob or 0) >= CHUVA_PROB or (mm or 0) >= CHUVA_MM
-    if tmax <= FRIO_TMAX or chuva: v = "FRIO"
+    if tmax <= FRIO_TMAX or (chuva and tmax <= TETO_CHUVA_FRIO): v = "FRIO"
     elif tmax >= CALOR_TMAX: v = "CALOR"
     else: v = "AMENO"
     print(f"clima ({fonte}) para {alvo}: tmax={tmax:.1f}C prob={prob} mm={mm:.1f} chuva={chuva} -> {v}")
-    return v, round(tmax, 1), prob, round(mm or 0, 1), fonte
+    return v, round(tmax, 1), prob, round(mm or 0, 1), fonte, chuva
 
 def ads_por_sazon():
     regs = json.load(open(FILA))
@@ -128,7 +134,7 @@ def main():
     alvo_s = alvo.strftime("%Y-%m-%d")
     agora_brt = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M")
     print(f"agora {agora_brt} BRT -> decidindo para o dia {alvo_s}")
-    v, tmax, prob, mm, fonte = veredito(alvo)
+    v, tmax, prob, mm, fonte, chuva = veredito(alvo)
     pool = ads_por_sazon()
     print(f"pool frio={pool['frio']} calor={pool['calor']} frio_estrito={pool['frio_estrito']} calor_estrito={pool['calor_estrito']}")
     state = {"pausados_por_clima": []}
@@ -139,6 +145,9 @@ def main():
     if v == "FRIO":
         pausar = pool["calor"] + pool["calor_estrito"]
         ativar = pool["frio"] + pool["frio_estrito"]
+    elif v == "CALOR" and chuva:  # quente mas chovendo: caldo fora, calor normal roda, video de sol nao
+        pausar = pool["frio"] + pool["frio_estrito"] + pool["calor_estrito"]
+        ativar = pool["calor"]
     elif v == "CALOR":
         pausar = pool["frio"] + pool["frio_estrito"]
         ativar = pool["calor"] + pool["calor_estrito"]
@@ -157,7 +166,7 @@ def main():
             if fb_set(aid, "ACTIVE"): meus.discard(aid); acoes.append(f"reativou {aid}")
     # historico e indexado pelo dia ALVO (o dia que a decisao vale), nao pelo dia do run
     hist = [h for h in state.get("historico", []) if h.get("data") != alvo_s]  # re-run do mesmo alvo sobrescreve
-    hist.append({"data": alvo_s, "veredito": v, "tmax": tmax, "chuva_mm": mm, "chuva_prob": prob,
+    hist.append({"data": alvo_s, "veredito": v, "tmax": tmax, "chuva_mm": mm, "chuva_prob": prob, "chuva_forte": chuva,
                  "fonte": fonte, "acoes": acoes or [], "pausados_apos": sorted(meus),
                  "executado_em": agora_brt, "run_id": os.environ.get("GITHUB_RUN_ID", "local")})
     hist = sorted(hist, key=lambda h: h["data"])[-60:]  # ~2 meses
