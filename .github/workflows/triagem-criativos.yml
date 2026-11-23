@@ -1,6 +1,6 @@
 # Esteira de triagem de criativos — Casa Pellegrini
 # Destino no repo: .github/workflows/triagem-criativos.yml
-# Secrets (ja existem): GEMINI_API_KEY, IG_ACCESS_TOKEN, GOOGLE_SHEETS_CREDS
+# Secrets (ja existem): GEMINI_API_KEY, IG_ACCESS_TOKEN, GOOGLE_SHEETS_CREDS, META_ADS_TOKEN (reconciliacao, 23/11/2026)
 #
 # FONTE DA VERDADE = data/esteira-fila.json (o Claude le e escreve via git, com o PC do Antonio desligado).
 # A planilha e um espelho somente-leitura.
@@ -53,6 +53,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests google-auth google-api-python-client
+      - name: Reconciliar fila com os anuncios reais (Meta)
+        # Antonio 23/11/2026: a rodada agendada de Ads nao consegue mais commitar a fila.
+        # Este passo le os 3 conjuntos da campanha Vendas e acerta data/esteira-fila.json sozinho
+        # (EM_TESTE / PROMOVIDO / REPESCAGEM / CORTADO_RESULTADO / FILLER_CLUBE). So LE a Meta.
+        # Se falhar, a triagem do dia segue normal (continue-on-error).
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          DRY_RUN:        ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/reconciliar_fila.py
       - name: Rodar esteira
         env:
           GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
