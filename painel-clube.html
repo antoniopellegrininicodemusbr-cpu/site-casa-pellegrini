@@ -412,6 +412,7 @@
         <div><button class="btn sec" onclick="carregarAnalises(true)">🔄 Atualizar</button></div>
       </div>
       <p class="smallnote">📌 Os quadros 1 a 5 contam <b>só a partir de 03/11/2026</b>, dia em que o Clube estreou, e são calculados na hora pelo servidor. Enquanto o Clube tiver menos dias que o período escolhido, o número é o mesmo em "30", "60" e "90 dias".</p>
+      <p class="smallnote" id="anTeste"></p>
       <p class="smallnote" id="anServidor"></p>
       <div class="erro" id="anMsg"></div>
     </div>
@@ -768,6 +769,12 @@ const pct=(v)=> v==null? '—' : (Math.round(v*10)/10).toLocaleString('pt-BR')+'
 const brl2=(v)=> v==null? '—' : 'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function renderAnalises(){
   if(!AN) return;
+  /* 23/11/2026: contas de teste (botão 🧪 na lista de clientes) e a máquina de teste ficam fora de todos os quadros */
+  (function(){ const ft=AN.teste, el=$('anTeste'); if(!el) return;
+    if(!ft||!(ft.contas||ft.vendas||ft.convites||ft.compras)){ el.innerHTML=''; return; }
+    el.innerHTML='🧪 Fora destes números: '+(ft.contas? '<b>'+ft.contas+'</b> conta(s) de teste e ' : '')+'a máquina de teste — '+
+      (ft.vendas||0)+' venda(s), '+(ft.compras||0)+' compra(s) pontuada(s), '+(ft.convites||0)+' convite(s), '+(ft.premios||0)+' prêmio(s) e '+(ft.mensagens||0)+' mensagem(ns). A conta de teste é marcada no botão 🧪 da lista de clientes.';
+  })();
   /* 23/11/2026: medidor do servidor — memória e tempo do cálculo da Saúde (a função é a mesma das maquininhas) */
   (function(){ const sv=AN.servidor, el=$('anServidor'); if(!el) return;
     if(!sv||!sv.memoriaMb||!sv.limiteMb){ el.innerHTML=''; return; }
@@ -1145,7 +1152,7 @@ function renderClientes(){
   cl.sort((a,b)=>f(a)-f(b));
   const tot=cl.length; cl=cl.slice(0,MAX_LINHAS);
   $('crmClientes').innerHTML=tot?'<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Celular</th><th>Pontos</th><th>Visitas</th><th>Gasto</th><th>Últ. visita</th><th></th></tr>'+
-    cl.map(c=>`<tr><td>${esc(c.nome||'—')}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''} <button class="btn sec" title="Desvincular cartões (a maquininha deixa de reconhecer pelo cartão)" style="padding:6px 10px;margin:0;width:auto" onclick="desvincularCartoes('${esc(c._id)}',this)">💳</button></td></tr>`).join('')+'</table></div>'
+    cl.map(c=>`<tr><td>${esc(c.nome||'—')}${c.teste?' <span class="muted" title="Conta de teste: fora dos números da aba Saúde">🧪 teste</span>':''}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''} <button class="btn sec" title="Desvincular cartões (a maquininha deixa de reconhecer pelo cartão)" style="padding:6px 10px;margin:0;width:auto" onclick="desvincularCartoes('${esc(c._id)}',this)">💳</button> <button class="btn sec" title="${c.teste?'Conta de TESTE — toque pra tirar a marca':'Marcar como conta de teste (fica fora dos números da aba Saúde)'}" style="padding:6px 10px;margin:0;width:auto${c.teste?';border-color:var(--gold)':''}" onclick="contaTeste('${esc(c._id)}',this)">🧪</button></td></tr>`).join('')+'</table></div>'
     +(tot>MAX_LINHAS?`<p class="smallnote">Mostrando ${MAX_LINHAS} de ${tot}. Use a busca para achar alguém.</p>`:`<p class="smallnote">${tot} cliente(s).</p>`)
     :'<p class="muted">Ninguém encontrado.</p>';
 }
@@ -1155,9 +1162,10 @@ let GA_LISTA=[], gaCarregado=false;
 async function garconsCarregar(){
   const r=await chamar('/admin/garcons'); if(!r.ok) return msg('gaMsg',r.erro||'Não carregou.');
   GA_LISTA=r.lista||[]; gaCarregado=true;
-  $('gaLista').innerHTML=GA_LISTA.length? '<table><tr><th>Garçom</th><th>Situação</th><th></th></tr>'+GA_LISTA.map((g,i)=>`<tr><td>${esc(g.nome)}</td><td>${g.ativo?'✅ ativo':'<span class="muted">desativado</span>'}</td><td style="white-space:nowrap">`+
+  $('gaLista').innerHTML=GA_LISTA.length? '<table><tr><th>Garçom</th><th>Situação</th><th></th></tr>'+GA_LISTA.map((g,i)=>`<tr><td>${esc(g.nome)}${g.teste?' <span class="muted" title="Garçom de teste: aparece no ranking marcado e por último">🧪 teste</span>':''}</td><td>${g.ativo?'✅ ativo':'<span class="muted">desativado</span>'}</td><td style="white-space:nowrap">`+
     `<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomSenha(${i})">🔑 Trocar senha</button> `+
     (g.ativo?`<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomAcao(${i},'desativar')">Desativar</button>`:`<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomAcao(${i},'reativar')">Reativar</button>`)+
+    ` <button class="btn sec" title="${g.teste?'Garçom de TESTE — toque pra tirar a marca':'Marcar como garçom de teste (quem testa a máquina)'}" style="padding:6px 10px;margin:0;width:auto${g.teste?';border-color:var(--gold)':''}" onclick="garcomTeste(${i})">🧪</button>`+
     `</td></tr>`).join('')+'</table>' : '<p class="muted">Nenhum garçom cadastrado — a maquininha não pede senha.</p>';
   garconsRanking();
 }
@@ -1166,7 +1174,7 @@ async function garconsRanking(){
   if(!r.ok){ $('gaRanking').innerHTML='<tr><td class="muted">'+esc(r.erro||'Não carregou.')+'</td></tr>'; return; }
   const l=r.lista||[];
   $('gaRanking').innerHTML=l.length? '<tr><th>#</th><th>Garçom</th><th>Vendas</th><th>📱 Celulares</th><th>% (sem cartão reconhecido)</th><th>já membro</th><th>convite</th><th>💳 cartão</th><th>🙅 não quis</th><th title="Venda aprovada e a pergunta do Clube ficou sem resposta: o garçom fechou o app ou saiu da tela (só nas máquinas com a versão 0.3.6)">🚪 saiu sem responder</th><th title="Deu o celular (convite) e criou a conta até 10 minutos depois da compra — pelo link do WhatsApp ou pelo QR do cupom">⚡ cadastrou na hora</th></tr>'+
-    l.map((g,i)=>`<tr><td>${i+1}</td><td><b>${esc(g.nome)}</b></td><td>${g.vendas}</td><td><b style="color:var(--gold)">${g.celulares}</b></td><td>${pct(g.taxa)}</td><td>${g.celular_membro}</td><td>${g.celular_convite}</td><td>${g.cartao}</td><td>${g.nao_quis}</td><td>${g.sem_resposta||0}</td><td><b style="color:#7fe39a">${g.cadastro10||0}</b>${g.cadastrou>(g.cadastro10||0)?` <span class="muted" title="criaram a conta depois de 10 min">(+${g.cadastrou-(g.cadastro10||0)} depois)</span>`:''}</td></tr>`).join('')
+    l.map((g,i)=>`<tr${g.teste?' style="opacity:.55"':''}><td>${g.teste?'—':i+1}</td><td><b>${esc(g.nome)}</b>${g.teste?' <span class="muted">🧪 teste</span>':''}</td><td>${g.vendas}</td><td><b style="color:var(--gold)">${g.celulares}</b></td><td>${pct(g.taxa)}</td><td>${g.celular_membro}</td><td>${g.celular_convite}</td><td>${g.cartao}</td><td>${g.nao_quis}</td><td>${g.sem_resposta||0}</td><td><b style="color:#7fe39a">${g.cadastro10||0}</b>${g.cadastrou>(g.cadastro10||0)?` <span class="muted" title="criaram a conta depois de 10 min">(+${g.cadastrou-(g.cadastro10||0)} depois)</span>`:''}</td></tr>`).join('')
     : '<tr><td class="muted">Nenhuma venda com senha de garçom no período.</td></tr>';
 }
 async function garcomCriar(){
@@ -1183,6 +1191,12 @@ async function garcomSenha(i){
   const r=await chamar('/admin/garcons',{acao:'senha',id:g.id,pin});
   msg('gaMsg', r.ok? '✅ Senha de '+g.nome+' trocada.' : (r.erro||'Não deu.'), r.ok);
 }
+async function garcomTeste(i){
+  const g=GA_LISTA[i]; if(!g) return;
+  const r=await chamar('/admin/garcons',{acao:'teste',id:g.id,teste:!g.teste});
+  if(!r.ok) return msg('gaMsg',r.erro||'Não deu.');
+  msg('gaMsg','',true); garconsCarregar();
+}
 async function garcomAcao(i,acao){
   const g=GA_LISTA[i]; if(!g) return;
   if(acao==='desativar' && !confirm('Desativar '+g.nome+'? A senha dele para de funcionar na maquininha.')) return;
@@ -1194,6 +1208,18 @@ async function garcomAcao(i,acao){
 /* ============ 💳 DESVINCULAR CARTÕES (11/11/2026) ============
    A maquininha deixa de reconhecer a pessoa pelo cartão e volta a perguntar celular/CPF.
    Conta, pontos e prêmios ficam iguais. Serve pra teste e pra cartão que caiu na conta errada. */
+/* 23/11/2026: conta de TESTE (dono, equipe) — funciona igual, mas fica fora dos números da Saúde e vai marcada na exportação */
+async function contaTeste(id,btn){
+  const c=db.contas[id]||{}, nome=c.nome||'este cliente', marcar=!c.teste;
+  if(!confirm(marcar? 'Marcar '+nome+' como conta de TESTE?\n\nA conta continua funcionando igual (pontua, ganha e resgata prêmio). Só sai dos números da aba Saúde e vai marcada na exportação.'
+    : 'Tirar a marca de teste de '+nome+'?\n\nAs compras, convites e prêmios dessa conta voltam a contar na aba Saúde.')) return;
+  if(btn) btn.disabled=true;
+  const r=await chamar('/admin/conta/teste',{conta:id,teste:marcar,simular:false});
+  if(btn) btn.disabled=false;
+  if(!r.ok) return alert('Não deu: '+(r.erro||'erro'));
+  if(db.contas[id]) db.contas[id].teste=marcar;
+  renderClientes();
+}
 async function desvincularCartoes(id,btn){
   const c=db.contas[id]||{}, nome=c.nome||'este cliente';
   const s=await chamar('/admin/cartoes/remover',{conta:id});
