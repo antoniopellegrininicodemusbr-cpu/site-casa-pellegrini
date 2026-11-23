@@ -340,6 +340,7 @@
           <option value="visitas">Mais visitas</option><option value="recente">Visita mais recente</option><option value="sumido">Há mais tempo sem vir</option>
         </select></div>
       </div>
+      <p class="smallnote" id="crmTeste"></p>
       <div id="crmClientes"></div>
     </div>
     <div class="card" id="cardLeads">
@@ -1147,12 +1148,19 @@ function renderClientes(){
   const q=($('crmBusca').value||'').trim().toLowerCase(), qd=q.replace(/\D/g,'');
   let cl=Object.entries(db.contas).map(([id,c])=>Object.assign({_id:id},c));
   if(q) cl=cl.filter(c=>String(c.nome||'').toLowerCase().includes(q) || (qd.length>=3 && String(c.telefone||c.doc||'').includes(qd)));
+  /* 23/11/2026: quem está marcado como conta de teste, sempre à vista (não depende da busca) */
+  (function(){ const el=$('crmTeste'); if(!el) return;
+    const tt=Object.entries(db.contas).filter(([id,c])=>c.teste).map(([id,c])=>Object.assign({_id:id},c));
+    el.innerHTML=tt.length? '🧪 <b>Contas de teste ('+tt.length+')</b>, fora dos números da aba Saúde: '+
+      tt.map(c=>`<b>${esc(c.nome||'sem nome')}</b> ${esc(fmtTel(c.telefone||''))} <a href="#" onclick="contaTeste('${esc(c._id)}',null);return false" title="Tirar a marca de teste">tirar</a>`).join(' · ')
+      : '🧪 Nenhuma conta marcada como teste. Para marcar, busque a pessoa e toque no 🧪 da linha dela.';
+  })();
   const o=$('crmOrdem').value;
   const f={pontos:c=>-(+c.pontos||0),gasto:c=>-(+c.totalGasto||0),visitas:c=>-(+c.visitas||0),recente:c=>-(c.ultimaVisitaTs||0),sumido:c=>(c.ultimaVisitaTs||0)}[o];
   cl.sort((a,b)=>f(a)-f(b));
   const tot=cl.length; cl=cl.slice(0,MAX_LINHAS);
   $('crmClientes').innerHTML=tot?'<div style="overflow-x:auto"><table><tr><th>Cliente</th><th>Celular</th><th>Pontos</th><th>Visitas</th><th>Gasto</th><th>Últ. visita</th><th></th></tr>'+
-    cl.map(c=>`<tr><td>${esc(c.nome||'—')}${c.teste?' <span class="muted" title="Conta de teste: fora dos números da aba Saúde">🧪 teste</span>':''}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''} <button class="btn sec" title="Desvincular cartões (a maquininha deixa de reconhecer pelo cartão)" style="padding:6px 10px;margin:0;width:auto" onclick="desvincularCartoes('${esc(c._id)}',this)">💳</button> <button class="btn sec" title="${c.teste?'Conta de TESTE — toque pra tirar a marca':'Marcar como conta de teste (fica fora dos números da aba Saúde)'}" style="padding:6px 10px;margin:0;width:auto${c.teste?';border-color:var(--gold)':''}" onclick="contaTeste('${esc(c._id)}',this)">🧪</button></td></tr>`).join('')+'</table></div>'
+    cl.map(c=>`<tr><td>${esc(c.nome||'—')}${c.teste?' <span class="muted" title="Conta de teste: fora dos números da aba Saúde">🧪 teste</span>':''}</td><td style="white-space:nowrap">${esc(fmtTel(c.telefone||''))}</td><td><b style="color:var(--gold)">${+c.pontos||0}</b></td><td>${+c.visitas||0}</td><td style="white-space:nowrap">${brl(c.totalGasto)}</td><td>${c.ultimaVisitaTs?diasInativo(c)+'d':'—'}</td><td>${c.telefone?`<button class="btn sec" title="Dar presente" style="padding:6px 10px;margin:0;width:auto" onclick="presentePara('${esc(String(c.telefone).replace(/\D/g,''))}')">🎁</button>`:''} <button class="btn sec" title="Desvincular cartões (a maquininha deixa de reconhecer pelo cartão)" style="padding:6px 10px;margin:0;width:auto" onclick="desvincularCartoes('${esc(c._id)}',this)">💳</button> <button class="btn sec" title="${c.teste?'Conta de TESTE — toque pra tirar a marca':'Marcar como conta de teste (fica fora dos números da aba Saúde)'}" style="padding:6px 10px;margin:0;width:auto${c.teste?';border-color:var(--gold);background:var(--gold);color:#1a1205':''}" onclick="contaTeste('${esc(c._id)}',this)">🧪</button></td></tr>`).join('')+'</table></div>'
     +(tot>MAX_LINHAS?`<p class="smallnote">Mostrando ${MAX_LINHAS} de ${tot}. Use a busca para achar alguém.</p>`:`<p class="smallnote">${tot} cliente(s).</p>`)
     :'<p class="muted">Ninguém encontrado.</p>';
 }
@@ -1165,7 +1173,7 @@ async function garconsCarregar(){
   $('gaLista').innerHTML=GA_LISTA.length? '<table><tr><th>Garçom</th><th>Situação</th><th></th></tr>'+GA_LISTA.map((g,i)=>`<tr><td>${esc(g.nome)}${g.teste?' <span class="muted" title="Garçom de teste: aparece no ranking marcado e por último">🧪 teste</span>':''}</td><td>${g.ativo?'✅ ativo':'<span class="muted">desativado</span>'}</td><td style="white-space:nowrap">`+
     `<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomSenha(${i})">🔑 Trocar senha</button> `+
     (g.ativo?`<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomAcao(${i},'desativar')">Desativar</button>`:`<button class="btn sec" style="padding:6px 10px;margin:0;width:auto" onclick="garcomAcao(${i},'reativar')">Reativar</button>`)+
-    ` <button class="btn sec" title="${g.teste?'Garçom de TESTE — toque pra tirar a marca':'Marcar como garçom de teste (quem testa a máquina)'}" style="padding:6px 10px;margin:0;width:auto${g.teste?';border-color:var(--gold)':''}" onclick="garcomTeste(${i})">🧪</button>`+
+    ` <button class="btn sec" title="${g.teste?'Garçom de TESTE — toque pra tirar a marca':'Marcar como garçom de teste (quem testa a máquina)'}" style="padding:6px 10px;margin:0;width:auto${g.teste?';border-color:var(--gold);background:var(--gold);color:#1a1205':''}" onclick="garcomTeste(${i})">🧪</button>`+
     `</td></tr>`).join('')+'</table>' : '<p class="muted">Nenhum garçom cadastrado — a maquininha não pede senha.</p>';
   garconsRanking();
 }
