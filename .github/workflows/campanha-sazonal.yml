@@ -1,0 +1,32 @@
+name: campanha-sazonal
+# Guarda da campanha de fim de ano (Antonio 24/11/2026): garante a campanha
+# "Reservas Final de Ano" no ar de 01/11 a 14/12 e pausada de 15/12 a 31/12.
+# Docs: memoria/marketing/esteira-triagem-criativos.md (secao da confraternizacao)
+on:
+  schedule:
+    - cron: "19 3 * * *"   # 00h19 BRT, minuto quebrado. Roda TODO DIA de proposito: a acao e idempotente, entao um run atrasado ou pulado pelo GitHub se conserta no dia seguinte
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = so mostra o que faria"
+        default: "false"
+jobs:
+  campanha:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: rodar guarda da campanha sazonal
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python3 scripts/campanha_sazonal.py
+      - name: persistir estado
+        run: |
+          git config user.name "campanha-bot"
+          git config user.email "campanha-bot@users.noreply.github.com"
+          git add data/campanha-sazonal-state.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "campanha-sazonal: estado do dia [skip ci]"
+          git push
