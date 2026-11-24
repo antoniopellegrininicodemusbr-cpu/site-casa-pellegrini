@@ -39,7 +39,8 @@ DRY = os.environ.get("DRY_RUN", "false").lower() == "true"
 FILA = os.environ.get("FILA_PATH", "data/esteira-fila.json")
 STATE = os.environ.get("CLIMA_STATE_PATH", "data/clima-state.json")
 ADSETS = {"120254652786890460": "dia", "120254652787400460": "noite", "120255615676900460": "teste"}
-NUNCA_TOCAR = {"REPROVADO_GEMINI", "EXPIRADO", "ZUMBI_DELETADO", "FILLER_CLUBE", "SAZONAL", "NAO_TRIADO"}
+NUNCA_TOCAR = {"REPROVADO_GEMINI", "EXPIRADO", "ZUMBI_DELETADO", "FILLER_CLUBE", "SAZONAL",
+               "APROVADO_SAZONAL", "NAO_TRIADO"}  # APROVADO_SAZONAL: confra de fim de ano, vive na campanha propria
 MAX_MUDANCAS = 8
 HOJE = (datetime.now(timezone.utc) - timedelta(hours=3)).strftime("%Y-%m-%d")
 
