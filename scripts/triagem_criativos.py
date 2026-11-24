@@ -107,6 +107,13 @@ REPROVE SEMPRE (criterio rigido — "na duvida, reprova, temos conteudo bom de s
   o video ainda funciona num dia ameno, e 'calor' (normal). Mesma logica para 'frio_estrito' (so faz
   sentido num dia frio/chuvoso de verdade) versus 'frio'. Na duvida entre os dois, use o NORMAL.
   Sazonalidade de DATA — Natal, Bauernfest, Copa, festas — continua REPROVANDO via momento_datado.)
+- EXCECAO DA CONFRATERNIZACAO (Antonio 24/11/2026): o video que VENDE confraternizacao de fim de ano
+  (confra da firma, festa de fim de ano, "agende sua confra", Natal/Ano Novo como ocasiao pra reservar
+  ou comemorar na casa) continua sendo datado, mas tem campanha propria no WhatsApp. Nesse caso marque
+  'evento_sazonal': 'confraternizacao_fim_de_ano' e de a NOTA DE QUALIDADE normalmente, como se o fato
+  de ser datado nao existisse. NAO marque evento_sazonal em aviso de recesso/fechamento ("fechamos dia
+  24 e 25"), em mensagem institucional de boas festas sem convite, nem em retrospectiva do ano — esses
+  continuam apenas reprovando.)
 - Qualidade ruim: audio inaudivel, imagem tremida, video cortado no meio.
 
 APROVE: comida/bebida apetitosa, ambiente cheio, happy hour, chopp, atendimento, fachada, prova social
@@ -123,6 +130,7 @@ Responda SOMENTE com JSON valido, sem markdown, neste formato exato:
  "motivo": "uma frase curta em portugues",
  "conjunto_sugerido": "dia"|"noite"|"qualquer",
  "momento_datado": "nenhum"|"aniversario"|"mesversario"|"promocao_com_prazo"|"evento_unico"|"cafe_da_manha"|"promessa_vencida"|"item_fora_do_cardapio",
+ "evento_sazonal": "nenhum"|"confraternizacao_fim_de_ano",
  "sazonalidade": "nenhuma"|"calor"|"calor_estrito"|"frio"|"frio_estrito"|"data_especifica",
  "conteudo_ia_celebridade": true|false,
  "tema": "2-4 palavras descrevendo o video"}}"""
@@ -410,7 +418,7 @@ def main():
                        key=lambda r: r["data_post"], reverse=True)
     print(f"pendentes: {len(pendentes)} | teto desta rodada: {MAX_POR_RODADA}")
     midia_por_id = {m["id"]: m for m in midias}
-    triados = aprovados = 0
+    triados = aprovados = sazonais = 0
 
     for r in pendentes[:MAX_POR_RODADA]:
         url = midia_por_id.get(r["media_id"], {}).get("media_url")
@@ -442,12 +450,28 @@ def main():
                 f"tema:{g.get('tema', '')}",
             ]))
             r["data_triagem"] = HOJE.isoformat()
+            # Segunda saida (Antonio 24/11/2026): confra de fim de ano nao morre no REPROVADO.
+            # A trava dura segue valendo pra esteira de Vendas; o que muda e que este tema ganha
+            # destino proprio (campanha Reservas Final de Ano, conjunto WhatsApp). Sem janela de
+            # data aqui de proposito: quem decide quando vai ao ar e scripts/campanha_sazonal.py,
+            # entao um post de confra triado em marco so fica esperando a temporada.
+            try:
+                nota = int(float(g.get('nota') or 0))
+            except (TypeError, ValueError):
+                nota = 0
+            confra = (g.get('evento_sazonal', 'nenhum') == 'confraternizacao_fim_de_ano'
+                      and not g.get('conteudo_ia_celebridade') and nota >= 5)
             if ok:
                 r["status"] = "APROVADO_FILA"
                 r["conjunto_sugerido"] = g.get("conjunto_sugerido", "qualquer")
                 # o prompt v4 ja julgou a legenda junto do video -> nao precisa do re-passe
                 r["flags"] += "|legenda_v2:ok"
                 aprovados += 1
+            elif confra:
+                r["status"] = "APROVADO_SAZONAL"
+                r["conjunto_sugerido"] = "confra_whatsapp"
+                r["flags"] += "|sazonal:confraternizacao_fim_de_ano"
+                sazonais += 1
             else:
                 r["status"] = "REPROVADO_GEMINI"
                 r["motivo_reprova"] = str(g.get("motivo", ""))[:200]
