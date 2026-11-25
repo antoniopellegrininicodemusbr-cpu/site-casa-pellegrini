@@ -120,6 +120,9 @@ https://www.casapellegrini.com.br/*      https://casapellegrini.com.br/:splat   
 /cadastro/presente          /cadastro-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=presente                 301
 # 10/11/2026: ativação do convite em 1 toque — o token identifica o celular da compra (sem CPF, sem captcha)
 /c/:token                   /cadastro-clube.html?c=:token&utm_source=whatsapp&utm_medium=clube&utm_campaign=convite_ativar 301
+# 25/11/2026: link de evento — presente pra quem entra no Clube ou já é do Clube (clube_eventos/<codigo>, criado no painel).
+# 302 de propósito: evento é temporário, não queremos o navegador guardando o atalho pra sempre.
+/evento/:codigo             /cadastro-clube.html?evento=:codigo&utm_source=evento&utm_medium=clube&utm_campaign=:codigo  302
 /minha-conta/saldo          /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=saldo                        301
 /minha-conta/visita         /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=visita                       301
 /minha-conta/vencimento     /area-clube.html?utm_source=whatsapp&utm_medium=clube&utm_campaign=vencimento                   301
