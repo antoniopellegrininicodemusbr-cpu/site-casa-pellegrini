@@ -152,6 +152,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 }catch(e){}})();
 window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_origem')||localStorage.getItem('cp_origem')||'{}');
   if(o.ts&&Date.now()-o.ts>30*86400000) return {}; return o;}catch(e){return {}}};
+/* 25/11/2026: link de evento (casapellegrini.com.br/evento/<codigo>) — guarda o código neste aparelho por 30 dias
+   pra o presente cair na conta por qualquer caminho: cadastro novo, entrar, ou criar a senha. */
+(function(){try{ var c=(new URLSearchParams(location.search).get('evento')||'').toLowerCase();
+  if(/^[a-z0-9]{3,24}$/.test(c)) localStorage.setItem('cp_evento', JSON.stringify({c:c, ts:Date.now()})); }catch(e){}})();
+window.cpEvento=function(){try{var o=JSON.parse(localStorage.getItem('cp_evento')||'{}');
+  if(!o.c||Date.now()-o.ts>30*86400000) return ''; return o.c;}catch(e){return ''}};
+window.cpEventoLimpar=function(){try{localStorage.removeItem('cp_evento');}catch(e){}};
 </script>
 </head>
 <body>
@@ -181,6 +188,9 @@ window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_orige
   </header>
 
   <!-- 14/11/2026 (Antonio): quadro de benefícios tirado de todos os fluxos — o formulário sobe pra 1ª tela -->
+
+  <!-- 25/11/2026: presente de evento (aparece só pra quem chegou por /evento/<codigo>) -->
+  <div class="msg ok" id="eventoBox" style="display:none"></div>
 
   <div class="msg" id="aviso"></div>
 
@@ -435,6 +445,52 @@ document.getElementById('gsenha').addEventListener('keydown',e=>{if(e.key==='Ent
    (que dá acesso à base inteira) — ela se defende com Turnstile + rate limit
    no servidor. */
 const API = 'https://casapellegrini.com.br/api/clube/publico';
+
+/* ---------- 25/11/2026: link de evento ---------- */
+const escEv = (t) => String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+(async function(){
+  const c = window.cpEvento ? window.cpEvento() : ''; if(!c) return;
+  const box = document.getElementById('eventoBox');
+  try{
+    const j = await (await fetch(API + '/evento?c=' + encodeURIComponent(c))).json();
+    if(!j.ok){ window.cpEventoLimpar(); return; }
+    if(!j.aberto){ window.cpEventoLimpar(); box.className='msg err'; box.textContent = j.motivo || 'Essa promoção não está mais disponível.'; box.style.display='block'; return; }
+    box.innerHTML = '🎁 <strong>' + escEv(j.nome) + '</strong><br>Você ganha: <strong>' + escEv(j.frase) + '</strong>.<br>' +
+      'É só <strong>entrar</strong> na sua conta do Clube ou <strong>se cadastrar</strong> aqui embaixo: o presente cai na sua conta na hora.' +
+      (j.semConsumo ? '<br>É de graça: não precisa de consumo.' : '') +
+      (j.liberaEm && j.liberaEm === j.expiraEm
+        ? '<br><strong>Vale só no dia ' + escEv(j.liberaEm) + ', a partir das 10h30.</strong>'
+        : j.liberaEm && j.expiraEm
+        ? '<br><strong>Pra usar na Casa de ' + escEv(j.liberaEm) + ' (a partir das 10h30) até ' + escEv(j.expiraEm) + '.</strong>'
+        : (j.expiraEm ? '<br><strong>Pra usar na Casa até ' + escEv(j.expiraEm) + '.</strong>' : '')) +
+      (j.ate ? '<br><span style="font-size:12px;opacity:.85">' + (j.expiraEm ? '' : 'Vale pra quem entrar até ' + escEv(j.ate) + '. ') + 'Um por pessoa.</span>' : '');
+    box.style.display='block';
+  }catch(e){}
+})();
+/* quem acabou de entrar (senha criada pelo código) pega o presente do evento; a Minha Conta faz o mesmo ao abrir */
+async function eventoResgatar(){
+  const c = window.cpEvento ? window.cpEvento() : ''; let tk=''; try{ tk = localStorage.getItem('cp_sessao') || ''; }catch(e){}
+  if(!c || !tk) return null;
+  try{
+    const r = await fetch(API + '/evento', {method:'POST', headers:{'Content-Type':'application/json','X-Clube-Sessao':tk}, body:JSON.stringify({codigo:c})});
+    const j = await r.json();
+    if(j.ok || j.fechado) window.cpEventoLimpar();
+    return j;
+  }catch(e){ return null; }
+}
+function eventoMostrarGanho(nome, premio, validoAte, liberaEm, semConsumo){
+  const b = document.getElementById('bonus'); if(!b) return;
+  b.innerHTML = (b.style.display==='block' ? b.innerHTML+'<br><br>' : '') +
+    '🎁 Presente do evento <strong>' + escEv(nome) + '</strong> já está na sua conta:<br><strong>' + escEv(premio) + '</strong><br>' +
+    (semConsumo ? 'É de graça: não precisa de consumo.<br>' : '') +
+    (liberaEm && liberaEm === validoAte
+      ? 'Vale só no dia ' + escEv(liberaEm) + ', a partir das 10h30. No dia, em "Ver minha conta", você escolhe e gera o código pra mostrar ao garçom.'
+      : liberaEm
+      ? 'Abre pra usar em ' + escEv(liberaEm) + ' (a partir das 10h30) e vale até ' + escEv(validoAte||'') + '. No dia, em "Ver minha conta", você escolhe e gera o código pra mostrar ao garçom.'
+      : 'Vale até ' + escEv(validoAte||'') + '. Em "Ver minha conta" você escolhe e gera o código pra mostrar ao garçom.');
+  b.style.display='block';
+  const ev = document.getElementById('eventoBox'); if(ev) ev.style.display='none';
+}
 
 /* ---------- máscaras ---------- */
 const cpf = document.getElementById('cpf');
@@ -744,6 +800,8 @@ async function definirSenha(e){
     document.getElementById('oNome').textContent=(j.nome||'').split(' ')[0]||'tudo certo';
     document.getElementById('sucesso').style.display='block';
     window.scrollTo({top:0,behavior:'smooth'});
+    /* 25/11: chegou pelo link de um evento e acabou de criar a senha → o presente cai agora */
+    eventoResgatar().then(function(ev){ if(ev && ev.ok && ev.ganhou) eventoMostrarGanho(ev.nome, ev.frase || (ev.premios||[]).join(' + '), ev.validoAte, ev.liberaEm, ev.semConsumo); });
   }catch(err){
     btn.disabled=false; btn.textContent='Salvar senha e entrar';
     aviso('Sem conexão com o servidor. Tenta de novo?');
@@ -786,6 +844,7 @@ async function enviar(e){
         website: document.getElementById('website').value, /* honeypot */
         turnstile: tokCad,
         convite: CONVITE || undefined,
+        evento: (window.cpEvento ? window.cpEvento() : '') || undefined,   /* 25/11: link de evento */
         consentiu: true,
         /* trilha do aceite — prova de quando, onde e o que foi aceito */
         consentimento: {
@@ -866,6 +925,9 @@ async function enviar(e){
         'Vale até '+escB(j.brindeBoasVindas.validoAte||'')+', em compra a partir de R$ '+escB(j.brindeBoasVindas.apartirDe||25)+'.';
       b.style.display='block';
     }
+    /* 25/11/2026: presente do link de evento */
+    if (j.brindeEvento && j.brindeEvento.premio){ eventoMostrarGanho(j.brindeEvento.nome, j.brindeEvento.premio, j.brindeEvento.validoAte, j.brindeEvento.liberaEm, j.brindeEvento.semConsumo); window.cpEventoLimpar(); }
+    else if (window.cpEvento && window.cpEvento()) { window.cpEventoLimpar(); }   /* o evento não valia mais: não fica tentando depois */
     window.scrollTo({top:0,behavior:'smooth'});
   }catch(err){
     btn.disabled=false; btn.textContent= CONVITE ? 'Ativar meu prêmio' : 'Criar minha conta';   /* 12/11: no convite o botão voltava com o texto errado */
