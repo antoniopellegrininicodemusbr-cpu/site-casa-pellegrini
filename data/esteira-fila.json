@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-11-24",
- "total": 366,
+ "atualizado_em": "2026-11-25",
+ "total": 367,
  "registros": [
+  {
+   "media_id": "18116213660170173",
+   "data_post": "2026-11-24",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DgI33WgvkNY/",
+   "caption": "Se liga, manda pra galera e marca  logo sua confraternização!  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "APROVADO_FILA",
+   "nota_gemini": "9.5",
+   "motivo_reprova": "",
+   "flags": "gemini_aprovou:sim|tema:Confraternizacao e variadas opcoes do cardapio|legenda_v2:ok",
+   "conjunto_sugerido": "qualquer",
+   "data_triagem": "2026-11-25",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18020138390746169",
    "data_post": "2026-11-22",
