@@ -249,6 +249,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 }catch(e){}})();
 window.cpOrigem=function(){try{var o=JSON.parse(sessionStorage.getItem('cp_origem')||localStorage.getItem('cp_origem')||'{}');
   if(o.ts&&Date.now()-o.ts>30*86400000) return {}; return o;}catch(e){return {}}};
+/* 25/11/2026: link de evento (casapellegrini.com.br/evento/<codigo>) — guarda o código neste aparelho por 30 dias
+   pra o presente cair na conta por qualquer caminho: cadastro novo, entrar, ou criar a senha. */
+(function(){try{ var c=(new URLSearchParams(location.search).get('evento')||'').toLowerCase();
+  if(/^[a-z0-9]{3,24}$/.test(c)) localStorage.setItem('cp_evento', JSON.stringify({c:c, ts:Date.now()})); }catch(e){}})();
+window.cpEvento=function(){try{var o=JSON.parse(localStorage.getItem('cp_evento')||'{}');
+  if(!o.c||Date.now()-o.ts>30*86400000) return ''; return o.c;}catch(e){return ''}};
+window.cpEventoLimpar=function(){try{localStorage.removeItem('cp_evento');}catch(e){}};
 </script>
 </head>
 <body>
@@ -543,6 +550,15 @@ function tokenTurnstile(){
 const fmtData = ts => new Date(ts).toLocaleDateString('pt-BR',
   {day:'2-digit', month:'2-digit', year:'numeric'});
 
+/* 25/11/2026: prazo que não acaba no fim do dia (horário de Brasília), igual ao fmtPrazoBR do servidor.
+   Prazo normal (23:59) → só a data. De madrugada (antes das 6h) → a data da NOITE: 30/11 às 2h aparece
+   "29/11/2026" (pro cliente o evento é dia 29; as 2h são a folga da noite). Outra hora → "30/11/2026 às 14h". */
+const fmtDataSP = ts => new Date(ts).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'America/Sao_Paulo'});
+const fmtPrazo = ts => { const d = new Date(ts - 3*3600000), h = d.getUTCHours(), m = d.getUTCMinutes();
+  if (h === 23 && m === 59) return fmtData(ts);
+  if (h < 6) return fmtDataSP(ts - 6*3600000);
+  return fmtData(ts) + ' às ' + h + 'h' + (m ? String(m).padStart(2,'0') : ''); };
+
 /* Dias inteiros que faltam. Math.ceil pra "vence amanhã" nunca virar "0 dias". */
 const diasAte = ts => Math.ceil((ts - Date.now()) / DIA);
 
@@ -551,7 +567,9 @@ const diasAte = ts => Math.ceil((ts - Date.now()) / DIA);
 function prazo(validadeTs){
   if(!validadeTs) return {classe:'ok', txt:'Sem prazo de validade'};
   const d = diasAte(validadeTs);
-  if(d <= 0)  return {classe:'urgente', txt:'Venceu em ' + fmtData(validadeTs)};
+  const comHora = fmtPrazo(validadeTs) !== fmtData(validadeTs);   // 25/11: prazo com hora marcada (evento)
+  if(d <= 0)  return {classe:'urgente', txt:'Venceu em ' + fmtPrazo(validadeTs)};
+  if(comHora) return {classe: d <= 4 ? 'urgente' : 'perto', txt:'Vale até ' + fmtPrazo(validadeTs)};
   if(d === 1) return {classe:'urgente', txt:'Vence hoje ainda — ' + fmtData(validadeTs)};
   if(d === 2) return {classe:'urgente', txt:'Vence amanhã — ' + fmtData(validadeTs)};
   const cls = d <= 4 ? 'urgente' : (d <= 8 ? 'perto' : 'ok');
@@ -652,6 +670,34 @@ async function abrirConta(){
   $('carregando').style.display = 'none';
   $('telaConta').style.display = 'block';
   desenhar();
+  eventoChecar();
+}
+
+/* 25/11/2026: chegou pelo link de um evento (casapellegrini.com.br/evento/<codigo>)? O presente cai aqui,
+   uma vez por conta. O código fica guardado no aparelho até dar certo ou a promoção fechar. */
+let eventoRodando = false;
+async function eventoChecar(){
+  const c = window.cpEvento ? window.cpEvento() : '';
+  if(!c || eventoRodando) return;
+  eventoRodando = true;
+  try{
+    const j = await chamar('/evento', {codigo:c});
+    if(!j) return;
+    if(j.ok || j.fechado) window.cpEventoLimpar();
+    if(j.ok && j.ganhou){
+      await abrirConta();   // recarrega a lista já com o presente
+      aviso('🎁 Presente do evento ' + (j.nome||'') + ' na sua conta: ' + (j.frase || (j.premios||[]).join(' + ')) + '. ' + (j.semConsumo ? 'É de graça, não precisa de consumo. ' : '') +
+        (j.liberaEm && j.liberaEm === j.validoAte
+          ? 'Vale só no dia ' + j.liberaEm + ', a partir das 10h30. No dia, toque em "Usar agora" em cada um pra escolher e gerar o código.'
+          : j.liberaEm
+          ? 'Abre pra usar em ' + j.liberaEm + ' (a partir das 10h30) e vale até ' + (j.validoAte||'') + '. No dia, toque em "Usar agora" em cada um pra escolher e gerar o código.'
+          : 'Vale até ' + (j.validoAte||'') + '. Toque em "Usar agora" em cada um pra escolher e gerar o código.'), 'ok');
+    } else if(j.ok && j.ja){
+      aviso('Você já pegou o presente do evento ' + (j.nome||'') + '. Ele está na sua lista de prêmios.', 'ok');
+    } else if(j.fechado){
+      aviso(j.erro || 'Essa promoção não está mais disponível.');
+    }
+  }catch(e){} finally{ eventoRodando = false; }
 }
 
 function desenhar(){
@@ -764,10 +810,13 @@ function desenharPremios(lista){
       '<div class="origem">' + origem + '</div>' +
       '<div class="nome">' + esc(p.premio) + '</div>' +
       '<div class="prazo ' + pz.classe + '">🕒 ' + pz.txt + '</div>' +
+      (p.semConsumo ? '<div class="escolhido">✅ <b>De graça</b>: não precisa de consumo.</div>' : '') +   /* 25/11: presente de evento */
       (preso
         ? '<button disabled>🔒 Será liberado em ' + fmtData(p.liberadoTs) + ', às 10:30</button>' +
           '<div class="vazio" style="font-size:12px;padding:10px 0 0">' +
-          'Seu prêmio fica guardado esperando sua próxima visita.</div>'
+          (p.origem === 'presente'   /* 25/11: presente de evento com data marcada */
+            ? 'Seu presente fica guardado aqui e abre nesse dia' + (p.validadeTs ? (fmtPrazo(p.validadeTs) === fmtData(p.liberadoTs) ? ' (vale só nesse dia)' : ' (vale até ' + fmtPrazo(p.validadeTs) + ')') : '') + '.'
+            : 'Seu prêmio fica guardado esperando sua próxima visita.') + '</div>'
         : codigoVivo
           ? (duplo && !p.escolha
               // código antigo de um brinde que passou a ter 2 opções: falta escolher
@@ -783,7 +832,11 @@ function desenharPremios(lista){
     '</div>';
   }).join('') +
     /* 12/11/2026: as mensagens curtas do WhatsApp não trazem mais as regras — elas ficam aqui */
-    '<div class="vazio" style="font-size:12px;padding:6px 0 0">Regras para resgate: mediante compra pontuada (mínimo R$ 25) · somente consumo no local.</div>';
+    /* 25/11/2026: presente "de graça" (evento) não entra na regra da compra; se só tem desses, a regra da compra nem aparece */
+    (lista.every(p => p.semConsumo)
+      ? '<div class="vazio" style="font-size:12px;padding:6px 0 0">Somente consumo no local.</div>'
+      : '<div class="vazio" style="font-size:12px;padding:6px 0 0">Regras para resgate: mediante compra pontuada (mínimo R$ 25) · somente consumo no local.' +
+        (lista.some(p => p.semConsumo) ? ' Os presentes marcados como "De graça" não precisam de compra.' : '') + '</div>');
 }
 
 // De onde veio o prêmio. Antes era só "roleta" ou "pontos" — brinde de
