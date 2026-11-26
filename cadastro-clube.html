@@ -243,7 +243,7 @@ window.cpEventoLimpar=function(){try{localStorage.removeItem('cp_evento');}catch
       <label for="senha">Crie uma senha <span class="req">*</span></label>
       <input type="password" id="senha" name="new-password" autocomplete="new-password"
              placeholder="Mínimo de 6 caracteres" minlength="6" required>
-      <div class="dica">Só você resgata seus prêmios. Sem a senha, ninguém mexe na sua conta.</div>
+      <div class="dica">Pode ser simples, com 6 caracteres ou mais. Só você resgata seus prêmios: sem a senha, ninguém mexe na sua conta.</div>
       <div class="forca" id="forca"></div>
     </div>
 
@@ -513,22 +513,17 @@ nasc.addEventListener('input', () => {
   nasc.value = d.length>2 ? `${d.slice(0,2)}/${d.slice(2)}` : d;
 });
 
-/* ---------- força da senha ---------- */
+/* ---------- aviso embaixo da senha ----------
+   26/11/2026 (Antonio, com print de uma cliente: "quero tirar esse aviso de senha fraca / senha média; quero que as
+   pessoas possam criar senhas simples... dessa maneira parece que a pessoa não pode criar a conta ainda").
+   Saiu a nota de fraca / razoável / forte. Depois ele completou: "mínimo de 6 pode manter... só não fica colocando
+   esse aviso que confunde as pessoas". Então: nenhum aviso enquanto a pessoa digita; a regra dos 6 caracteres fica
+   escrita na dica fixa embaixo do campo e, chegando nos 6, aparece só um "ok" verde (qualquer senha de 6+ vale). */
 const senha = document.getElementById('senha');
 senha.addEventListener('input', () => {
-  const v = senha.value, el = document.getElementById('forca');
-  if (!v){ el.textContent=''; return; }
-  let n = 0;
-  if (v.length >= 8) n++;
-  if (v.length >= 12) n++;
-  if (/[a-z]/.test(v) && /[A-Z]/.test(v)) n++;
-  if (/\d/.test(v)) n++;
-  if (/[^\w]/.test(v)) n++;
-  const nivel = v.length < 6 ? ['Muito curta','#FF5C5C']
-              : n <= 1 ? ['Senha fraca','#FF8A5C']
-              : n <= 3 ? ['Senha razoável','#FF9E21']
-              :          ['Senha forte','#1DB954'];
-  el.textContent = nivel[0]; el.style.color = nivel[1];
+  const el = document.getElementById('forca');
+  if (senha.value.length >= 6){ el.textContent = '\u2713 Senha ok'; el.style.color = '#1DB954'; }
+  else el.textContent = '';
 });
 
 /* ---------- validação de CPF no navegador (o servidor confere de novo) ---------- */
