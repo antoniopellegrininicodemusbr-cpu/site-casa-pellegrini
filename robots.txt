@@ -8,6 +8,7 @@ Disallow: /cotacao
 Disallow: /fornecedor
 # Contagem de estoque (interno)
 Disallow: /contagem
+Disallow: /cadastros
 Disallow: /data/
 
 Sitemap: https://casapellegrini.com.br/sitemap.xml
