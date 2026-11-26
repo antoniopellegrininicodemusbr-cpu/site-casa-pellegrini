@@ -23,6 +23,8 @@
 /fornecedor/  https://us-central1-pellegrini-app.cloudfunctions.net/cotacao/cadastro  200!
 # Contagem de estoque (26/11/2026): app da equipe (substitui a tela de contagem do Pinch). Não linkado, noindex.
 /contagem/*  https://us-central1-pellegrini-app.cloudfunctions.net/contagem/:splat  200!
+# Cadastros (26/11/2026): itens, receitas e custos — só administradores. Não linkado, noindex.
+/cadastros/*  https://us-central1-pellegrini-app.cloudfunctions.net/cadastros/:splat  200!
 
 # === CANONIZAÇÃO DE DOMÍNIO (HTTP → HTTPS, WWW → APEX) ===
 # Adicionado em 06/05/2026 — GSC mostrava http://www.casapellegrini.com.br/ com 2.339 imp,
