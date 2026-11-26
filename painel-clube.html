@@ -522,6 +522,15 @@
    Nada de cliente fica guardado no navegador (só o token da sessão). */
 if (window.top !== window.self) { document.documentElement.innerHTML = ''; throw new Error('frame'); }
 const API = '/api/clube';
+/* 25/11/2026 (Antonio: "pode chamar o servidor direto"): o caminho pelo site (API acima) corta em ~30 s e o pacote do
+   Augusto já leva ~23 s (deu 504 nesse dia). As chamadas PESADAS do pacote vão direto no servidor, onde o limite é
+   120 s. É o mesmo servidor e a mesma sessão; só não passa pelo site. Se o navegador não alcançar o endereço direto
+   (rede que bloqueia), cai de volta no caminho antigo. */
+const API_DIRETA = 'https://us-central1-pellegrini-app.cloudfunctions.net/api';
+async function buscarPesado(caminho, opcoes){
+  try { return await fetch(API_DIRETA+caminho, opcoes); }
+  catch(e){ return await fetch(API+caminho, opcoes); }
+}
 const SITEKEY = '0x4AAAAAAEPBoYU8aqp1g3M9';
 const KS = 'painel_clube_sessao';
 const $ = (id) => document.getElementById(id);
@@ -747,9 +756,10 @@ async function exportBaixar(dias){
   const id=dias?'exBtn7':'exBtnP'; ocupado(id,true,'Gerando…');
   try{
     const h={}; if(SESSAO) h['X-Painel-Sessao']=SESSAO;
-    const r=await fetch(API+'/admin/exportacao?tipo=janela&inicio='+ini+'&fim='+fim,{headers:h,cache:'no-store'});
-    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.erro||('erro '+r.status)); }
-    const nome=((r.headers.get('Content-Disposition')||'').match(/filename="([^"]+)"/)||[])[1]||('clube_pellegrini_'+ini+'_'+fim+'.zip');
+    const r=await buscarPesado('/admin/exportacao?tipo=janela&inicio='+ini+'&fim='+fim,{headers:h,cache:'no-store'});
+    if(r.status===401 && SESSAO){ guardarSessao(null); db=vazio(); carregado=false; mostrar('entrar'); msg('entrarMsg','Sessão expirada. Entre de novo.'); ocupado(id,false); return; }
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.erro||(r.status===504?'demorou demais (o servidor não respondeu a tempo). Tente de novo em 1 minuto.':'erro '+r.status)); }
+    const nome=((r.headers.get('Content-Disposition')||'').match(/filename="([^"]+)"/)||[])[1]||('clube_pellegrini_export_'+ini.replace(/-/g,'')+'_'+fim.replace(/-/g,'')+'.zip');
     const blob=await r.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome;
     document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000);
     msg('exMsg','Baixado: '+nome+' ('+Math.round(blob.size/1024)+' KB)',true);
@@ -759,9 +769,21 @@ async function exportBaixar(dias){
 async function exportEmailCompleta(){
   msg('exMsg','');
   ocupado('exBtnC',true,'Montando e enviando…');
-  const r=await chamar('/admin/exportacao/enviar',{tipo:'completa'});
+  // direto no servidor (a completa é a mais pesada de todas); se não alcançar, vai pelo caminho antigo
+  let r; const t0=Date.now();
+  try{
+    const h={'Content-Type':'application/json'}; if(SESSAO) h['X-Painel-Sessao']=SESSAO;
+    const resp=await fetch(API_DIRETA+'/admin/exportacao/enviar',{method:'POST',headers:h,body:JSON.stringify({tipo:'completa'}),cache:'no-store'});
+    if(resp.status===401 && SESSAO){ guardarSessao(null); db=vazio(); carregado=false; mostrar('entrar'); msg('entrarMsg','Sessão expirada. Entre de novo.'); ocupado('exBtnC',false); return; }
+    r=await resp.json().catch(()=>({ok:false,erro:'Resposta inválida do servidor ('+resp.status+').'}));
+  }catch(e){
+    // Só tenta de novo pelo caminho antigo se o endereço direto falhou NA HORA (rede bloqueando). Se caiu no meio,
+    // o servidor pode já ter mandado o e-mail: tentar de novo mandaria em dobro pro Augusto.
+    if(Date.now()-t0 < 4000) r=await chamar('/admin/exportacao/enviar',{tipo:'completa'});
+    else r={ok:false,erro:'A conexão caiu no meio e não deu pra confirmar se o e-mail saiu. Veja "Último e-mail" aqui embaixo antes de mandar de novo.'};
+  }
   ocupado('exBtnC',false);
-  if(!r.ok) return msg('exMsg',r.erro||'Não enviou.');
+  if(!r.ok){ msg('exMsg',r.erro||'Não enviou.'); exportCarregarCfg(true); return; }
   msg('exMsg','Enviado pra '+(r.para||[]).join(', ')+' — '+r.arquivo+' ('+Math.round((r.bytes||0)/1024)+' KB)',true);
   exportCarregarCfg(true);
 }
