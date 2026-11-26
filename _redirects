@@ -22,7 +22,6 @@
 /fornecedor   https://us-central1-pellegrini-app.cloudfunctions.net/cotacao/cadastro  200!
 /fornecedor/  https://us-central1-pellegrini-app.cloudfunctions.net/cotacao/cadastro  200!
 # Contagem de estoque (26/11/2026): app da equipe (substitui a tela de contagem do Pinch). Não linkado, noindex.
-/contagem    /contagem/  301
 /contagem/*  https://us-central1-pellegrini-app.cloudfunctions.net/contagem/:splat  200!
 
 # === CANONIZAÇÃO DE DOMÍNIO (HTTP → HTTPS, WWW → APEX) ===
