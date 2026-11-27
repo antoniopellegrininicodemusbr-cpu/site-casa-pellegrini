@@ -1,6 +1,6 @@
 {
  "ultima_fase": "ligar",
- "ultima_execucao": "2026-11-26",
+ "ultima_execucao": "2026-11-27",
  "historico": [
   {
    "data": "2026-11-24",
@@ -25,6 +25,13 @@
    "status_campanha_antes": "ACTIVE",
    "acoes": [],
    "run_id": "45820735903"
+  },
+  {
+   "data": "2026-11-27",
+   "fase": "ligar",
+   "status_campanha_antes": "ACTIVE",
+   "acoes": [],
+   "run_id": "45997579491"
   }
  ]
 }
