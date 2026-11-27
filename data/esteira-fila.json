@@ -1,7 +1,26 @@
 {
- "atualizado_em": "2026-11-26",
- "total": 367,
+ "atualizado_em": "2026-11-27",
+ "total": 368,
  "registros": [
+  {
+   "media_id": "18161219710570505",
+   "data_post": "2026-11-26",
+   "media_type": "REELS",
+   "permalink": "https://www.instagram.com/reel/DgODxl7vDa-/",
+   "caption": "Vacilo, nem tinha acabado…  #RestaurantePetropolis #BarPetropolis #RestauranteCentroPetropolis #AlmocoExecutivo #HappyHour",
+   "status": "REPROVADO_GEMINI",
+   "nota_gemini": "3",
+   "motivo_reprova": "Conteudo e um meme/sketch humoristica, nao recomendado para anuncios evergreens",
+   "flags": "gemini_aprovou:nao|tema:meme garcom recolhendo copo",
+   "conjunto_sugerido": "",
+   "data_triagem": "2026-11-27",
+   "data_entrada_teste": "",
+   "gasto_teste": "",
+   "compras_teste": "",
+   "ctr_teste": "",
+   "data_veredito": "",
+   "ad_id_promovido": ""
+  },
   {
    "media_id": "18116213660170173",
    "data_post": "2026-11-24",
